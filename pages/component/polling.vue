@@ -108,7 +108,7 @@ export default {
 					title: '完成',
 					icon: '',
 					status: '',
-					path: '',
+					path: 'component/details/complete',
 					description: '2020-10-10 12:20:30'
 				}]
 		};
@@ -117,7 +117,7 @@ export default {
 		console.log(option);
 		let me = this;
 		if (JSON.stringify(option) != '{}') {
-			basic.getSysMenuById(option.id).then(rest => {
+			/* basic.getSysMenuById(option.id).then(rest => {
 				let data = rest.data;
 				for (let i in data) {
 					let disLength = data[i].name.length;
@@ -125,8 +125,8 @@ export default {
 					data[i].name = data[i].name.substring(0, disLength - 3);
 				}
 				console.log(data);
-				/* this.elements = data; */
-			});
+				this.elements = data; 
+			});*/
 		}
 	},
 	methods: {}

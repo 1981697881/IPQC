@@ -244,6 +244,6 @@
 
 		100% {
 			transform: translateY(0px);
-		}
+		} 
 	}
 </style>

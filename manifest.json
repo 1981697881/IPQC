@@ -16,9 +16,14 @@
             "autoclose" : true,
             "delay" : 0
         },
-        /* 模块配置 */
-        "modules" : {},
-        /* 应用发布信息 */
+        /* 5+App特有相关 */
+        "modules" : {
+            "Payment" : {}
+        },
+        "compatible" : {
+            "ignoreVersion" : true
+        },
+        /* 模块配置 *//* 应用发布信息 */
         "distribute" : {
             /* android打包配置 */
             "android" : {
@@ -51,7 +56,6 @@
             "ios" : {},
             /* SDK配置 */
             "sdkConfigs" : {
-                "geolocation" : {},
                 "ad" : {}
             }
         }
@@ -60,16 +64,11 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "appid",
+        "appid" : "",
         "setting" : {
             "urlCheck" : false
         },
-        "usingComponents" : true,
-        "permission" : {
-            "scope.userLocation" : {
-                "desc" : "你的位置信息将用于小程序位置接口的效果展示"
-            }
-        }
+        "usingComponents" : true
     },
     "mp-alipay" : {
         "usingComponents" : true

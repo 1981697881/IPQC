@@ -1,7 +1,7 @@
 <template>
 	<view>
 		<loading :loadModal="loadModal"></loading>
-		<cu-custom bgColor="bg-gradual-blue" :isBack="true">
+		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">整改意见</block>
 		</cu-custom>

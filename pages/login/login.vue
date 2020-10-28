@@ -102,7 +102,7 @@
 				this.service = true
 			}else{
 				this.service = false
-				this.modalName = 'Modal'
+				/* this.modalName = 'Modal' */
 			}
 		 plus.key.addEventListener('backbutton',()=>{
 		    if(back_k){
@@ -190,7 +190,7 @@
 				}
 			},
 			bindLogin() {
-				 if(this.service){
+				 //if(this.service){
 				/**
 				 * 客户端对账号信息进行一些必要的校验。
 				 * 实际开发中，根据业务需要进行处理，这里仅做示例。
@@ -216,7 +216,10 @@
 					account: this.account,
 					password: this.password
 				};
-				login.login(data).then(res => {
+				uni.reLaunch({
+					url: '../index/index',
+				});
+				/* login.login(data).then(res => {
 					uni.showToast({
 						icon: 'none',
 						title: res.msg,
@@ -229,8 +232,8 @@
 						icon: 'none',
 						title: err.msg,
 					});
-				})
-				}else{
+				}) */
+				/* }else{
 				 uni.showToast({
 				 	icon: 'none',
 					duration: 2000,
@@ -238,7 +241,7 @@
 				 });
 				  this.modalName = 'Modal'
 				
-			 }	
+			 }	 */
 			},
 			getUserInfo({
 				detail

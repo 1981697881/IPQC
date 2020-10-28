@@ -1,6 +1,6 @@
 <template>
 	<view>
-		<cu-custom bgColor="bg-gradual-blue" :isBack="true">
+		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">整改反馈</block>
 		</cu-custom>
@@ -95,7 +95,6 @@
 							headHeight = data.height;
 						})
 						.exec();
-						console.log(res.windowHeight)
 					setTimeout(function() {
 						me.pageHeight = res.windowHeight - headHeight - 30;
 					}, 1000);
