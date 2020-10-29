@@ -164,9 +164,8 @@ export default {
 			});
 		},
 		handlerSign(){
-			uni.showToast({
-				icon: 'none',
-				title: '该功能暂未完善'
+			uni.navigateTo({
+				url: '../details/endorse'
 			});
 		},	
 		IsCard(e,item) {
