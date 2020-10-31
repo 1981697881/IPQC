@@ -98,13 +98,15 @@ export default {
 					status: '',
 					path: 'component/details/feedback',
 					description: '2020-10-10 12:20:30'
-				},{
+				},
+				/* {
 					title: '延期申请',
 					icon: '',
 					status: '',
 					path: 'component/details/applyFor',
 					description: '2020-10-10 12:20:30'
-				},{
+				}, */
+				{
 					title: '完成',
 					icon: '',
 					status: '',

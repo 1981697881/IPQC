@@ -51,6 +51,10 @@
 					</view>
 				</picker>
 			</view>
+			<view class="cu-form-group">
+				<view class="title">是否延期</view>
+				<button class='cu-btn bg-orange shadow' @tap="$manyCk(applyFor)">申请</button>
+			</view>
 		</form>
 		<view class="cu-bar tabbar shadow foot">
 			<view class="box text-center">
@@ -102,6 +106,11 @@
 			});
 		},
 		methods: {
+			applyFor(){
+				uni.navigateTo({
+					url: '../details/applyFor'
+				});
+			},
 			PickerChange1(e) {
 				this.index1 = e.detail.value
 			},PickerChange2(e) {
