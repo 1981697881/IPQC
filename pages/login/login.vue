@@ -52,7 +52,7 @@
 			<view class="input-group">
 				<view class="input-row border">
 					<text class="title">账号：</text>
-					<m-input class="m-input" type="text" clearable focus v-model="account" placeholder="请输入账号"></m-input>
+					<m-input class="m-input" type="text" clearable focus v-model="username" placeholder="请输入账号"></m-input>
 				</view>
 				<view class="input-row">
 					<text class="title">密码：</text>
@@ -87,7 +87,7 @@
 				providerList: [],
 				hasProvider: false,
 				modalName: null,
-				account: '',
+				username: '',
 				password: '',
 				positionTop: 0,
 				popupForm: {
@@ -97,12 +97,16 @@
 			}
 		},
 		created(){
+			if(service.getUsers()[0].username !='' && typeof service.getUsers()[0].username != "undefined"){
+			this.username = service.getUsers()[0].username
+			this.password = service.getUsers()[0].password
+			}	
 			if(service.getUrls().url !='' && typeof service.getUrls().url != "undefined"){
 				this.popupForm.URL = service.getUrls().url
 				this.service = true
 			}else{
 				this.service = false
-				/* this.modalName = 'Modal' */
+				this.modalName = 'Modal'
 			}
 		 plus.key.addEventListener('backbutton',()=>{
 		    if(back_k){
@@ -138,9 +142,9 @@
 				 * 检测用户账号密码是否在已缓存的用户列表中
 				 */
 			 if(this.service){
-				 if(service.getUsers()[0].account !='' && typeof service.getUsers()[0].account != "undefined"){
+				 if(service.getUsers()[0].username !='' && typeof service.getUsers()[0].username != "undefined"){
 				 	const data = {
-				 		account: service.getUsers()[0].account,
+				 		username: service.getUsers()[0].username,
 				 		password: service.getUsers()[0].password
 				 	};
 				 	login.login(data).then(res => {
@@ -190,12 +194,12 @@
 				}
 			},
 			bindLogin() {
-				 //if(this.service){
+				 if(this.service){
 				/**
 				 * 客户端对账号信息进行一些必要的校验。
 				 * 实际开发中，根据业务需要进行处理，这里仅做示例。
 				 */
-				if (this.account.length < 3) {
+				if (this.username.length < 3) {
 					uni.showToast({
 						icon: 'none',
 						title: '账号最短为 5 个字符'
@@ -213,13 +217,10 @@
 				 * 使用 uni.request 将账号信息发送至服务端，客户端在回调函数中获取结果信息。
 				 */
 				const data = {
-					account: this.account,
+					username: this.username,
 					password: this.password
 				};
-				uni.reLaunch({
-					url: '../index/index',
-				});
-				/* login.login(data).then(res => {
+				login.login(data).then(res => {
 					uni.showToast({
 						icon: 'none',
 						title: res.msg,
@@ -232,8 +233,8 @@
 						icon: 'none',
 						title: err.msg,
 					});
-				}) */
-				/* }else{
+				})
+				}else{
 				 uni.showToast({
 				 	icon: 'none',
 					duration: 2000,
@@ -241,7 +242,7 @@
 				 });
 				  this.modalName = 'Modal'
 				
-			 }	 */
+			 }	
 			},
 			getUserInfo({
 				detail

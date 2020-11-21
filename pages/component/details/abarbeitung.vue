@@ -38,9 +38,9 @@
 							<view class="action">
 								<button class="cu-btn bg-blue round sm" @tap="previewImage">隐患图片</button>
 							</view>
-							<view class="action" >
+							<!-- <view class="action" >
 								<button class="cu-btn bg-purple round sm" @tap="handlerOpin">整改意见</button>
-							</view>
+							</view> -->
 							<view class="action" >
 								<button class="cu-btn bg-pink round sm" @tap="handlerSign">签名确认</button>
 							</view>

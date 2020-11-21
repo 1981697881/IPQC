@@ -13,35 +13,34 @@ export default {
 		return {
 			PageCur: 'component',
 			totalSize: 0,
-			 baifen: 0
+			baifen: 0
 		};
 	},
-	computed: mapState(['forcedLogin', 'hasLogin', 'account']),
-	/**
-	 * 默认登录，这情况为已登录过，而登录缓存还在，后台登录，前端不展示登录页
-	 * 检测用户账号密码是否在已缓存的用户列表中
-	 */
-	/* onReady() {
+	computed: mapState(['forcedLogin', 'hasLogin', 'username']),
+	created() {
+		/**
+		 * 默认登录，这情况为已登录过，而登录缓存还在，后台登录，前端不展示登录页
+		 * 检测用户账号密码是否在已缓存的用户列表中
+		 */
 		if (service.getUrls().url != '' && typeof service.getUrls().url != 'undefined') {
 			if (service.getUsers().length > 0) {
-				console.log(service.getUsers()[0].account != '' && service.getUsers()[0].account != 'undefined');
-				if (service.getUsers()[0].account != '' && service.getUsers()[0].account != 'undefined') {
+				if (service.getUsers()[0].username != '' && service.getUsers()[0].username != 'undefined') {
 					const data = {
-						account: service.getUsers()[0].account,
+						username: service.getUsers()[0].username,
 						password: service.getUsers()[0].password
-					};
-					if (data.account && data.password) {
+					}; 
+					if (data.username && data.password) {
 						login
 							.login(data)
 							.then(res => {
-								console.log(res.success);
+								console.log(123);
+								console.log(res);
 								if (res.success) {
 									data.userId = res.data['userId'];
 									data.username = res.data['username'];
 									store.commit('login', data);
 									service.clearUser();
 									service.addUser(data);
-									console.log(123);
 								}
 							})
 							.catch(err => {
@@ -73,7 +72,21 @@ export default {
 				url: '../login/login'
 			});
 		}
-	}, */
+		plus.key.addEventListener('backbutton',()=>{
+		   if(back_k){
+						plus.runtime.quit();
+		   }else{
+						uni.showToast({
+						title:"再按一次退出应用",
+						icon:'none'
+						});
+					}
+						back_k ++
+		   setTimeout(()=>{
+						back_k --
+		   },3000)
+		  }, false);
+	},
 	onLoad() {
 		this.plusReady();
 		var that = this;

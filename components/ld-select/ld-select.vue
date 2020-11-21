@@ -1,7 +1,7 @@
 <template>
 	<view class="main">
 		<view class="input" :style="disabled?'background-color:#f5f7fa':''">
-			<input @click="showModal" :value="valueOf(list)" :style="disabled?'color:#c0c4cc':''" :placeholder="placeholder" disabled/>
+			<input @click="showModal" v-model="bValue" :style="disabled?'color:#c0c4cc':''" :placeholder="placeholder" disabled/>
 			<text v-if="clearable&&!disabled" @click="empty" class="selectIcon iconcross"></text>
 		</view>
 		<view class="select-modal" :class="isShowModal?'show':''" @tap="hideModal">
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-	import {Function} from '@/components/ld-select/eval5.min.js';
+	import {Function} from './eval5.min.js';
 	export default {
 		data() {
 			return {
@@ -90,8 +90,8 @@
 		},
 		watch: {
 			sValue (val) {
-					  this.bValue = this.getBValye(val)
-					  this.$emit('change', val)
+				this.bValue = this.getBValye(val)
+				this.$emit('change', val)
 			}
 		},
 		created() {
@@ -145,20 +145,6 @@
 					return this.value.indexOf(this.evil(item))!=-1
 				} else {
 					return this.value.indexOf(item)!=-1
-				}
-			},
-			valueOf(list){
-				let me = this
-				let value = ''
-				if(me.valueKey){
-					for(let i in list){
-						if(me.sValue == list[i].FNumber){
-							value = list[i].FName
-						}
-					}
-					return value
-				} else {
-					return value
 				}
 			},
 			getListKeyValue(item){

@@ -1,6 +1,6 @@
 <template name="components">
 	<view>
-		<view class="cu-bar bg-cyan">
+		<view class="headerHei cu-bar bg-cyan">
 			<view></view>
 			<view class="content"></view>
 			<view class="action" style="margin-top: 15px;">
@@ -19,7 +19,7 @@
 				</view>
 			</view>
 		</view>
-		<scroll-view scroll-y class="page">
+		<scroll-view class="page" :style="{ height: pageHeight + 'px' }">
 			<view style="margin-left: 10px;margin-right: 10px;" class="cu-bar bg-white solid-bottom margin-top">
 				<view class="action">
 					<text class="cuIcon-title text-orange "></text>
@@ -83,6 +83,9 @@
 				</navigator>
 			</view>
 		</scroll-view>
+		<text v-if="isShow" class="loading-text">
+			{{ loadingType === 0 ? contentText.contentdown : loadingType === 1 ? contentText.contentrefresh : contentText.contentnomore }}
+		</text>
 	</view>
 </template>
 
@@ -90,9 +93,41 @@
 import service from '@/service.js';
 import ruiDatePicker from '@/components/rattenking-dtpicker/rattenking-dtpicker.vue';
 import basic from '@/api/basic';
+var _self,
+	page = 1;
 export default {
 	components: { ruiDatePicker },
+	data() {
+		return {
+			start: '',
+			end: '',
+			switchB: true,
+			loadingType: 0,
+			pageHeight: 0,
+			contentText: {
+				contentdown: '上拉显示更多',
+				contentrefresh: '正在加载...',
+				contentnomore: '没有更多数据了'
+			},
+			isShow: true,
+			elements: [
+				{
+					title: '采购管理',
+					name: 'procurement',
+					color: 'purple',
+					cuIcon: 'vipcard'
+				},
+				{
+					title: '销售管理',
+					name: 'sales',
+					color: 'mauve',
+					cuIcon: 'formfill'
+				}
+			]
+		};
+	},
 	created() {
+		_self = this;
 		/* if (service.getUsers().length > 0) {
 			if (service.getUsers()[0].account != '' && service.getUsers()[0].account != 'undefined') {
 				 basic
@@ -116,34 +151,107 @@ export default {
 				url: '../login/login'
 			});
 		} */
+		var me = this;
+		uni.getSystemInfo({
+			success: function(res) {
+				// res - 各种参数
+				let info = uni.createSelectorQuery().select('.getheight');
+				let customHead = uni.createSelectorQuery().select('.headerHei');
+				var infoHeight = 0;
+				var headHeight = 0;
+				info.boundingClientRect(function(data) {
+					//data - 各种参数
+					infoHeight = data.height;
+				}).exec();
+				customHead
+					.boundingClientRect(function(data) {
+						//data - 各种参数
+						headHeight = data.height;
+					})
+					.exec();
+				setTimeout(function() {
+					me.pageHeight = res.windowHeight - infoHeight - headHeight - 90;
+				}, 1000);
+			}
+		});
 		this.start = this.getDay('', -3).date;
 		this.end = this.getDay('', 0).date;
+		me.getLists()
 	},
-	onLoad: function(option) {
-		
+	// 下拉刷新
+	onPullDownRefresh() {
+		this.getLists();
 	},
-	data() {
-		return {
-			start: '',
-			end: '',
-			switchB: true,
-			elements: [
-				{
-					title: '采购管理',
-					name: 'procurement',
-					color: 'purple',
-					cuIcon: 'vipcard'
-				},
-				{
-					title: '销售管理',
-					name: 'sales',
-					color: 'mauve',
-					cuIcon: 'formfill'
+	// 上拉加载
+	onReachBottom: function() {
+		this.isShow = false;
+		page++; //每触底一次 page +1
+		// console.log(_self.cuIconList.length);
+		if (_self.loadingType != 0) {
+			//loadingType!=0;直接返回
+			return false;
+		}
+		_self.loadingType = 1;
+		// console.log(page);
+		uni.showNavigationBarLoading(); //显示加载动画
+		let obj = this.qFilter();
+		obj.pageNum = page;
+		basic
+			.pollingPlanList(obj)
+			.then(res => {
+				if (res.success) {
+					if (_self.cuIconList.length == res.data.total) {
+						//没有数据
+						_self.loadingType = 2;
+						uni.hideNavigationBarLoading(); //关闭加载动画
+						return false;
+					}
+					if (res.data.list.length > 0) {
+						let dList = res.data.list;
+						dList.forEach((item, index) => {
+							_self.cuIconList.push(item);
+						});
+					}
+					/* for (var i = _self.cuIconList.length; i < res.data.total; i++) {
+						_self.cuIconList = _self.cuIconList.concat(res.data.list[i - 1]); //将数据拼接在一起
+					} */
+					_self.loadingType = 0; //将loadingType归0重置
+					uni.hideNavigationBarLoading(); //关闭加载动画
+					uni.stopPullDownRefresh(); //得到数据后停止下拉刷新
+					this.isShow = true;
 				}
-			]
-		};
+			})
+			.catch(err => {
+				uni.showToast({
+					icon: 'none',
+					title: err.msg
+				});
+			});
 	},
 	methods: {
+		//列表数据
+		getLists: function() {
+			//第一次回去数据
+			_self.loadingType = 0;
+			uni.showNavigationBarLoading();
+			const me = this;
+			basic
+				.pollingPlanList(this.qFilter())
+				.then(res => {
+					if (res.success) {
+						console.log(res);
+						_self.cuIconList = res.data.list;
+						uni.hideNavigationBarLoading();
+						uni.stopPullDownRefresh(); //得到数据后停止下拉刷新
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+		},
 		// 查询前后三天日期
 		getDay(date, day) {
 			var today = new Date();
@@ -184,12 +292,15 @@ export default {
 			let obj = {};
 			this.start != null && this.start != undefined ? (obj.startDate = this.start) : null;
 			this.end != null && this.end != undefined ? (obj.endDate = this.end) : null;
+			obj.pageSize = 20;
+			obj.pageNum = 1;
 			return obj;
 		},
 		search() {
 			const me = this;
 			if (this.start.length > 5 && this.end.length > 5) {
 				if (!this.compareDate(this.start, this.end)) {
+					me.getLists();
 				} else {
 					uni.showToast({
 						icon: 'none',
@@ -231,9 +342,7 @@ export default {
 	width: 64px;
 	text-align: right;
 }
-.page {
-	height: 100vh;
-}
+
 .nav-list {
 	margin-top: 5%;
 }
@@ -243,5 +352,13 @@ export default {
 .nav-title::first-letter {
 	font-size: 16px;
 	margin-right: 2px;
+}
+.loading-text {
+	height: 80upx;
+	line-height: 80upx;
+	font-size: 30upx;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
 }
 </style>

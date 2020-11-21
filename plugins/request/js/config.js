@@ -38,7 +38,6 @@ globalInterceptor.request.use(
         console.log('is global request interceptor');
 		console.log(config)
         getToken() && (config.header.token = getToken());
-
         return config;
     },
     (err) => {
@@ -129,13 +128,16 @@ function saveToken(token) {
  */
 function handleCode({ data, code, config, res }) {
     const STATUS = {
-        '0'() {
+        '200'() {
 			store.commit("setToken", {token: res.header.authorization})
             return data;
         },
-		/* '1'() {
-			  return Promise.reject({ code, msg: '请求错误' });
-		}, */
+		'20010'() {
+			uni.reLaunch({
+				url: '../login/login'
+			});
+			return data;
+		},
         '400'() {
             // return { code, msg: '请求错误' };
             return Promise.reject({ code, msg: '请求错误' });

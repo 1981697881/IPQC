@@ -1,33 +1,77 @@
 <template>
 	<view>
-		<cu-custom bgColor="bg-gradual-blue" :isBack="true">
+		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">巡检计划</block>
 		</cu-custom>
-		<scroll-view scroll-y class="page">
-			<view class="box getheight">
-				<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
+		<view class="box getheight">
+			<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
+				<view class="action">
+					被检公司:
+					<text>{{ form.finBillNo }}</text>
+				</view>
+				<view class="action">
+					被检项目:
+					<text>{{ form.finBillNo }}</text>
+				</view>
+			</view>
+			<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
+				<view class="action">
+					登记日期:
+					<text>{{ form.finBillNo }}</text>
+				</view>
+				<view class="action">
+					计划状态:
+					<text>{{ form.finBillNo }}</text>
+				</view>
+			</view>
+		</view>
+		<view class="cu-modal" style="z-index: 333" :class="modalName == 'Modal' ? 'show' : ''">
+			<view class="cu-dialog bg-white" style="height: 420upx;">
+				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
+					<view class="content text-sl">检查登记</view>
+					<view class="action" @tap="hideModal"><text class="cuIcon-close text-red"></text></view>
+				</view>
+				<view class="cu-bar margin-top solid-bottom" style="height: 60upx;">
 					<view class="action">
-						被检公司:
-						<text>{{ form.finBillNo }}</text>
-					</view>
-					<view class="action">
-						被检项目:
-						<text>{{ form.finBillNo }}</text>
+						<view style="width: 70px;">检查项目:</view>
+						        <ld-select :multiple="true" :list="projectCheckList"
+						        list-key="FName" value-key="FNumber"
+						        placeholder="请选择"
+						        clearable
+						        v-model="form.fdCStockId"
+						        @change="supplierChange"></ld-select>
 					</view>
 				</view>
-				<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
+				<view class="cu-bar solid-bottom" style="height: 60upx;">
 					<view class="action">
-						巡检/整改日期:
-						<text>{{ form.finBillNo }}</text>
+						<view style="width: 70px;">被检人员</view>
+						        <ld-select :list="userList"
+						        list-key="FName" value-key="FNumber"
+						        placeholder="请选择"
+						        clearable
+						        v-model="form.fdeptID"
+						        @change="deptChange"></ld-select>
 					</view>
+				</view><view class="cu-bar solid-bottom" style="height: 60upx;">
 					<view class="action">
-						计划状态:
-						<text>{{ form.finBillNo }}</text>
+						<view style="width: 70px;">检查日期:</view>
+						<picker mode="date" :value="date" start="2015-09-01" end="2020-09-01" @change="DateChange">
+							<view class="picker">
+								{{date}}
+							</view>
+						</picker>
+					</view>
+				</view><view class="cu-bar solid-bottom" style="height: 60upx;">
+					<view class="action">
+						<view style="width: 70px;">陪同人员:</view>
+						<input name="input" style="font-size: 13px;text-align: left;" v-model="form.fcardNum"></input>
 					</view>
 				</view>
 			</view>
-			<view class="bg-white evan-step-show__title text-center"><text class="evan-step-show__title__item"></text></view>
+		</view>
+		<scroll-view scroll-y class="page" :style="{'height': pageHeight + 'px' }">
+			<!-- <view class="bg-white evan-step-show__title text-center"><text class="evan-step-show__title__item"></text></view>
 			<evan-steps :active="1" class="bg-white" style="padding-left: 30%;">
 				<navigator
 					hover-class="none"
@@ -38,27 +82,28 @@
 					:key="index"
 				>
 				<evan-step :icon="item.icon"  :status="item.status" :title="item.title" :description="item.description"></evan-step>
-				<!-- <evan-step title="延期申请" description="2020-10-10 10:10:10">
+				<evan-step title="延期申请" description="2020-10-10 10:10:10">
 					<template v-slot:icon>
 						<image class="evan-step-show__show" src="/static/logo.png"></image>
 					</template>
-				</evan-step> -->
+				</evan-step>
 				</navigator>
-			</evan-steps>
+			</evan-steps> -->
 			<view class="cu-tabbar-height"></view>
 		</scroll-view>
 	</view>
 </template>
-
 <script>
 import basic from '@/api/basic';
 import EvanSteps from '@/components/evan-steps/evan-steps.vue';
 import EvanStep from '@/components/evan-steps/evan-step.vue';
 import UniIcons from '@/components/uni-icons/uni-icons.vue';
+import ldSelect from '@/components/ld-select/ld-select.vue'
 export default {
 	components: {
 		EvanSteps,
 		EvanStep,
+		ldSelect,
 		UniIcons
 	},
 	data() {
@@ -74,6 +119,12 @@ export default {
 				FCustName: '',
 				fdeptID: ''
 			},
+			date: '2018-12-25',
+			modalName: null,
+			pageHeight: 0,
+			cuIList: [],
+			userList: [],
+			projectCheckList: [],
 			elements: [{
 					title: '打卡',
 					status: '',
@@ -115,6 +166,29 @@ export default {
 				}]
 		};
 	},
+	onReady: function() {
+			 var me = this
+			 if(me.cuIList.length<=0){
+			 	this.modalName = 'Modal' 
+			 }
+			 uni.getSystemInfo({
+			 　　success: function(res) { // res - 各种参数
+			 　　   let info = uni.createSelectorQuery().select(".getheight");
+			 　　   let customHead = uni.createSelectorQuery().select(".customHead");
+					 var infoHeight = 0;
+					 var headHeight = 0;
+			 　　　  　info.boundingClientRect(function(data) { //data - 各种参数
+						infoHeight = data.height
+			 　　    }).exec();
+					customHead.boundingClientRect(function(data) { //data - 各种参数
+						headHeight = data.height
+			 　　    }).exec();
+			 setTimeout(function () {
+			 				me.pageHeight= res.windowHeight - infoHeight - headHeight
+			 		}, 1000);
+			       }
+			 });
+	},
 	onLoad: function(option) {
 		console.log(option);
 		let me = this;
@@ -130,8 +204,41 @@ export default {
 				this.elements = data; 
 			});*/
 		}
+		me.initMain()
 	},
-	methods: {}
+	methods: {
+		initMain(){
+			basic.userList().then(res => {
+				if(res.success){
+					me.userList=res.data
+				}
+			}).catch(err => {
+				uni.showToast({
+					icon: 'none',
+					title: err.msg,
+				});
+			});
+			basic.projectCheckList().then(res => {
+				if(res.success){
+					me.projectCheckList=res.data
+				}
+			}).catch(err => {
+				uni.showToast({
+					icon: 'none',
+					title: err.msg,
+				});
+			})
+		},	
+		deptChange(val){
+		        this.form.fdeptID = val
+		  }, 
+		  supplierChange(val){
+		        this.form.FSupplyID = val
+		  },
+		DateChange(e) {
+			this.date = e.detail.value
+		},
+	}
 };
 </script>
 <style>
@@ -147,6 +254,10 @@ export default {
 }
 </style>
 <style>
+	.main{
+	        font-size: 32rpx;
+	        padding: 20rpx;
+	    }
 .cu-item {
 	float: left;
 	width: 50%;

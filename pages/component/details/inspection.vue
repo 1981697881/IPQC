@@ -25,7 +25,7 @@
 							<view class="cu-bar bg-shadeBottom"> <text class="text-cut">我已天理为凭，踏入这片荒芜，不再受凡人的枷锁遏制。我已天理为凭，踏入这片荒芜，不再受凡人的枷锁遏制。</text></view>
 						</view> -->
 						<view class="cu-list menu-avatar">
-							<view class="cu-item">
+							<view class="cu-item" >
 								<view class="cu-avatar round lg" style="background-image:url(../../static/OK.png);"></view>
 								<view class="content flex-sub">
 									<view class="text-grey">安全检查</view>
@@ -36,6 +36,63 @@
 											<text class="cuIcon-appreciatefill margin-lr-xs"></text> 20
 											<text class="cuIcon-messagefill margin-lr-xs"></text> 30
 										</view> -->
+									</view>
+								</view>
+								<view @tap="unfoldSetting" v-show='isAdd' style="position: absolute;" class="action">
+									<text class="cuIcon-add text-red"  style="font-size: 21px;" ></text>
+								</view>
+								<view @tap="closeSetting" v-show='isClose' style="position: absolute;" class="action">
+									<text class="cuIcon-close text-red"  style="font-size: 21px;" ></text>
+								</view>
+							</view>
+							<view v-show='isThrough' class="cu-list menu">
+								<view class="cu-item" style="height: 30px;">
+									<view  class="content padding-sm" style="left: 0;">
+										<view>
+											<text class="cuIcon-text text-blue margin-right-xs"></text> 消防</view>
+									</view>
+									<view class="action">
+										<checkbox-group class="block" @change="CheckboxChange">
+										<checkbox class='round blue' :class="checked?'checked':''" :checked="checked?true:false"
+										 value="C"></checkbox>
+										 </checkbox-group>
+									</view>
+								</view>
+								<view class="cu-item" style="height: 30px;">
+									<view  class="content padding-sm" style="left: 0;">
+										<view>
+											<text class="cuIcon-text text-blue margin-right-xs"></text> 水电</view>
+									</view>
+									<view class="action">
+										<checkbox-group class="block" @change="CheckboxChange">
+										<checkbox class='round blue' :class="checked?'checked':''" :checked="checked?true:false"
+										 value="C"></checkbox>
+										 </checkbox-group>
+									</view>
+								</view>
+							</view>
+							<view v-show='isThrough' class="cu-form-group align-start">
+								<view class="title">隐患问题</view>
+								<textarea maxlength="-1" :disabled="modalName!=null" @input="textareaBInput" placeholder="隐患问题"></textarea>
+							</view>
+							<view v-show='isThrough' class="cu-bar bg-white">
+								<view class="action">
+									隐患图片
+								</view>
+								<view class="action">
+									{{imgList.length}}/4
+								</view>
+							</view>
+							<view v-show='isThrough' class="cu-form-group">
+								<view class="grid col-4 grid-square flex-sub">
+									<view class="bg-img" v-for="(item,index) in imgList" :key="index" @tap="ViewImage" :data-url="imgList[index]">
+									 <image :src="imgList[index]" mode="aspectFill"></image>
+										<view class="cu-tag bg-red" @tap.stop="DelImg" :data-index="index">
+											<text class='cuIcon-close'></text>
+										</view>
+									</view>
+									<view class="solids" @tap="ChooseImage" v-if="imgList.length<4">
+										<text class='cuIcon-cameraadd'></text>
 									</view>
 								</view>
 							</view>
@@ -68,12 +125,17 @@ export default {
 			isDis: false,
 			onoff: true,
 			isClick: false,
+			isClose: false,
+			isThrough: false, //是否展示明细
+			isAdd: false, // 是否展示“+”号
 			loadModal: false,
 			pickerVal: null,
 			modalName: null,
 			modalName2: null,
 			gridCol: 3,
 			skin: false,
+			checked: true,
+			imgList: [],
 			listTouchStart: 0,
 			listTouchDirection: null,
 			horizontal: 'right',
@@ -169,7 +231,58 @@ export default {
 		} */
 	},
 	methods: {
+		unfoldSetting(){
+			this.$set(this,'isThrough', true)
+			this.$set(this,'isClose', true)
+			this.$set(this,'isAdd', false)
+		}, 
+		closeSetting(){
+			this.$set(this,'isThrough', false)
+			this.$set(this,'isClose', false)
+			this.$set(this,'isAdd', true)
+		},
+		CheckboxChange(e){
+			if(this.checked){
+				this.$set(this,'checked', false)
+			}else{
+				this.$set(this,'checked', true)
+			}
+		},
+		ChooseImage() {
+			uni.chooseImage({
+				count: 4, //默认9
+				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
+				sourceType: ['album'], //从相册选择
+				success: (res) => {
+					if (this.imgList.length != 0) {
+						this.imgList = this.imgList.concat(res.tempFilePaths)
+					} else {
+						this.imgList = res.tempFilePaths
+					}
+				}
+			});
+		},
+		ViewImage(e) {
+			uni.previewImage({
+				urls: this.imgList,
+				current: e.currentTarget.dataset.url
+			});
+		},
+		DelImg(e) {
+			uni.showModal({
+				title: '召唤师',
+				content: '确定要删除这段回忆吗？',
+				cancelText: '再看看',
+				confirmText: '再见',
+				success: res => {
+					if (res.confirm) {
+						this.imgList.splice(e.currentTarget.dataset.index, 1)
+					}
+				}
+			})
+		},
 		IsCard(e,item) {
+			this.$set(this, 'isAdd' , !e.detail.value)
 			this.$set(item, 'isCard' , e.detail.value)
 			/* this.isCard = e.detail.value */
 		},
@@ -324,7 +437,7 @@ export default {
 			var that = this;
 			that.cuIList.push({
 				userId: '',
-				isCard: false,
+				isCard: true,
 				dispatchNum: 0
 			});
 			console.log(that.cuIList);

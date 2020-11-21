@@ -225,9 +225,9 @@ export default {
 				title: '加载中'
 			});
 			let _this = this;
-			uni.authorize({
+			/* uni.authorize({
 				scope: 'scope.userLocation',
-				success() {
+				success() { */
 					uni.getLocation({
 						type: 'gcj02',
 						success: res => {
@@ -240,12 +240,12 @@ export default {
 							};
 							_this.covers.push(Position);
 							let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
-							let key = '你申请的开发者密钥key';//你申请的开发者密钥（Key）  一般放在后台获取过来
+							let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3';//你申请的开发者密钥（Key）  一般放在后台获取过来
 							let getAddressUrl = URL + _this.lat_current + ',' + _this.lng_current + `&key=${key}`;
-
 							wx.request({
 								url: getAddressUrl,
 								success: result => {
+									console.log(result) 
 									let Res_Data = result.data.result;
 									_this.ClockInObj.street = Res_Data.address;
 									_this.ClockInObj.Details = Res_Data.formatted_addresses.recommend;
@@ -257,8 +257,8 @@ export default {
 							});
 						}
 					});
-				}
-			});
+				/* }
+			}); */
 		},
 
 		//公司地址范围限制
