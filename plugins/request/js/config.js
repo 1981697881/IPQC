@@ -36,8 +36,8 @@ export const config = {
 globalInterceptor.request.use(
     (config) => {
         console.log('is global request interceptor');
+        getToken() && (config.header.Authorization = getToken());
 		console.log(config)
-        getToken() && (config.header.token = getToken());
         return config;
     },
     (err) => {
@@ -61,7 +61,7 @@ globalInterceptor.request.use(
 globalInterceptor.response.use(
     async (res, config) => {
         ////////////////////////////////////////
-        //  demo使用的是 用code模拟http状态码   //
+        //  demo使用的是 用status模拟http状态码   //
         ////////////////////////////////////////
 
         console.log('is global response interceptor');
@@ -72,10 +72,10 @@ globalInterceptor.response.use(
 
         const {
             data,
-            data: { code }
+            data: { status }
         } = res;
         try {
-            return await handleCode({ data, code, config, res });
+            return await handleCode({ data, status, config, res });
         } catch (err) {
             return Promise.reject(err);
         }
@@ -123,29 +123,34 @@ function saveToken(token) {
  * @param {object} o
  * @param {object} o.data 请求返回的数据
  * @param {object} o.config 本次请求的config数据
- * @param {string|number} o.code http状态码
+ * @param {string|number} o.status http状态码
  * @return {object|Promise<reject>}
  */
-function handleCode({ data, code, config, res }) {
-    const STATUS = {
-        '200'() {
-			store.commit("setToken", {token: res.header.authorization})
-            return data;
+function handleCode({ data, status, config, res }) {
+	const STATUS = {
+        '20000'() {
+			if(store.state.token == '' || typeof store.state.token == 'undefined'){
+				store.commit("setToken", {token: res.header.authorization})
+				saveToken(res.header.authorization)
+			}
+			return data;
         },
 		'20010'() {
 			uni.reLaunch({
 				url: '../login/login'
 			});
+			store.commit("setToken", {token: ''})
+			saveToken('')
 			return data;
 		},
         '400'() {
-            // return { code, msg: '请求错误' };
-            return Promise.reject({ code, msg: '请求错误' });
+            // return { status, msg: '请求错误' };
+            return Promise.reject({ status, msg: '请求错误' });
         },
         '401'() {
-            // 只让这个实例发送一次请求，如果code还是401则抛出错误
+            // 只让这个实例发送一次请求，如果status还是401则抛出错误
             if (config.count === 1) {
-                return Promise.reject({ code, msg: '请求未授权' });
+                return Promise.reject({ status, msg: '请求未授权' });
             }
 
             config.count++; // count字段自增，可以用来判断请求次数，避免多次发送重复的请求
@@ -156,14 +161,14 @@ function handleCode({ data, code, config, res }) {
                 .then(() => Request().request(config));
         },
         '403'() {
-            return Promise.reject({ code, msg: '拒绝请求' });
+            return Promise.reject({ status, msg: '拒绝请求' });
         },
         '500'() {
-            return Promise.reject({ code, msg: '服务器错误' });
+            return Promise.reject({ status, msg: '服务器错误' });
         }
     };
 
-    return STATUS[code] ? STATUS[code]() : Promise.reject(data, config); // 有状态码但不在这个封装的配置里，就直接进入 `fail`
+    return STATUS[status] ? STATUS[status]() : Promise.reject(data, config); // 有状态码但不在这个封装的配置里，就直接进入 `fail`
 }
 
 // 显示消息提示框

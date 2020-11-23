@@ -1,8 +1,7 @@
 import Vue from 'vue'
 import App from './App'
-import store from './store'
+import store from '@/store/index.js'
 import service from './service.js'
-import login from '@/api/login'
 import components from './pages/component/home.vue'
 Vue.component('components',components)
 

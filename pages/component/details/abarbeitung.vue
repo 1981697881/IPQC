@@ -100,7 +100,7 @@ export default {
 			workshop
 				.formatByProductWork({ productWorkDetailId: option.productWorkDetailId })
 				.then(res => {
-					if (res.success) {
+					if (res.flag) {
 						me.processList = res.data;
 					}
 				})
@@ -186,7 +186,7 @@ export default {
 			basic
 				.getDeptList({})
 				.then(res => {
-					if (res.success) {
+					if (res.flag) {
 						me.deptList = res.data;
 					}
 				})
@@ -199,7 +199,7 @@ export default {
 			basic
 				.getEmpList({})
 				.then(res => {
-					if (res.success) {
+					if (res.flag) {
 						me.empList = res.data;
 					}
 				})
@@ -267,7 +267,7 @@ export default {
 			workshop
 				.productWorkDispatchAdd(JSON.stringify(array))
 				.then(res => {
-					if (res.success) {
+					if (res.flag) {
 						this.cuIList = [];
 						uni.showToast({
 							icon: 'success',

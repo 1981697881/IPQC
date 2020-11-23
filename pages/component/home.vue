@@ -34,13 +34,13 @@
 				<navigator
 					style="width: 100%;"
 					hover-class="none"
-					:url="'/pages/component/polling?id=' + item.id"
+					:url="'/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName"
 					navigateTo
 					class="cu-item"
 					v-for="(item, index) in elements"
 					:key="index"
 				>
-					<view class="text-grey padding-xs">公司: A项目组</view>
+					<view class="text-grey padding-xs">公司: {{item.deptName}}</view>
 					<view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
 						<view class="flex-sub text-sl ">
 							<text class=" cuIcon-roundcheckfill text-green"><text class="text-grey text-sm">巡检</text></text>
@@ -111,18 +111,7 @@ export default {
 			},
 			isShow: true,
 			elements: [
-				{
-					title: '采购管理',
-					name: 'procurement',
-					color: 'purple',
-					cuIcon: 'vipcard'
-				},
-				{
-					title: '销售管理',
-					name: 'sales',
-					color: 'mauve',
-					cuIcon: 'formfill'
-				}
+				
 			]
 		};
 	},
@@ -170,13 +159,17 @@ export default {
 					})
 					.exec();
 				setTimeout(function() {
-					me.pageHeight = res.windowHeight - infoHeight - headHeight - 90;
+					me.pageHeight = res.windowHeight - infoHeight - headHeight;
 				}, 1000);
 			}
 		});
 		this.start = this.getDay('', -3).date;
 		this.end = this.getDay('', 0).date;
 		me.getLists()
+	},
+	onLoad(){
+		var me = this;
+		
 	},
 	// 下拉刷新
 	onPullDownRefresh() {
@@ -199,17 +192,17 @@ export default {
 		basic
 			.pollingPlanList(obj)
 			.then(res => {
-				if (res.success) {
+				if (res.flag) {
 					if (_self.cuIconList.length == res.data.total) {
 						//没有数据
 						_self.loadingType = 2;
 						uni.hideNavigationBarLoading(); //关闭加载动画
 						return false;
 					}
-					if (res.data.list.length > 0) {
-						let dList = res.data.list;
+					if (res.data.records.length > 0) {
+						let dList = res.data.records;
 						dList.forEach((item, index) => {
-							_self.cuIconList.push(item);
+							_self.elements.push(item);
 						});
 					}
 					/* for (var i = _self.cuIconList.length; i < res.data.total; i++) {
@@ -238,9 +231,9 @@ export default {
 			basic
 				.pollingPlanList(this.qFilter())
 				.then(res => {
-					if (res.success) {
 						console.log(res);
-						_self.cuIconList = res.data.list;
+					if (res.flag) {
+						_self.elements = res.data.records;
 						uni.hideNavigationBarLoading();
 						uni.stopPullDownRefresh(); //得到数据后停止下拉刷新
 					}
@@ -271,15 +264,6 @@ export default {
 				date: tYear + '-' + tMonth + '-' + tDate
 			};
 		},
-		SwitchB(e) {
-			this.switchB = e.detail.value;
-		},
-		bindChange1(e) {
-			this.start = e;
-		},
-		bindChange2(e) {
-			this.end = e;
-		},
 		doHandleMonth(month) {
 			var m = month;
 			if (month.toString().length == 1) {
@@ -287,6 +271,18 @@ export default {
 			}
 			return m;
 		},
+		SwitchB(e) {
+			this.switchB = e.detail.value;
+		},
+		bindChange1(e) {
+			this.start = e;
+			this.search()
+		},
+		bindChange2(e) {
+			this.end = e;
+			this.search()
+		},
+		
 		// 查询条件过滤
 		qFilter() {
 			let obj = {};
@@ -296,10 +292,19 @@ export default {
 			obj.pageNum = 1;
 			return obj;
 		},
+		compareDate(date1,date2){
+		                  var oDate1 = new Date(date1);
+		                  var oDate2 = new Date(date2);
+		                  if(oDate1.getTime() > oDate2.getTime()){
+		                      return true; //第一个大
+		                  } else {
+		                      return false; //第二个大
+		                  }
+		},
 		search() {
 			const me = this;
-			if (this.start.length > 5 && this.end.length > 5) {
-				if (!this.compareDate(this.start, this.end)) {
+			if (me.start.length > 5 && me.end.length > 5) {
+				if (!me.compareDate(me.start, me.end)) {
 					me.getLists();
 				} else {
 					uni.showToast({

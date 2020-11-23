@@ -19,7 +19,6 @@ const store = new Vuex.Store({//全局变量定义
             state.password = user.password || '';
             state.hasLogin = true;
             state.userId = user.id || '';
-            state.token = user.token || '';
         },
         logout(state) {
            state.account = "";

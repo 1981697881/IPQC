@@ -115,7 +115,7 @@ export default {
 					}
 				})
 				.then(res => {
-					if (res.success === true) {
+					if (res.flag === true) {
 						this.RecordList = res.result.data;
 						if (this.RecordList.length !== 0) {
 							this.RecordList.forEach(item => {
