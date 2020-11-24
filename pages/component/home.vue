@@ -31,14 +31,12 @@
 				</view>
 			</view>
 			<view style="margin-left: 10px;margin-right: 10px;" class="cu-list bg-white">
-				<navigator
+				<view
 					style="width: 100%;"
-					hover-class="none"
-					:url="'/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName"
-					navigateTo
 					class="cu-item"
 					v-for="(item, index) in elements"
 					:key="index"
+					@tap="$manyCk(showList(index, item))"
 				>
 					<view class="text-grey padding-xs">公司: {{item.deptName}}</view>
 					<view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
@@ -80,7 +78,7 @@
 							<view class="text-grey text-xs">2020-10-28</view>
 							<view class="cu-tag round bg-grey sm">5</view>
 						</view> -->
-				</navigator>
+				</view>
 			</view>
 		</scroll-view>
 		<text v-if="isShow" class="loading-text">
@@ -222,6 +220,24 @@ export default {
 			});
 	},
 	methods: {
+		showList(index, item){
+			basic
+				.pollingRecordByPlanId(item.planId)
+				.then(res => {
+					if (res.flag) {
+						uni.navigateTo({
+							url: '/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName+'&checkStaff=' + res.data.checkStaff+'&recordCheckList='+encodeURIComponent(JSON.stringify(res.data.recordCheckList))
+						});
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+			
+		},
 		//列表数据
 		getLists: function() {
 			//第一次回去数据

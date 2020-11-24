@@ -32,6 +32,7 @@
 					:key="index">
 						<text class="cuIcon-text text-blue margin-right-xs"></text>{{index+1}} {{item.checkName}}</view>
 				</view>
+				<button v-if='isAlter' class="cu-btn round lines-blue line-blue shadow" @tap="$manyCk(alterData)">修改</button>
 			</view>
 		</view>
 		<view class="cu-modal" style="z-index: 333" :class="modalName == 'Modal' ? 'show' : ''">
@@ -46,7 +47,7 @@
 						<ld-select
 							:multiple="true"
 							:list="projectCheckList"
-							list-key="checkName"
+							list-key="checkName" 
 							value-key="checkId"
 							placeholder="请选择"
 							clearable
@@ -111,31 +112,30 @@
 				</navigator>
 			</evan-steps> -->
 			<view class="cu-tabbar-height"></view>
-		<view class="cu-bar tabbar shadow foot">
-			<view class="box text-center">
-				<button class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(alterData)">修改</button>
-			</view>
-		</view>
+		
 		</scroll-view>
 	</view>
 </template>
 <script>
-import basic from '@/api/basic';
-import EvanSteps from '@/components/evan-steps/evan-steps.vue';
-import EvanStep from '@/components/evan-steps/evan-step.vue';
-import UniIcons from '@/components/uni-icons/uni-icons.vue';
 import ldSelect from '@/components/ld-select/ld-select.vue';
+import basic from '@/api/basic';
+/* import EvanSteps from '@/components/evan-steps/evan-steps.vue';
+import EvanStep from '@/components/evan-steps/evan-step.vue';
+import UniIcons from '@/components/uni-icons/uni-icons.vue'; */
 export default {
 	components: {
-		EvanSteps,
-		EvanStep,
 		ldSelect,
-		UniIcons
+		/* EvanSteps,
+		EvanStep,
+		UniIcons */
 	},
 	data() {
 		return {
 			form: {
-				deptName: ''
+				deptName: '',
+				checkNo: '',
+				recordDate: '',
+				auditStatus: '',
 			},
 			winForm: {
 				checkStaff: '',
@@ -143,13 +143,15 @@ export default {
 				recordDate: null,
 				escort: '',
 			},
+			onoff: true,
 			modalName: null,
+			isAlter: false,
 			pageHeight: 0,
 			cuIList: [],
 			userList: [],
 			projectCheckList: [],
 			elements: [
-				{
+				/*{
 					title: '打卡',
 					status: '',
 					path: 'ClockIn/ClockIn',
@@ -177,26 +179,66 @@ export default {
 					path: 'component/details/feedback',
 					description: '2020-10-10 12:20:30'
 				},
-				/* {
+				 {
 					title: '延期申请',
 					icon: '',
 					status: '',
 					path: 'component/details/applyFor',
 					description: '2020-10-10 12:20:30'
-				}, */
+				}, 
 				{
 					title: '完成',
 					icon: '',
 					status: '',
 					path: 'component/details/complete',
 					description: '2020-10-10 12:20:30'
-				}
+				}*/
 			]
 		};
 	},
-	onReady: function() {
+	onLoad: function(option) {
+		let me = this;
+		console.log(option)
+		me.winForm.checkStaff = option.checkStaff
+		let checkList = JSON.parse(option.recordCheckList)
+		console.log(checkList)
+		let check = []
+		checkList.map((item,index)=>{
+			check.push(item.checkId)
+		})
+		console.log(check)
+		me.winForm.checkId = check
+		if (JSON.stringify(option) != '{}') {
+			me.winForm.planId = option.planId
+			me.form.planId = option.planId
+			basic
+				.pollingRecordByPlanId(option.planId)
+				.then(res => {
+					if (res.flag) {
+						if (res.data == null) {
+							me.modalName = 'Modal';
+							me.winForm.recordDate = me.getDay('', 0).date;
+						}else{
+							me.isAlter = true;
+						}
+						me.$set(me,"form",res.data)
+						me.form.deptName = option.deptName
+						uni.showToast({
+							icon: 'success',
+							title: err.msg
+						});
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+		}
+	},
+	onShow: function() {
 		var me = this;
-		
 		uni.getSystemInfo({
 			success: function(res) {
 				// res - 各种参数
@@ -219,27 +261,17 @@ export default {
 				}, 1000);
 			}
 		});
+		me.initMain()
 	},
-	onLoad: function(option) {
-		let me = this;
-		if (JSON.stringify(option) != '{}') {
-			me.winForm.planId = option.planId
-			me.form.planId = option.planId
+	methods: {
+		initMain() {
+			console.log("1开始")
+			var me = this;
 			basic
-				.pollingRecordByPlanId(option.planId)
+				.userList()
 				.then(res => {
 					if (res.flag) {
-						if (res.data == null) {
-							me.modalName = 'Modal';
-						}
-						me.form = res.data
-						me.form.deptName = option.deptName
-						console.log(me.form)
-						console.log(123)
-						uni.showToast({
-							icon: 'success',
-							title: err.msg
-						});
+						me.$set(me,'userList',res.data)
 					}
 				})
 				.catch(err => {
@@ -248,23 +280,31 @@ export default {
 						title: err.msg
 					});
 				});
-		}
-		me.initMain();
-		this.winForm.recordDate = this.getDay('', 0).date;
-	},
-	methods: {
+			basic
+				.projectCheckList()
+				.then(res => {
+					if (res.flag) {
+						me.$set(me,'projectCheckList',res.data)
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+		},
 		alterData(){
-			this.modalName = 'Modal';
-			let checkList = this.form.recordCheckList
-			let check = []
-			checkList.forEach((item,index)=>{
-				check.push(item.checkId)
-			})
-			this.winForm.checkStaff = this.form.checkStaff
-			this.winForm.checkId = check
-			this.winForm.recordDate = this.form.recordDate
-			this.winForm.escort = this.form.escort
-			this.winForm.planId = this.form.planId
+			let me = this
+			
+			/* me.$set(me.winForm,'checkStaff', me.form.checkStaff)
+			me.$set(me.winForm,'checkId', check) */
+			me.winForm.recordDate = me.form.recordDate
+			me.winForm.escort = me.form.escort
+			me.winForm.planId = me.form.planId
+			me.modalName = 'Modal';
+			this.$forceUpdate()
+			
 		},
 		// 查询前后三天日期
 		getDay(date, day) {
@@ -312,7 +352,7 @@ export default {
 			checkList.forEach((item,index)=>{
 				let obj = {}
 				obj.checkId = item
-				obj.qualifiedStatus = 0
+				obj.qualifiedStatus = item.qualifiedStatus || 0
 				recordCheckList.push(obj)
 			})
 			rqData.planId = me.winForm.planId
@@ -337,116 +377,69 @@ export default {
 		hideModal(e) {
 			this.modalName = null;
 		},
-		initMain() {
-			var me = this;
-			basic
-				.userList()
-				.then(res => {
-					if (res.flag) {
-						me.userList = res.data;
-						me.userList.forEach((item,index) =>{
-							item.uid = item.uid.toString()
-						})
-					}
-				})
-				.catch(err => {
-					uni.showToast({
-						icon: 'none',
-						title: err.msg
-					});
-				});
-			basic
-				.projectCheckList()
-				.then(res => {
-					if (res.flag) {
-						me.projectCheckList = res.data;
-					}
-				})
-				.catch(err => {
-					uni.showToast({
-						icon: 'none',
-						title: err.msg
-					});
-				});
-		},
+		
 		checkListChange(val) {
-			this.winForm.recordCheckList = val;
+			console.log(val)
+			this.winForm.checkId = val;
 		},
 		userListChange(val) {
+			console.log(val)
 			this.winForm.checkStaff = val;
 		},
 		DateChange(e) {
 			this.date = e.detail.value;
-		}
+		},
 	}
 };
 </script>
-<style>
-.page {
-	height: 100vh;
-}
-.nav-list {
-	margin-top: 5%;
-}
-.nav-title::first-letter {
-	font-size: 16px;
-	margin-right: 2px;
-}
-</style>
-<style>
-.main {
-	font-size: 32rpx;
-	padding: 20rpx;
-}
-.cu-item {
-	float: left;
-	width: 50%;
-}
-.cu-item .content {
-	float: left;
-}
-.cu-list.menu-avatar > .cu-item .content {
-	left: 5px;
-}
-.cu-list.menu-avatar > .cu-item .action {
-}
-.input {
-	height: 30px;
-}
-.box {
-	width: 100%;
-}
-.uni-input-placeholder,
-.uni-input-input {
-	font-size: 13px;
-}
-.action,
-.content {
-	font-size: 13px !important;
-}
-.ruidata {
-	font-size: 13px;
-	height: 7vw !important;
-}
-.cu-bar {
-	min-height: 30px;
-}
-/* .page {
+
+<style lang="scss" scoped>
+	.cu-item{
+		float: left;
+		width: 50%;
+	}
+	.cu-item .content{
+		float: left;
+	}
+	.cu-list.menu-avatar>.cu-item .content{
+		left: 5px;
+	}
+	.cu-list.menu-avatar>.cu-item .action{
+		
+	}
+	.input{
+		height: 30px;
+	}
+	.box{
+		width: 100%;
+	}
+	.uni-input-placeholder, .uni-input-input{
+		font-size: 13px;
+	}
+	.action,.content{
+		font-size: 13px !important;
+	}
+	.ruidata{
+		font-size: 13px;
+		height: 7vw !important;
+	}
+	.cu-bar{
+		min-height: 30px;
+	}
+	/* .page {
 		height: calc(100vh - 320upx);
 	} */
-.nav-title::first-letter {
-	font-size: 16px;
-	margin-right: 2px;
-}
-</style>
-<style lang="scss" scoped>
+	.nav-title::first-letter {
+	    font-size: 16px;
+	    margin-right: 2px;
+	}
 /* #ifdef APP-PLUS*/
-.selectTrees {
+/* .selectTrees {
 	margin-bottom: 180rpx;
-}
+} */
 /* #endif */
 
-.deleteBtn {
+/* .deleteBtn {
 	position: absolute;
 	right: 10%;
 	background: #f97979;
@@ -481,10 +474,10 @@ export default {
 	align-content: center;
 	flex-wrap: nowrap;
 	width: 100%;
-}
+} */
 </style>
 <style lang="scss" scoped>
-.evan-step-show {
+/* .evan-step-show {
 	padding: 20px;
 	&__title {
 		padding: 10px 0;
@@ -499,5 +492,5 @@ export default {
 		height: 22px;
 		display: block;
 	}
-}
+} */
 </style>
