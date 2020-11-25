@@ -110,10 +110,28 @@
 					</template>
 				</evan-step>
 				</navigator>
-			</evan-steps> -->
-			<view class="cu-tabbar-height"></view>
-		
+			</evan-steps>
+			<view class="cu-tabbar-height"></view>-->
+			<view v-for="(item,index) in cuIconList" :key="index">
+					<view class="cu-list menu-avatar">
+						<view class="cu-item" style="width: 100%;margin-top: 2px;height: 260upx;" >
+							<view style="clear: both;width: 100%;" class="grid text-left col-2" @tap="$manyCk(showList(index, item))" data-target="Modal" data-number="item.number">
+								<view class="text-grey">日期:{{item.Fdate}}</view>
+								<view class="text-grey">单号:{{item.FBillNo}}</view>
+								<view class="text-grey">编码:{{item.FItemNumber}}</view>
+								<view class="text-grey">名称:{{item.FItemName}}</view>
+								<view class="text-grey">规格:{{item.FModel}}</view>
+								<view class="text-grey">应收数量:{{item.Fauxqty}}</view>
+								<view class="text-grey">制单人:{{item.Fbiller}}</view>
+								<view class="text-grey">金蝶号:{{item.FKDNo}}</view>
+								<view class="text-grey">流水卡号:{{item.FCardNum}}</view>
+								<view class="text-grey" style="width: 100%;">线路名称:{{item.FTranWay}}</view>
+							</view>
+						</view>
+					</view>
+			</view>
 		</scroll-view>
+		<!-- <text v-if="isShow" class="loading-text">{{ loadingType === 0 ? contentText.contentdown : loadingType === 1 ? contentText.contentrefresh : contentText.contentnomore }}</text> -->
 	</view>
 </template>
 <script>
@@ -122,6 +140,8 @@ import basic from '@/api/basic';
 /* import EvanSteps from '@/components/evan-steps/evan-steps.vue';
 import EvanStep from '@/components/evan-steps/evan-step.vue';
 import UniIcons from '@/components/uni-icons/uni-icons.vue'; */
+var _self,
+		page = 1;
 export default {
 	components: {
 		ldSelect,
@@ -131,6 +151,13 @@ export default {
 	},
 	data() {
 		return {
+			loadingType: 0,
+			contentText: {
+				contentdown: '上拉显示更多',
+				contentrefresh: '正在加载...',
+				contentnomore: '没有更多数据了'
+			},
+			isShow: true,
 			form: {
 				deptName: '',
 				checkNo: '',
@@ -147,7 +174,7 @@ export default {
 			modalName: null,
 			isAlter: false,
 			pageHeight: 0,
-			cuIList: [],
+			cuIconList: [],
 			userList: [],
 			projectCheckList: [],
 			elements: [
@@ -198,15 +225,13 @@ export default {
 	},
 	onLoad: function(option) {
 		let me = this;
-		console.log(option)
+		_self = this
 		me.winForm.checkStaff = option.checkStaff
 		let checkList = JSON.parse(option.recordCheckList)
-		console.log(checkList)
 		let check = []
 		checkList.map((item,index)=>{
 			check.push(item.checkId)
 		})
-		console.log(check)
 		me.winForm.checkId = check
 		if (JSON.stringify(option) != '{}') {
 			me.winForm.planId = option.planId
@@ -220,6 +245,7 @@ export default {
 							me.winForm.recordDate = me.getDay('', 0).date;
 						}else{
 							me.isAlter = true;
+							me.getNewsList({recordId: res.data.recordId})
 						}
 						me.$set(me,"form",res.data)
 						me.form.deptName = option.deptName
@@ -264,8 +290,23 @@ export default {
 		me.initMain()
 	},
 	methods: {
+		// 列表数据
+		getNewsList: function(val) {
+			basic
+				.recordRectifyList(val)
+				.then(res => {
+					if (res.success) {
+						_self.cuIconList = res.data;
+					} 
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+		},
 		initMain() {
-			console.log("1开始")
 			var me = this;
 			basic
 				.userList()
@@ -493,4 +534,12 @@ export default {
 		display: block;
 	}
 } */
+.loading-text {
+		height: 80upx;
+		line-height: 80upx;
+		font-size: 30upx;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+	}
 </style>

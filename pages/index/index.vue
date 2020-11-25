@@ -33,8 +33,6 @@ export default {
 						login
 							.login(data)
 							.then(res => {
-								console.log(123);
-								console.log(res);
 								if (res.flag) {
 									data.userId = res.data['userId'];
 									data.username = res.data['username'];

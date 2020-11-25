@@ -39,5 +39,13 @@ export default {
 			},
 			data: params
 	    });
+	},//反馈登记历史记录
+	recordRectifyList(params) {
+	    return Request().post('/app/recordRectifyList', {
+	        header: {
+				contentType: 'application/json',
+			},
+			data: params
+	    });
 	},
 };
