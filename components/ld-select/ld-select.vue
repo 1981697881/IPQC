@@ -90,7 +90,6 @@
 		},
 		watch: {
 			sValue (val) {
-				console.log(val)
 				let me = this
 				setTimeout(function() {
 					me.bValue = me.getBValye(val)
@@ -193,8 +192,10 @@
 			empty(){
 				if(this.multiple){
 					this.sValue = []
+					this.bValue = ''
 				} else {
 					this.sValue = ''
+					this.bValue = ''
 				}
 			},
 			cancelClick(){ // 点击取消

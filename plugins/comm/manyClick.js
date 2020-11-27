@@ -1,7 +1,6 @@
 // 处理多次点击
 function manyCk(fn) {
     let that = this;
-	console.log(that.onoff)
 	if(typeof(that.onoff) == "undefined"){
 		that.onoff = true
 	}

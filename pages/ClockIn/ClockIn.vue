@@ -3,15 +3,16 @@
 		<cu-custom bgColor="bg-gradual-blue" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">打卡</block>
-			<block slot="right">
+			<!-- <block slot="right">
 				<navigator :url="'/pages/TimeRecord/TimeRecord'"><text class="cuIcon-remind">打卡记录</text></navigator>
-			</block>
+			</block> -->
 		</cu-custom>
 		<view class="ClockIn_conten">
-			<view class="header">
+			
+			<!-- <view class="header">
 				<view class="header_Type" @click="Tabs_Type" :class="{ choose: activeType === false }">公司打卡</view>
 				<view class="header_Type" @click="Tabs_Type" :class="{ choose: activeType === true }">外出打卡</view>
-			</view>
+			</view> -->
 			<view class="container">
 				<!-- 公司打卡 -->
 				<view class="item_In" v-if="activeType === false">
@@ -65,15 +66,21 @@
 
 <script>
 import uploadImg from '@/components/uploadImg/uploadImg.vue';
+import basic from '@/api/basic';
+import ldSelect from '@/components/ld-select/ld-select.vue';
 export default {
-	components: { uploadImg },
+	components: { uploadImg, ldSelect },
 	data() {
 		return {
+			form: {
+				
+			},
 			IsChange: false, //控制“添加备注”
 			autoBool: false, //textarea自动聚焦
 			keycode: '', //输入框的值
 			conBoll: true,
 			ImgArr: [],
+			userList: [],
 			covers: [],
 			activeType: false,
 			time: '',
@@ -97,7 +104,16 @@ export default {
 
 	onShow() {
 		//获取设定好的地址坐标（经纬度）
-		uniCloud
+		uni.getLocation({
+			type: 'gcj02',
+			success: res => {
+				this.lng_In = res.Longitude;
+				this.lat_In = res.Latitude;
+				this.Distance_In = 0.005;
+				this.Distance_Out = 0.005;
+			},
+		})
+		/* uniCloud
 			.callFunction({
 				name: 'ClockIn-get-location'
 			})
@@ -110,7 +126,7 @@ export default {
 					this.Distance_Out = result.Distance_Out;
 					this.getMaxLongitudeLatitude();
 				}
-			});
+			}); */
 		// 获取当前时间
 		setInterval(() => {
 			var date = new Date();
@@ -119,10 +135,49 @@ export default {
 			this.time = hour + ':' + minute;
 		}, 1000);
 	},
-	onLoad() {
+	onLoad(option) {
+		if (JSON.stringify(option) != '{}') {
+			this.form.planId = option.planId
+			 this.form.deptName = option.deptName
+		}
+		this.initMain()
 		this.GetCurrentAddress();
 	},
 	methods: {
+		initMain() {
+			var me = this;
+			
+		},
+		
+		// 查询前后三天日期
+		getDay(date, day) {
+			var today = new Date();
+			var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
+			today.setTime(targetday_milliseconds); //注意，这行是关键代码
+			var tYear = today.getFullYear();
+			var tMonth = today.getMonth();
+			var tDate = today.getDate();
+			var getDay = today.getDay();
+			var hour = this.doHandleMonth(today.getHours());
+			var minute = this.doHandleMonth(today.getMinutes());
+			var second = this.doHandleMonth(today.getSeconds());
+			tMonth = this.doHandleMonth(tMonth + 1);
+			tDate = this.doHandleMonth(tDate);
+			var weeks = new Array('星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六');
+			var week = weeks[getDay];
+			return {
+				day: tDate,
+				week: week,
+				date: tYear + '-' + tMonth + '-' + tDate + ' ' + hour + ':' + minute+ ':' + second
+			};
+		},
+		doHandleMonth(month) {
+			var m = month;
+			if (month.toString().length == 1) {
+				m = '0' + month;
+			}
+			return m;
+		},
 		Submit() {
 			let type = 0;
 			let address = '';
@@ -139,7 +194,7 @@ export default {
 				type = 0;
 				address = this.ClockInObj.Details;
 				if (this.IS_Range === false) {
-					this.showToast_Tips('你已超出公司打卡范围', 'none');
+					this.showToast_Tips('你已超出打卡范围', 'none');
 					return false;
 				}
 			}
@@ -155,7 +210,33 @@ export default {
 				Remark: this.keycode,
 				PhotoUrl: this.ImgArr
 			};
-			uniCloud
+			
+			let rqData = {}
+			rqData.planId = this.form.planId
+			this.form.checkStaff != null && this.form.checkStaff != '' ? rqData.checkStaff = this.form.checkStaff : null
+			address != null && address != '' ? rqData.clockLocation = address : null
+			rqData.clockTime = this.getDay('', 0).date
+			basic.pollingRecordAdd(rqData).then(reso => {
+				if (reso.flag) {
+					setTimeout(function() {
+						uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true});
+						uni.navigateBack({
+							url: '../component/polling'
+						});
+					}, 1000);
+					uni.showToast({
+						icon: 'success',
+						title: reso.msg
+					});
+				} else {
+					uni.showToast({
+						icon: 'none',
+						title: reso.msg
+					});
+				}
+			});
+			// 保存打卡数据
+			/* uniCloud
 				.callFunction({
 					name: 'ClockIn-add',
 					data: obj
@@ -166,7 +247,7 @@ export default {
 						this.showToast_Tips('打卡成功', 'success');
 						uni.hideLoading();
 					}, 1500);
-				});
+				}); */
 		},
 
 		//选择地址
@@ -239,28 +320,30 @@ export default {
 								longitude: res.longitude
 							};
 							_this.covers.push(Position);
-							let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
-							let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3';//你申请的开发者密钥（Key）  一般放在后台获取过来
-							let getAddressUrl = URL + _this.lat_current + ',' + _this.lng_current + `&key=${key}`;
-							wx.request({
-								url: getAddressUrl,
-								success: result => {
-									console.log(result) 
-									let Res_Data = result.data.result;
-									_this.ClockInObj.street = Res_Data.address;
-									_this.ClockInObj.Details = Res_Data.formatted_addresses.recommend;
-									_this.ClockInObj.address = Res_Data.address + '(' + Res_Data.formatted_addresses.recommend + ')';
-									setTimeout(() => {
-										uni.hideLoading();
-									}, 300);
-								}
-							});
+							_this.getLocationName()
 						}
 					});
 				/* }
 			}); */
 		},
-
+		getLocationName(){
+			let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
+			let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3';//你申请的开发者密钥（Key）  一般放在后台获取过来
+			let getAddressUrl = URL + _this.lat_current + ',' + _this.lng_current + `&key=${key}`;
+			wx.request({
+				url: getAddressUrl,
+				success: result => {
+					console.log(result) 
+					let Res_Data = result.data.result;
+					_this.ClockInObj.street = Res_Data.address;
+					_this.ClockInObj.Details = Res_Data.formatted_addresses.recommend;
+					_this.ClockInObj.address = Res_Data.address + '(' + Res_Data.formatted_addresses.recommend + ')';
+					setTimeout(() => {
+						uni.hideLoading();
+					}, 300);
+				}
+			});
+		},
 		//公司地址范围限制
 		getMaxLongitudeLatitude(res) {
 			let L = 0,
@@ -519,4 +602,29 @@ export default {
 		}
 	}
 }
+.cu-item{
+		float: left;
+		width: 50%;
+	}
+	.cu-item .content{
+		float: left;
+	}
+	.cu-list.menu-avatar>.cu-item .content{
+		left: 5px;
+	}
+	.cu-list.menu-avatar>.cu-item .action{
+		
+	}
+	.input{
+		height: 30px;
+	}
+	.box{
+		width: 100%;
+	}
+	.uni-input-placeholder, .uni-input-input{
+		font-size: 13px;
+	}
+	.action,.content{
+		font-size: 13px !important;
+	}
 </style>

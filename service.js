@@ -19,9 +19,9 @@ const getUrls = function() {
 	return JSON.parse(ret);
 }
 const addUser = function(userInfo) {
+	console.log(userInfo)
 	let users = getUsers();
 	users.push({
-		account: userInfo.account,
 		password: userInfo.password,
 		userId: userInfo.userId,
 		username: userInfo.username,

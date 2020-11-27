@@ -5,98 +5,140 @@
 			<block slot="backText">返回</block>
 			<block slot="content">巡检登记</block>
 		</cu-custom>
-		<uni-fab :pattern="pattern" :horizontal="horizontal" :vertical="vertical" cuIcon="add" :popMenu="popMenu" distable :direction="direction" @fabClick="fabClick"></uni-fab>
-		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
-			<view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
-				<view class="cu-bar bg-white solid-bottom">
+		<uni-fab v-show="isFab" :pattern="pattern" :horizontal="horizontal" :vertical="vertical" cuIcon="add" :popMenu="popMenu" :direction="direction" @fabClick="fabClick"></uni-fab>
+		<view class="cu-modal" style="z-index: 1111" :class="modalName2 == 'Modal' ? 'show' : ''">
+			<view class="cu-dialog bg-white" style="height: 320upx;">
+				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
+					<view class="content text-sl">检查登记</view>
+					<view class="action" @tap="hideModal"><text class="cuIcon-close text-red"></text></view>
+				</view>
+				<view class="cu-bar solid-bottom" style="height: 60upx;">
 					<view class="action">
-						<text class="cuIcon-titles text-orange"></text> 检查项目
-					</view>
-					<view class="action" >
-						<switch :class="item.isCard?'checked':''" :checked="item.isCard?true:false" @change="IsCard($event, item)"></switch>
+						<view style="width: 70px;">被检人员</view>
+						<ld-select
+							:list="userList"
+							list-key="username"
+							value-key="uid"
+							placeholder="请选择"
+							clearable
+							v-model="winForm.checkStaff"
+							@change="userListChange"
+						></ld-select>
 					</view>
 				</view>
-				<view class="cu-card no-card case">
-					<view class="cu-item shadow">
-						<!-- <view class="image">
-							<image src="https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg"
-							 mode="widthFix"></image>
-							<view class="cu-tag bg-blue">史诗</view>
-							<view class="cu-bar bg-shadeBottom"> <text class="text-cut">我已天理为凭，踏入这片荒芜，不再受凡人的枷锁遏制。我已天理为凭，踏入这片荒芜，不再受凡人的枷锁遏制。</text></view>
-						</view> -->
-						<view class="cu-list menu-avatar">
-							<view class="cu-item" >
-								<view class="cu-avatar round lg" style="background-image:url(../../static/OK.png);"></view>
-								<view class="content flex-sub">
-									<view class="text-grey">安全检查</view>
-									<view class="text-gray text-sm flex justify-between">
-										2020-10-10 10:10:10
-										<!-- <view class="text-gray text-sm">
-											<text class="cuIcon-attentionfill margin-lr-xs"></text> 10
-											<text class="cuIcon-appreciatefill margin-lr-xs"></text> 20
-											<text class="cuIcon-messagefill margin-lr-xs"></text> 30
+				<view class="cu-bar solid-bottom" style="height: 60upx;">
+					<view class="action">
+						<view style="width: 70px;">检查项目:</view>
+						<ld-select
+							:multiple="true"
+							:list="projectCheckList"
+							list-key="checkName"
+							value-key="checkId"
+							placeholder="请选择"
+							clearable
+							v-model="winForm.checkId"
+							@change="checkListChange"
+						></ld-select>
+					</view>
+				</view>
+				<view style="clear: both;" class="cu-bar bg-white justify-end padding-bottom-xl margin-top">
+					<view class="action">
+						<button class="cu-btn line-green text-green" @tap="hideModal">取消</button>
+						<button class="cu-btn bg-green margin-left" @tap="$manyCk(saveCom)">确定</button>
+					</view>
+				</view>
+			</view>
+		</view>
+		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
+			<view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
+				<view class="cu-list menu-avatar">
+					<view
+						class="cu-item"
+						style="width: 100%;margin-top: 2px;height: auto;"
+						:class="modalName == 'move-box-' + index ? 'move-cur' : ''"
+						@touchstart="ListTouchStart"
+						@touchmove="ListTouchMove"
+						@touchend="ListTouchEnd"
+						:data-target="'move-box-' + index"
+					>
+						<view style="clear: both;width: 100%;">
+							<view class="cu-bar bg-white solid-bottom">
+								<view class="action">
+									<text class="cuIcon-titles text-orange"></text>
+									被检人员:{{ item.checkStaffName }}
+								</view>
+								<view class="action">
+									登记日期：{{ item.recordDate }}
+									<!-- <switch :class="item.isCard ? 'checked' : ''" :checked="item.isCard ? true : false" @change="IsCard($event, item)"></switch> -->
+								</view>
+							</view>
+							<view class="cu-card no-card case">
+								<view class="cu-item shadow">
+									<view class="cu-list menu-avatar">
+										<!-- 
+										<view class="cu-item">
+											<view class="cu-avatar round lg" style="background-image:url(../../static/OK.png);"></view>
+											<view class="content flex-sub">
+												<view class="text-grey">检查项目：{{ item.checkName }}</view>
+												<view class="text-gray text-sm flex justify-between">
+													登记日期：{{item.recordDate}}
+												</view>
+											</view>
+											<view @tap="unfoldSetting" v-show="isAdd" style="position: absolute;" class="action">
+												<text class="cuIcon-add text-red" style="font-size: 21px;"></text>
+											</view>
+											<view @tap="closeSetting" v-show="isClose" style="position: absolute;" class="action">
+												<text class="cuIcon-close text-red" style="font-size: 21px;"></text>
+											</view>
 										</view> -->
-									</view>
-								</view>
-								<view @tap="unfoldSetting" v-show='isAdd' style="position: absolute;" class="action">
-									<text class="cuIcon-add text-red"  style="font-size: 21px;" ></text>
-								</view>
-								<view @tap="closeSetting" v-show='isClose' style="position: absolute;" class="action">
-									<text class="cuIcon-close text-red"  style="font-size: 21px;" ></text>
-								</view>
-							</view>
-							<view v-show='isThrough' class="cu-list menu">
-								<view class="cu-item" style="height: 30px;">
-									<view  class="content padding-sm" style="left: 0;">
-										<view>
-											<text class="cuIcon-text text-blue margin-right-xs"></text> 消防</view>
-									</view>
-									<view class="action">
-										<checkbox-group class="block" @change="CheckboxChange">
-										<checkbox class='round blue' :class="checked?'checked':''" :checked="checked?true:false"
-										 value="C"></checkbox>
-										 </checkbox-group>
-									</view>
-								</view>
-								<view class="cu-item" style="height: 30px;">
-									<view  class="content padding-sm" style="left: 0;">
-										<view>
-											<text class="cuIcon-text text-blue margin-right-xs"></text> 水电</view>
-									</view>
-									<view class="action">
-										<checkbox-group class="block" @change="CheckboxChange">
-										<checkbox class='round blue' :class="checked?'checked':''" :checked="checked?true:false"
-										 value="C"></checkbox>
-										 </checkbox-group>
-									</view>
-								</view>
-							</view>
-							<view v-show='isThrough' class="cu-form-group align-start">
-								<view class="title">隐患问题</view>
-								<textarea maxlength="-1" :disabled="modalName!=null" @input="textareaBInput" placeholder="隐患问题"></textarea>
-							</view>
-							<view v-show='isThrough' class="cu-bar bg-white">
-								<view class="action">
-									隐患图片
-								</view>
-								<view class="action">
-									{{imgList.length}}/4
-								</view>
-							</view>
-							<view v-show='isThrough' class="cu-form-group">
-								<view class="grid col-4 grid-square flex-sub">
-									<view class="bg-img" v-for="(item,index) in imgList" :key="index" @tap="ViewImage" :data-url="imgList[index]">
-									 <image :src="imgList[index]" mode="aspectFill"></image>
-										<view class="cu-tag bg-red" @tap.stop="DelImg" :data-index="index">
-											<text class='cuIcon-close'></text>
+										<view class="cu-list menu">
+											<view v-for="(item2, index2) in item.recordCheckList" :key="index2" class="cu-item" style="height: 30px;">
+												<view class="content padding-sm" style="left: 0;">
+													<view>
+														<text class="cuIcon-text text-blue margin-right-xs"></text>
+														{{ item2.checkName }}
+													</view>
+												</view>
+												<view class="action" style="position: absolute;right:0;">
+													<checkbox-group class="block" @change="CheckboxChange($event, item2, item)">
+														<checkbox
+															class="round blue"
+															:class="item2.checked ? 'checked' : ''"
+															:checked="item2.checked ? true : false"
+															:value="item2.checkId"
+														></checkbox>
+													</checkbox-group>
+												</view>
+											</view>
 										</view>
-									</view>
-									<view class="solids" @tap="ChooseImage" v-if="imgList.length<4">
-										<text class='cuIcon-cameraadd'></text>
+										<view v-show="item.isThrough" class="cu-form-group align-start">
+											<view class="title">隐患问题</view>
+											<textarea
+												v-model="item.concerns"
+												maxlength="-1"
+												:disabled="modalName != null"
+												@input="textareaBInput"
+												placeholder="隐患问题"
+											></textarea>
+										</view>
+										<view v-show="item.isThrough" class="cu-bar bg-white">
+											<view class="action">隐患图片</view>
+											<view class="action">{{ item.rectifyImg.length }}/3</view>
+										</view>
+										<view v-show="item.isThrough" class="cu-form-group">
+											<view class="grid col-3 grid-square flex-sub">
+												<view class="bg-img" v-for="(item3, index3) in item.rectifyImg" :key="index3" @tap="ViewImage($event,item)" :data-url="item.rectifyImg[index3]">
+													<image :src="item.rectifyImg[index3]" mode="aspectFill"></image>
+													<view class="cu-tag bg-red" @tap.stop="DelImg($event,item)" :data-index="index3"><text class="cuIcon-close"></text></view>
+												</view>
+												<view class="solids" @tap="ChooseImage(item)" v-if="item.rectifyImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
+											</view>
+										</view>
 									</view>
 								</view>
 							</view>
 						</view>
+						<view class="move"><view class="bg-red" @tap="del(index, item)">删除</view></view>
 					</view>
 				</view>
 			</view>
@@ -124,6 +166,7 @@ export default {
 			isOrder: false,
 			isDis: false,
 			onoff: true,
+			isFab: true,
 			isClick: false,
 			isClose: false,
 			isThrough: false, //是否展示明细
@@ -135,13 +178,18 @@ export default {
 			gridCol: 3,
 			skin: false,
 			checked: true,
-			imgList: [],
+			projectCheckList: [],
+			userList: [],
 			listTouchStart: 0,
 			listTouchDirection: null,
 			horizontal: 'right',
 			vertical: 'bottom',
 			popMenu: false,
 			direction: 'horizontal',
+			winForm: {
+				checkId: [],
+				planId:'',
+			},
 			pattern: {
 				color: '#7A7E83',
 				backgroundColor: '#fff',
@@ -156,24 +204,27 @@ export default {
 	},
 	onLoad: function(option) {
 		let me = this;
+		console.log(option)
 		if (JSON.stringify(option) != '{}') {
 			this.isOrder = true;
-			me.form.kingDeeNo = option.kingDeeNo;
-			me.form.productWorkDetailId = option.productWorkDetailId;
-			me.form.lotNo = option.lotNo;
-			me.form.model = option.model;
-			me.form.planNum = option.planNum;
-			me.form.processCard = option.processCard;
-			me.form.productName = option.productName;
-			me.form.productNumber = option.productNumber;
-			me.form.workNo = option.workNo;
-			me.startDate = option.startDate;
-			me.endDate = option.endDate;
-			workshop
-				.formatByProductWork({ productWorkDetailId: option.productWorkDetailId })
+			this.planId = option.planId;
+			this.deptName = option.deptName;
+			basic
+				.pollingRecordByPlanId(option.planId)
 				.then(res => {
 					if (res.flag) {
-						me.processList = res.data;
+						if(res.data == null){
+							me.isFab = false
+						}else{
+							me.isFab = true
+							me.cuIList.push(res.data)
+						}
+						console.log(res.data)
+						uni.showToast({
+							icon: 'success',
+							title: err.msg
+						});
+						
 					}
 				})
 				.catch(err => {
@@ -181,7 +232,7 @@ export default {
 						icon: 'none',
 						title: err.msg
 					});
-				}); 
+				});
 		}
 	},
 	onReady: function() {
@@ -199,101 +250,118 @@ export default {
 						headHeight = data.height;
 					})
 					.exec();
-					console.log(res.windowHeight)
+				console.log(res.windowHeight);
 				setTimeout(function() {
 					me.pageHeight = res.windowHeight - headHeight - 30;
 				}, 1000);
 			}
 		});
-		/* if (service.getUsers().length > 0) {
-			if (service.getUsers()[0].account != '' && service.getUsers()[0].account != 'undefined') {
-				me.form.fbillerID = service.getUsers()[0].userId;
-				me.form.username = service.getUsers()[0].username;
-				uni.getSystemInfo({
-					success: function(res) {
-						// res - 各种参数
-						let info = uni.createSelectorQuery().select('.getheight');
-						let customHead = uni.createSelectorQuery().select('.customHead');
-						var headHeight = 0;
-						customHead
-							.boundingClientRect(function(data) {
-								//data - 各种参数
-								headHeight = data.height;
-							})
-							.exec();
-						setTimeout(function() {
-							me.pageHeight = res.windowHeight - headHeight;
-						}, 1000);
-					}
-				});
-				me.initMain();
-			}
-		} */
+		me.initMain();
 	},
 	methods: {
-		unfoldSetting(){
-			this.$set(this,'isThrough', true)
-			this.$set(this,'isClose', true)
-			this.$set(this,'isAdd', false)
-		}, 
-		closeSetting(){
-			this.$set(this,'isThrough', false)
-			this.$set(this,'isClose', false)
-			this.$set(this,'isAdd', true)
+		del(index, item) {
+			this.cuIList.splice(index, 1);
 		},
-		CheckboxChange(e){
-			if(this.checked){
-				this.$set(this,'checked', false)
-			}else{
-				this.$set(this,'checked', true)
+		unfoldSetting() {
+			this.$set(this, 'isThrough', true);
+			this.$set(this, 'isClose', true);
+			this.$set(this, 'isAdd', false);
+		},
+		closeSetting() {
+			this.$set(this, 'isThrough', false);
+			this.$set(this, 'isClose', false);
+			this.$set(this, 'isAdd', true);
+		},
+		//event:默认参数,item: 子数据,item2:父数据
+		CheckboxChange(e, item, item2) {
+			let me = this
+			if (item.checked) {
+				me.$set(item2, 'concerns', '');
+				this.$set(item, 'checked', false);
+				this.$set(item2, 'isThrough', true);
+				let arr = item2.recordCheckList;
+				arr.forEach(i => {
+					if (!i.checked) {
+						basic
+							.formatListByCheckId(i.checkId)
+							.then(res => {
+								if (res.flag) {
+									let data = res.data;
+									let str = item2.concerns
+									data.forEach((items,indexs)=>{
+										str += (indexs+1+''+items.concerns+'\n')
+									})
+									me.$set(item2, 'concerns', str);
+								}
+							})
+							.catch(err => {
+								uni.showToast({
+									icon: 'none',
+									title: err.msg
+								});
+							});
+					}
+				});
+			} else {
+				this.$set(item, 'checked', true);
+				let arr = item2.recordCheckList;
+				let isThrough = true;
+				arr.map(i => {
+					if (!i.checked) {
+						isThrough = false;
+					}
+				});
+				if (isThrough) {
+					this.$set(item2, 'concerns', '');
+					this.$set(item2, 'isThrough', false);
+				}
 			}
 		},
-		ChooseImage() {
+		ChooseImage(item) {
 			uni.chooseImage({
 				count: 4, //默认9
 				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 				sourceType: ['album'], //从相册选择
-				success: (res) => {
-					if (this.imgList.length != 0) {
-						this.imgList = this.imgList.concat(res.tempFilePaths)
+				success: res => {
+					if (item.rectifyImg.length != 0) {
+						item.rectifyImg = item.rectifyImg.concat(res.tempFilePaths);
 					} else {
-						this.imgList = res.tempFilePaths
+						item.rectifyImg = res.tempFilePaths;
 					}
 				}
 			});
 		},
-		ViewImage(e) {
+		ViewImage(e, item) {
 			uni.previewImage({
-				urls: this.imgList,
+				urls: item.rectifyImg,
 				current: e.currentTarget.dataset.url
 			});
 		},
-		DelImg(e) {
+		DelImg(e,item) {
 			uni.showModal({
-				title: '召唤师',
-				content: '确定要删除这段回忆吗？',
+				title: '注意',
+				content: '是否删除该图片？',
 				cancelText: '再看看',
 				confirmText: '再见',
 				success: res => {
 					if (res.confirm) {
-						this.imgList.splice(e.currentTarget.dataset.index, 1)
+						item.rectifyImg.splice(e.currentTarget.dataset.index, 1);
 					}
 				}
-			})
+			});
 		},
-		IsCard(e,item) {
-			this.$set(this, 'isAdd' , !e.detail.value)
-			this.$set(item, 'isCard' , e.detail.value)
+		IsCard(e, item) {
+			this.$set(this, 'isAdd', !e.detail.value);
+			this.$set(item, 'isCard', e.detail.value);
 			/* this.isCard = e.detail.value */
 		},
 		initMain() {
 			const me = this;
-			this.form.workDate = this.getDay('', 0).date;
 			basic
-				.getDeptList({})
+				.userList()
 				.then(res => {
 					if (res.flag) {
-						me.deptList = res.data;
+						me.$set(me, 'userList', res.data);
 					}
 				})
 				.catch(err => {
@@ -303,10 +371,10 @@ export default {
 					});
 				});
 			basic
-				.getEmpList({})
+				.projectCheckList()
 				.then(res => {
 					if (res.flag) {
-						me.empList = res.data;
+						me.$set(me, 'projectCheckList', res.data);
 					}
 				})
 				.catch(err => {
@@ -315,97 +383,103 @@ export default {
 						title: err.msg
 					});
 				});
-			me.loadModal = false;
-			me.isClick = false;
 		},
-		saveData() {
-			this.isClick = true;
-			let result = [];
-			let list = this.cuIList;
-			let me = this;
-			let array = [];
-			for (let i in list) {
-				let obj = {};
-				obj.userId = list[i].userId;
-				obj.dispatchNum = list[i].dispatchNum;
-				obj.processId = this.form.processID;
-				obj.processTeamId = this.form.fdeptID;
-				obj.productWorkDetailId = this.form.productWorkDetailId;
-				array.push(obj);
-			}
-			console.log(JSON.stringify(array));
-			if (this.form.processID == null || this.form.processID == '') {
-				this.isClick = false;
+		saveCom() {
+			var me = this;
+			if (me.winForm.checkId.length <= 0) {
 				return uni.showToast({
 					icon: 'none',
-					title: '工序不能为空'
+					title: '请选择检查项目！'
 				});
 			}
-			if (this.form.fdeptID == null || this.form.fdeptID == '') {
-				this.isClick = false;
+			if (me.winForm.checkStaff == '' || typeof this.winForm.checkStaff == 'undefined') {
 				return uni.showToast({
 					icon: 'none',
-					title: '班组不能为空'
+					title: '请选择人员！'
 				});
 			}
 
-			if (array.length <= 0) {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '请派工'
-				});
-			}
-			if (Number(this.form.bNum) > Number(this.form.planNum)) {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '不能大于计划数量'
-				});
-			}
-			if (this.form.workDate == null || this.form.workDate == '') {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '日期不能为空'
-				});
-			}
-			workshop
-				.productWorkDispatchAdd(JSON.stringify(array))
-				.then(res => {
-					if (res.flag) {
-						this.cuIList = [];
-						uni.showToast({
-							icon: 'success',
-							title: res.msg
+			let checkList = me.winForm.checkId;
+			let recordCheckList = [];
+			checkList.forEach((item, index) => {
+				this.projectCheckList.forEach((item2, index) => {
+					if (item == item2.checkId) {
+						recordCheckList.push({
+							checkId: item2.checkId.toString(),
+							checkName: item2.checkName,
+							typeId: item2.typeId,
+							qualifiedStatus: 0,
+							checked: true
 						});
-						this.form.bNum = 0;
-						this.initMain();
-						if (this.isOrder) {
-							setTimeout(function() {
-								uni.$emit('handleBack', { startDate: me.startDate, endDate: me.endDate });
-								uni.navigateBack({
-									url: '../workshop/dispatching'
-								});
-							}, 1000);
-						}
 					}
-				})
-				.catch(err => {
-					uni.showToast({
-						icon: 'none',
-						title: err.msg
-					});
-					this.isClick = false;
 				});
+			});
+			me.cuIList.push({
+				isCard: true,
+				rectifyImg: [],
+				isThrough: false,
+				planId: me.planId,
+				concerns: '',
+				checkStaff: me.winForm.checkStaff,
+				checkStaffName: me.winForm.checkStaffName,
+				recordDate: me.getDay('', 0).date,
+				recordCheckList: recordCheckList
+			});
+			console.log(me.cuIList);
+			me.modalName2 = null;
+		},
+		saveData() {
+			if(this.cuIList.length > 0){
+				this.isClick = true;
+				let result = [];
+				let list = JSON.parse(JSON.stringify(this.cuIList));
+				let me = this;
+				let array = [];
+				delete list[0].rectifyImg
+				basic
+					.pollingRecordAdd(list[0])
+					.then(res => {
+						if (res.flag) {
+							this.cuIList = [];
+							uni.showToast({
+								icon: 'success',
+								title: res.msg
+							});
+							const uploadTask = uni.uploadFile({
+							      url : service.getUrls().url+'file/imgUpload',
+							      filePath: me.cuIList[0].rectifyImg,
+							      name: 'imgS',
+							      success: function (uploadFileRes) {
+							       console.log(uploadFileRes.data);
+								   me.initMain();
+								   setTimeout(function() {
+								   	uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true});
+								   	uni.navigateBack({
+								   		url: '../component/polling'
+								   	});
+								   }, 1000);
+							      }
+							     });
+							     uploadTask.onProgressUpdate(function (res) {
+							      _self.percent = res.progress;
+							      console.log('上传进度' + res.progress);
+							      console.log('已经上传的数据长度' + res.totalBytesSent);
+							      console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+							     });
+						}
+					})
+					.catch(err => {
+						uni.showToast({
+							icon: 'none',
+							title: err.msg
+						});
+						this.isClick = false;
+					});
+			}
 		},
 		del(index, item) {
 			this.cuIList.splice(index, 1);
-			var count = 0;
-			for (var i = 0; i < list.length; i++) {
-				count += Number(list[i].dispatchNum);
-			}
-			this.form.bNum = count;
+			this.isFab = true
 		},
 		// 查询前后三天日期
 		getDay(date, day) {
@@ -433,14 +507,34 @@ export default {
 			}
 			return m;
 		},
+		hideModal(e) {
+			this.modalName2 = null;
+		},
+		checkListChange(val) {
+			this.winForm.checkId = val;
+		},
+		userListChange(val) {
+			let me = this;
+			this.winForm.checkStaff = val;
+			this.userList.forEach((item, index) => {
+				if (item.uid == val) {
+					me.winForm.checkStaffName = item.username;
+				}
+			});
+		},
 		fabClick() {
 			var that = this;
-			that.cuIList.push({
+			this.winForm = {
+				checkId: [],
+				checkStaff: ''
+			};
+			that.modalName2 = 'Modal';
+			/* that.cuIList.push({
 				userId: '',
 				isCard: true,
 				dispatchNum: 0
-			});
-			console.log(that.cuIList);
+			}); */
+			that.isFab = false
 		}, // ListTouch触摸开始
 		ListTouchStart(e) {
 			this.listTouchStart = e.touches[0].pageX;
@@ -475,6 +569,9 @@ export default {
 .uni-input-input {
 	font-size: 13px;
 }
+.cu-list.menu-avatar > .cu-item .action {
+	width: auto !important;
+}
 .action,
 .content {
 	font-size: 13px !important;
@@ -485,6 +582,9 @@ export default {
 }
 .cu-bar {
 	min-height: 30px;
+}
+.cu-list.menu-avatar > .cu-item .action {
+	width: auto !important;
 }
 /* .page {
 		height: calc(100vh - 320upx);

@@ -97,10 +97,12 @@
 			}
 		},
 		created(){
-			if(service.getUsers()[0].username !='' && typeof service.getUsers()[0].username != "undefined"){
-			this.username = service.getUsers()[0].username
-			this.password = service.getUsers()[0].password
-			}	
+			if(service.getUsers().length >= 1){
+				if(service.getUsers()[0].username !='' && typeof service.getUsers()[0].username != "undefined"){
+				this.username = service.getUsers()[0].username
+				this.password = service.getUsers()[0].password
+				}	
+			}
 			if(service.getUrls().url !='' && typeof service.getUrls().url != "undefined"){
 				this.popupForm.URL = service.getUrls().url
 				this.service = true
@@ -152,8 +154,6 @@
 				 			icon: 'none',
 				 			title: res.msg,
 				 		});
-				 		data.userId = res.data['userId']
-				 		data.username =res.data['username']
 				 		this.toMain(data);
 				 	}).catch(err => {
 				 		uni.showToast({
@@ -225,8 +225,6 @@
 						icon: 'none',
 						title: res.msg,
 					});
-					data.userId = res.data['userId']
-					data.username =res.data['username']
 					this.toMain(data);
 				}).catch(err => {
 					uni.showToast({
@@ -257,6 +255,7 @@
 				}
 			},
 			toMain(data) {
+				console.log(data)
 				this.login(data);
 				service.clearUser()
 				service.addUser(data)

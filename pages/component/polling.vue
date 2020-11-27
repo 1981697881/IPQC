@@ -10,10 +10,16 @@
 					被检公司:
 					<text>{{ form.deptName }}</text>
 				</view>
-				<view class="action">
+				<!-- <view class="action">
+					被检项目:
+					<view v-for="(item, index) in form.recordCheckList"
+					:key="index">
+						<text class="cuIcon-text text-blue margin-right-xs"></text>{{index+1}} {{item.checkName}}</view>
+				</view> -->
+				<!-- <view class="action">
 					单号:
 					<text>{{ form.checkNo }}</text>
-				</view>
+				</view> -->
 			</view>
 			<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
 				<view class="action">
@@ -28,7 +34,7 @@
 			<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
 				<view class="action">
 					被检项目:
-					<view v-for="(item, index) in form.recordCheckList"
+					<view style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" v-for="(item, index) in form.recordCheckList"
 					:key="index">
 						<text class="cuIcon-text text-blue margin-right-xs"></text>{{index+1}} {{item.checkName}}</view>
 				</view>
@@ -93,43 +99,39 @@
 			</view>
 		</view>
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
-			<!-- <view class="bg-white evan-step-show__title text-center"><text class="evan-step-show__title__item"></text></view>
+			<view class="bg-white evan-step-show__title text-center"><text class="evan-step-show__title__item"></text></view>
 			<evan-steps :active="1" class="bg-white" style="padding-left: 30%;">
 				<navigator
 					hover-class="none"
-					:url="'/pages/' + item.path"
+					:url="'/pages/' + item.path+'?planId='+form.planId"
 					navigateTo
 					:style="[{ animation: 'show ' + ((index + 1) * 0.2 + 1) + 's 1' }]"
 					v-for="(item, index) in elements"
 					:key="index"
 				>
 				<evan-step :icon="item.icon"  :status="item.status" :title="item.title" :description="item.description"></evan-step>
-				<evan-step title="延期申请" description="2020-10-10 10:10:10">
+				<!-- <evan-step title="延期申请" description="2020-10-10 10:10:10">
 					<template v-slot:icon>
 						<image class="evan-step-show__show" src="/static/logo.png"></image>
 					</template>
-				</evan-step>
+				</evan-step> -->
 				</navigator>
 			</evan-steps>
-			<view class="cu-tabbar-height"></view>-->
-			<view v-for="(item,index) in cuIconList" :key="index">
+			<view class="cu-tabbar-height"></view>
+			<!-- <view v-for="(item,index) in cuIconList" :key="index">
 					<view class="cu-list menu-avatar">
-						<view class="cu-item" style="width: 100%;margin-top: 2px;height: 260upx;" >
-							<view style="clear: both;width: 100%;" class="grid text-left col-2" @tap="$manyCk(showList(index, item))" data-target="Modal" data-number="item.number">
-								<view class="text-grey">日期:{{item.Fdate}}</view>
-								<view class="text-grey">单号:{{item.FBillNo}}</view>
-								<view class="text-grey">编码:{{item.FItemNumber}}</view>
-								<view class="text-grey">名称:{{item.FItemName}}</view>
-								<view class="text-grey">规格:{{item.FModel}}</view>
-								<view class="text-grey">应收数量:{{item.Fauxqty}}</view>
-								<view class="text-grey">制单人:{{item.Fbiller}}</view>
-								<view class="text-grey">金蝶号:{{item.FKDNo}}</view>
-								<view class="text-grey">流水卡号:{{item.FCardNum}}</view>
-								<view class="text-grey" style="width: 100%;">线路名称:{{item.FTranWay}}</view>
+						<view class="cu-item" style="width: 100%;margin-top: 2px;height: 200upx;" >
+							<view style="clear: both;width: 100%;" class="grid text-left col-2" @tap="$manyCk(showList(index, item))">
+								<view class="text-grey">检查时间:{{item.checkTime}}</view>
+								<view class="text-grey">检查状态:{{item.orderNo}}</view>
+								<view class="text-grey">打卡人:{{item.clockName}}</view>
+								<view class="text-grey">陪同人员:{{item.escort}}</view>
+								<view class="text-grey" style="width: 100%;">打卡时间:{{item.clockTime}}</view>
+								<view class="text-grey" style="width: 100%;">打卡位置:{{item.clockLocation}}</view>
 							</view>
 						</view>
 					</view>
-			</view>
+			</view> -->
 		</scroll-view>
 		<!-- <text v-if="isShow" class="loading-text">{{ loadingType === 0 ? contentText.contentdown : loadingType === 1 ? contentText.contentrefresh : contentText.contentnomore }}</text> -->
 	</view>
@@ -137,17 +139,17 @@
 <script>
 import ldSelect from '@/components/ld-select/ld-select.vue';
 import basic from '@/api/basic';
-/* import EvanSteps from '@/components/evan-steps/evan-steps.vue';
+import EvanSteps from '@/components/evan-steps/evan-steps.vue';
 import EvanStep from '@/components/evan-steps/evan-step.vue';
-import UniIcons from '@/components/uni-icons/uni-icons.vue'; */
+import UniIcons from '@/components/uni-icons/uni-icons.vue';
 var _self,
 		page = 1;
 export default {
 	components: {
 		ldSelect,
-		/* EvanSteps,
+		EvanSteps,
 		EvanStep,
-		UniIcons */
+		UniIcons
 	},
 	data() {
 		return {
@@ -178,7 +180,7 @@ export default {
 			userList: [],
 			projectCheckList: [],
 			elements: [
-				/*{
+				{
 					title: '打卡',
 					status: '',
 					path: 'ClockIn/ClockIn',
@@ -188,7 +190,7 @@ export default {
 				{
 					title: '巡检登记',
 					icon: '',
-					status: 'error',
+					status: '',/* error */
 					path: 'component/details/inspection',
 					description: '2020-10-10 12:20:30'
 				},
@@ -196,59 +198,94 @@ export default {
 					title: '整改登记',
 					icon: '',
 					status: '',
-					path: 'component/details/abarbeitung',
-					description: '2020-10-10 12:20:30'
-				},
-				{
-					title: '整改反馈',
-					icon: '',
-					status: '',
 					path: 'component/details/feedback',
 					description: '2020-10-10 12:20:30'
 				},
-				 {
+				{
+					title: '完成反馈',
+					icon: '',
+					status: '',
+					path: 'component/details/abarbeitung',
+					description: '2020-10-10 12:20:30'
+				},
+				 /* {
 					title: '延期申请',
 					icon: '',
 					status: '',
 					path: 'component/details/applyFor',
 					description: '2020-10-10 12:20:30'
-				}, 
+				}, */
 				{
 					title: '完成',
 					icon: '',
 					status: '',
-					path: 'component/details/complete',
+					path: '',
 					description: '2020-10-10 12:20:30'
-				}*/
+				}
 			]
 		};
+	},
+	onShow: function (option){
+		let me = this
+		uni.$on("handleBack", res => {
+		    me.form.planId = res.planId
+		    me.form.deptName = res.deptName
+		    basic
+		    	.pollingRecordByPlanId(option.planId)
+		    	.then(res => {
+		    		if (res.flag) {
+		    			me.$set(me,"form",res.data)
+		    			me.form.deptName = option.deptName
+		    			uni.showToast({
+		    				icon: 'success',
+		    				title: err.msg
+		    			});
+		    		}
+		    	})
+		    	.catch(err => {
+		    		uni.showToast({
+		    			icon: 'none',
+		    			title: err.msg
+		    		});
+		    	});
+			// 清除监听
+		    uni.$off('handleBack')
+		})
 	},
 	onLoad: function(option) {
 		let me = this;
 		_self = this
-		me.winForm.checkStaff = option.checkStaff
-		let checkList = JSON.parse(option.recordCheckList)
-		let check = []
-		checkList.map((item,index)=>{
-			check.push(item.checkId)
-		})
-		me.winForm.checkId = check
+		console.log(option)
+		console.log(123)
 		if (JSON.stringify(option) != '{}') {
+			if(typeof option.checkStaff !='undefined'){
+				me.winForm.checkStaff = option.checkStaff
+			}
+			if(typeof option.recordCheckList !='undefined'){
+				let checkList = JSON.parse(option.recordCheckList)
+				let check = []
+				checkList.map((item,index)=>{
+					check.push(item.checkId)
+				})
+				me.winForm.checkId = check
+			}
 			me.winForm.planId = option.planId
 			me.form.planId = option.planId
+			
 			basic
 				.pollingRecordByPlanId(option.planId)
 				.then(res => {
 					if (res.flag) {
 						if (res.data == null) {
-							me.modalName = 'Modal';
+							/* me.modalName = 'Modal'; */
 							me.winForm.recordDate = me.getDay('', 0).date;
+							me.form.deptName = option.deptName
 						}else{
 							me.isAlter = true;
-							me.getNewsList({recordId: res.data.recordId})
+							me.$set(me,"form",res.data)
+							me.form.deptName = option.deptName
+							/* me.getNewsList({recordId: res.data.recordId}) */
 						}
-						me.$set(me,"form",res.data)
-						me.form.deptName = option.deptName
 						uni.showToast({
 							icon: 'success',
 							title: err.msg
@@ -261,6 +298,7 @@ export default {
 						title: err.msg
 					});
 				});
+				
 		}
 	},
 	onShow: function() {
@@ -290,12 +328,23 @@ export default {
 		me.initMain()
 	},
 	methods: {
+		showList(index, item){
+			uni.navigateTo({
+				url: '../ClockIn/ClockIn?recordId='+item.recordId+'&deptName='+this.form.deptName
+			}); 
+		},
+		/* showList(index, item){
+			console.log(index)
+			uni.navigateTo({
+				url: 'ClockIn/ClockIn?recordId='+item.recordId
+			}); 
+		}, */
 		// 列表数据
-		getNewsList: function(val) {
+		getNewsList(val) {
 			basic
 				.recordRectifyList(val)
 				.then(res => {
-					if (res.success) {
+					if (res.flag) {
 						_self.cuIconList = res.data;
 					} 
 				})
@@ -337,7 +386,6 @@ export default {
 		},
 		alterData(){
 			let me = this
-			
 			/* me.$set(me.winForm,'checkStaff', me.form.checkStaff)
 			me.$set(me.winForm,'checkId', check) */
 			me.winForm.recordDate = me.form.recordDate
@@ -415,16 +463,15 @@ export default {
 				}
 			});
 		},
+		
 		hideModal(e) {
 			this.modalName = null;
 		},
 		
 		checkListChange(val) {
-			console.log(val)
 			this.winForm.checkId = val;
 		},
 		userListChange(val) {
-			console.log(val)
 			this.winForm.checkStaff = val;
 		},
 		DateChange(e) {

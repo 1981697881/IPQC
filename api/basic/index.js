@@ -30,6 +30,20 @@ export default {
 				accept: '*/*',
 			},
 	    });
+	},//查询问题隐患
+	formatListByCheckId(params) {
+	    return Request().get('/app/formatListByCheckId/'+params, {
+			header: {
+				accept: '*/*',
+			},
+	    });
+	},//查询登记
+	pollingRecordByPlanId(params) {
+	    return Request().get('/app/pollingRecordByPlanId/'+params, {
+			header: {
+				accept: '*/*',
+			},
+	    });
 	},
 	//巡检登记
 	pollingRecordAdd(params) {
@@ -42,6 +56,22 @@ export default {
 	},//反馈登记历史记录
 	recordRectifyList(params) {
 	    return Request().post('/app/recordRectifyList', {
+	        header: {
+				contentType: 'application/json',
+			},
+			data: params
+	    });
+	},//完成反馈
+	completeRectify(params) {
+	    return Request().post('/app/completeRectify', {
+	        header: {
+				contentType: 'application/json',
+			},
+			data: params
+	    });
+	},//反馈登记
+	recordRectifyAdd(params) {
+	    return Request().post('/app/recordRectifyAdd', {
 	        header: {
 				contentType: 'application/json',
 			},

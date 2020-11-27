@@ -116,7 +116,7 @@ export default {
 	created() {
 		_self = this;
 		/* if (service.getUsers().length > 0) {
-			if (service.getUsers()[0].account != '' && service.getUsers()[0].account != 'undefined') {
+			if (service.getUsers()[0].username != '' && service.getUsers()[0].username != 'undefined') {
 				 basic
 					.getSysMenuById(-1)
 					.then(rest => {
@@ -225,9 +225,17 @@ export default {
 				.pollingRecordByPlanId(item.planId)
 				.then(res => {
 					if (res.flag) {
-						uni.navigateTo({
-							url: '/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName+'&checkStaff=' + res.data.checkStaff+'&recordCheckList='+encodeURIComponent(JSON.stringify(res.data.recordCheckList))
-						});
+						console.log(res.data == null)
+						if(res.data == null){
+							uni.navigateTo({
+								url: '/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName
+							});
+						}else{
+							uni.navigateTo({
+								url: '/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName+'&checkStaff=' + res.data.checkStaff+'&recordCheckList='+encodeURIComponent(JSON.stringify(res.data.recordCheckList))
+							});
+						}
+						
 					}
 				})
 				.catch(err => {

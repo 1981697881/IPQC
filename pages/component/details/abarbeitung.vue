@@ -3,10 +3,26 @@
 		<loading :loadModal="loadModal"></loading>
 		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
-			<block slot="content">整改登记</block>
+			<block slot="content">完成反馈</block>
 		</cu-custom>
+		<view class="cu-modal" style="z-index: 1111" :class="modalName2 == 'Modal' ? 'show' : ''">
+			<view class="cu-dialog bg-white" style="height: 80%;">
+				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
+					<view class="content text-sl">签名确认</view>
+					<view class="action" @tap="hideModal"><text class="cuIcon-close text-red"></text></view>
+				</view>
+				<view class="signature" v-show="showCanvas">
+					<canvas class="mycanvas" canvas-id="mycanvas" @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
+					<view class="footer">
+						<view class="cu-btn bg-green shadow-blur round lg" @click="finish">保存</view>
+						<view class="cu-btn bg-grey shadow-blur round lg" @click="clear">清除</view>
+						<!-- <view class="close" @click="close">关闭</view> -->
+					</view>
+				</view>
+			</view>
+		</view>
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
-			<view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
+			<!-- <view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
 				<view class="cu-bar bg-white solid-bottom">
 					<view class="action">
 						<text class="cuIcon-titles text-cyan"></text> 单号：123
@@ -38,34 +54,98 @@
 							<view class="action">
 								<button class="cu-btn bg-blue round sm" @tap="previewImage">隐患图片</button>
 							</view>
-							<!-- <view class="action" >
+							<view class="action" >
 								<button class="cu-btn bg-purple round sm" @tap="handlerOpin">整改意见</button>
-							</view> -->
+							</view>
 							<view class="action" >
 								<button class="cu-btn bg-pink round sm" @tap="handlerSign">签名确认</button>
 							</view>
 						</view>
 					</view>
 				</view>
+			</view> -->
+			<view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
+				<view class="cu-list menu-avatar">
+					<view
+						class="cu-item"
+						style="width: 100%;margin-top: 2px;height: auto;"
+					>
+						<view style="clear: both;width: 100%;">
+							<view class="cu-bar bg-white solid-bottom">
+								<view class="action">
+									<text class="cuIcon-titles text-orange"></text>
+									被检人员:{{ item.checkStaffName }}
+								</view>
+								<view class="action">
+									登记日期：{{ item.recordDate }}
+								</view>
+							</view>
+							<view class="cu-card no-card case">
+								<view class="cu-item shadow">
+									<view class="cu-list menu-avatar">
+										<view class="cu-list menu">
+											<view v-for="(item2, index2) in item.recordCheckList" :key="index2" class="cu-item" style="height: 30px;">
+												<view class="content padding-sm" style="left: 0;">
+													<view>
+														<text class="cuIcon-text text-blue margin-right-xs"></text>
+														{{ item2.checkName }}
+													</view>
+												</view>
+											</view>
+										</view>
+										<view class="cu-form-group align-start">
+											<view class="title">隐患问题</view>
+											<textarea
+												v-model="item.concerns"
+												maxlength="-1"
+												:disabled="modalName != null"
+												@input="textareaBInput"
+												placeholder="隐患问题"
+											></textarea>
+										</view>
+										<view class="cu-bar bg-white">
+											<view class="action">隐患图片</view>
+											<view class="action">{{ item.rectifyImg.length }}/3</view>
+										</view>
+										<view class="cu-form-group">
+											<view class="grid col-3 grid-square flex-sub">
+												<view class="bg-img" v-for="(item3, index3) in item.rectifyImg" :key="index3" @tap="ViewImage($event,item)" :data-url="item.rectifyImg[index3]">
+													<image :src="item.rectifyImg[index3]" mode="aspectFill"></image>
+													<view class="cu-tag bg-red" @tap.stop="DelImg($event,item)" :data-index="index3"><text class="cuIcon-close"></text></view>
+												</view>
+												<view class="solids" v-if="item.rectifyImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
+											</view>
+										</view>
+									</view>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</view>
+			<view class="cu-bar tabbar shadow foot">
+				<view class="box text-center">
+					<button :disabled="isClick" class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(onCanvs)">提交</button>
+				</view>
 			</view>
 		</scroll-view>
 	</view>
 </template>
 <script>
-import ruiDatePicker from '@/components/rattenking-dtpicker/rattenking-dtpicker.vue';
-import ldSelect from '@/components/ld-select/ld-select.vue';
-import uniFab from '@/components/uni-fab/uni-fab.vue';
 import basic from '@/api/basic';
-import citySelect from '@/components/city-select/city-select.vue';
 import service from '@/service.js';
 import loading from '@/components/loading';
+var x = 20;
+var y = 20;
 export default {
-	components: { ruiDatePicker, ldSelect, uniFab, loading, citySelect },
+	components: { loading },
 	data() {
 		return {
+			showCanvas: false,
+			ctx: '', //绘图图像
+			points: [], //路径点集合
+			signature: '',
 			pageHeight: 0,
-			isOrder: false,
-			isDis: false,
 			onoff: true,
 			isClick: false,
 			loadModal: false,
@@ -73,35 +153,28 @@ export default {
 			modalName: null,
 			modalName2: null,
 			gridCol: 3,
-			skin: false,
-			listTouchStart: 0,
-			listTouchDirection: null,
-			isCard: false,
-			cuIList: [{},{}],
-			startDate: null,
-			endDate: null
+			cuIList: [],
 		};
 	},
 	onLoad: function(option) {
 		let me = this;
 		if (JSON.stringify(option) != '{}') {
 			this.isOrder = true;
-			me.form.kingDeeNo = option.kingDeeNo;
-			me.form.productWorkDetailId = option.productWorkDetailId;
-			me.form.lotNo = option.lotNo;
-			me.form.model = option.model;
-			me.form.planNum = option.planNum;
-			me.form.processCard = option.processCard;
-			me.form.productName = option.productName;
-			me.form.productNumber = option.productNumber;
-			me.form.workNo = option.workNo;
-			me.startDate = option.startDate;
-			me.endDate = option.endDate;
-			workshop
-				.formatByProductWork({ productWorkDetailId: option.productWorkDetailId })
+			this.planId = option.planId;
+			this.deptName = option.deptName;
+			basic
+				.pollingRecordByPlanId(option.planId)
 				.then(res => {
 					if (res.flag) {
-						me.processList = res.data;
+						if(res.data != null){
+							me.cuIList.push(res.data)
+						}
+						console.log(res.data)
+						uni.showToast({
+							icon: 'success',
+							title: err.msg
+						});
+						
 					}
 				})
 				.catch(err => {
@@ -109,7 +182,7 @@ export default {
 						icon: 'none',
 						title: err.msg
 					});
-				}); 
+				});
 		}
 	},
 	onReady: function() {
@@ -132,174 +205,80 @@ export default {
 				}, 1000);
 			}
 		});
-		/* if (service.getUsers().length > 0) {
-			if (service.getUsers()[0].account != '' && service.getUsers()[0].account != 'undefined') {
-				me.form.fbillerID = service.getUsers()[0].userId;
-				me.form.username = service.getUsers()[0].username;
-				uni.getSystemInfo({
-					success: function(res) {
-						// res - 各种参数
-						let info = uni.createSelectorQuery().select('.getheight');
-						let customHead = uni.createSelectorQuery().select('.customHead');
-						var headHeight = 0;
-						customHead
-							.boundingClientRect(function(data) {
-								//data - 各种参数
-								headHeight = data.height;
-							})
-							.exec();
-						setTimeout(function() {
-							me.pageHeight = res.windowHeight - headHeight;
-						}, 1000);
-					}
-				});
-				me.initMain();
-			}
-		} */
 	},
 	methods: {
-		handlerOpin(){
-			uni.navigateTo({
-				url: '../details/opinion'
+		onCanvs(){
+			this.modalName2 = 'Modal'
+			this.createCanvas()
+		},
+		//关闭并清空画布
+		close: function() {
+			this.showCanvas = false;
+			this.clear();
+		},
+		//创建并显示画布
+		createCanvas: function() {
+			this.showCanvas = true;
+			this.ctx = uni.createCanvasContext('mycanvas', this); //创建绘图对象
+			//设置画笔样式
+			this.ctx.lineWidth = 4;
+			this.ctx.lineCap = 'round';
+			this.ctx.lineJoin = 'round';
+		},
+		//触摸开始，获取到起点
+		touchstart: function(e) {
+			let startX = e.changedTouches[0].x;
+			let startY = e.changedTouches[0].y;
+			let startPoint = { X: startX, Y: startY };
+			this.points.push(startPoint);
+			//每次触摸开始，开启新的路径
+			this.ctx.beginPath();
+		},
+		
+		//触摸移动，获取到路径点
+		touchmove: function(e) {
+			let moveX = e.changedTouches[0].x;
+			let moveY = e.changedTouches[0].y;
+			let movePoint = { X: moveX, Y: moveY };
+			this.points.push(movePoint); //存点
+			let len = this.points.length;
+			if (len >= 2) {
+				this.draw(); //绘制路径
+			}
+		},
+		
+		// 触摸结束，将未绘制的点清空防止对后续路径产生干扰
+		touchend: function() {
+			this.points = [];
+		},
+		
+		/* ***********************************************
+			#   绘制笔迹
+			#	1.为保证笔迹实时显示，必须在移动的同时绘制笔迹
+			#	2.为保证笔迹连续，每次从路径集合中区两个点作为起点（moveTo）和终点(lineTo)
+			#	3.将上一次的终点作为下一次绘制的起点（即清除第一个点）
+			************************************************ */
+		draw: function() {
+			let point1 = this.points[0];
+			let point2 = this.points[1];
+			this.points.shift();
+			this.ctx.moveTo(point1.X, point1.Y);
+			this.ctx.lineTo(point2.X, point2.Y);
+			this.ctx.stroke();
+			this.ctx.draw(true);
+		},
+		
+		//清空画布
+		clear: function() {
+			let that = this;
+			uni.getSystemInfo({
+				success: function(res) {
+					let canvasw = res.windowWidth;
+					let canvash = res.windowHeight;
+					that.ctx.clearRect(0, 0, canvasw, canvash);
+					that.ctx.draw(true);
+				}
 			});
-		},
-		handlerSign(){
-			uni.navigateTo({
-				url: '../details/endorse'
-			});
-		},	
-		IsCard(e,item) {
-			this.$set(item, 'isCard' , e.detail.value)
-			/* this.isCard = e.detail.value */
-		},
-		// 预览图片多张
-		    previewImage() {
-					let imgList = ['https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg','https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg']
-					uni.previewImage({
-						current: imgList.length,
-						urls: imgList
-					});
-				},
-		initMain() {
-			const me = this;
-			this.form.workDate = this.getDay('', 0).date;
-			basic
-				.getDeptList({})
-				.then(res => {
-					if (res.flag) {
-						me.deptList = res.data;
-					}
-				})
-				.catch(err => {
-					uni.showToast({
-						icon: 'none',
-						title: err.msg
-					});
-				});
-			basic
-				.getEmpList({})
-				.then(res => {
-					if (res.flag) {
-						me.empList = res.data;
-					}
-				})
-				.catch(err => {
-					uni.showToast({
-						icon: 'none',
-						title: err.msg
-					});
-				});
-			me.loadModal = false;
-			me.isClick = false;
-		},
-		saveData() {
-			this.isClick = true;
-			let result = [];
-			let list = this.cuIList;
-			let me = this;
-			let array = [];
-			for (let i in list) {
-				let obj = {};
-				obj.userId = list[i].userId;
-				obj.dispatchNum = list[i].dispatchNum;
-				obj.processId = this.form.processID;
-				obj.processTeamId = this.form.fdeptID;
-				obj.productWorkDetailId = this.form.productWorkDetailId;
-				array.push(obj);
-			}
-			console.log(JSON.stringify(array));
-			if (this.form.processID == null || this.form.processID == '') {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '工序不能为空'
-				});
-			}
-			if (this.form.fdeptID == null || this.form.fdeptID == '') {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '班组不能为空'
-				});
-			}
-
-			if (array.length <= 0) {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '请派工'
-				});
-			}
-			if (Number(this.form.bNum) > Number(this.form.planNum)) {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '不能大于计划数量'
-				});
-			}
-			if (this.form.workDate == null || this.form.workDate == '') {
-				this.isClick = false;
-				return uni.showToast({
-					icon: 'none',
-					title: '日期不能为空'
-				});
-			}
-			workshop
-				.productWorkDispatchAdd(JSON.stringify(array))
-				.then(res => {
-					if (res.flag) {
-						this.cuIList = [];
-						uni.showToast({
-							icon: 'success',
-							title: res.msg
-						});
-						this.form.bNum = 0;
-						this.initMain();
-						if (this.isOrder) {
-							setTimeout(function() {
-								uni.$emit('handleBack', { startDate: me.startDate, endDate: me.endDate });
-								uni.navigateBack({
-									url: '../workshop/dispatching'
-								});
-							}, 1000);
-						}
-					}
-				})
-				.catch(err => {
-					uni.showToast({
-						icon: 'none',
-						title: err.msg
-					});
-					this.isClick = false;
-				});
-		},
-		del(index, item) {
-			this.cuIList.splice(index, 1);
-			var count = 0;
-			for (var i = 0; i < list.length; i++) {
-				count += Number(list[i].dispatchNum);
-			}
-			this.form.bNum = count;
 		},
 		// 查询前后三天日期
 		getDay(date, day) {
@@ -327,8 +306,175 @@ export default {
 			}
 			return m;
 		},
+		//完成绘画并保存到本地
+		finish: function() {
+			let that = this;
+			if(that.cuIList.length > 0){
+			uni.canvasToTempFilePath({
+				canvasId: 'mycanvas',
+				success: function(res) {
+					if(res.tempFilePath != '' && typeof res.tempFilePath != "undefined"){
+						console.log(res);
+						that.isClick = true;
+						let list = that.cuIList[0];
+						basic
+							.completeRectify({
+								recordId: list.recordId,
+								rectifyFinishDate: that.getDay('',0).date,
+								rectifyImg: list.rectifyImg,
+								rectifyUid: list.rectifyUid,
+							})
+							.then(res => {
+								if (res.flag) {
+									that.cuIList = [];
+									setTimeout(function() {
+										uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true});
+										uni.navigateBack({
+											url: '../component/polling'
+										});
+									}, 1000);
+									uni.showToast({
+										icon: 'success',
+										title: res.msg
+									});
+									
+								}
+							})
+							.catch(err => {
+								uni.showToast({
+									icon: 'none',
+									title: err.msg
+								});
+								that.isClick = false;
+							});
+						//上传到服务器
+						/* that.api.uploadFile({
+							url: 'user/upload/one',
+							filePath: res.tempFilePath,
+							name: 'file',
+							success: uploadFileRes => {
+								console.log(uploadFileRes);
+								that.signature = uploadFileRes.data.url;
+								that.clear();
+								that.showCanvas = false;
+							}
+						}); */
+						//保存到本地
+						/* 
+						let path = res.tempFilePath;
+						uni.saveImageToPhotosAlbum({
+							filePath:path,
+						}) */
+					}
+					
+				}
+			});
+			}
+		},
+		handlerOpin(){
+			uni.navigateTo({
+				url: '../details/opinion'
+			});
+		},
+		handlerSign(){
+			uni.navigateTo({
+				url: '../details/endorse'
+			});
+		},	
+		// 预览图片多张
+		    previewImage() {
+					let imgList = ['https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg','https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg']
+					uni.previewImage({
+						current: imgList.length,
+						urls: imgList
+					});
+				},
+				hideModal(e) {
+					this.modalName2 = null;
+				},
 		
 	}
 };
 </script>
-
+<style>
+	.input {
+		height: 30px;
+	}
+	.box {
+		width: 100%;
+	}
+	.uni-input-placeholder,
+	.uni-input-input {
+		font-size: 13px;
+	}
+	.cu-list.menu-avatar > .cu-item .action {
+		width: auto !important;
+	}
+	.action,
+	.content {
+		font-size: 13px !important;
+	}
+	.ruidata {
+		font-size: 13px;
+		height: 7vw !important;
+	}
+	.cu-bar {
+		min-height: 30px;
+	}
+	.cu-list.menu-avatar > .cu-item .action {
+		width: auto !important;
+	}
+	/* .page {
+			height: calc(100vh - 320upx);
+		} */
+	.nav-title::first-letter {
+		font-size: 16px;
+		margin-right: 2px;
+	}
+	.signature {
+		position: relative;
+		z-index: 999;
+		width: auto;
+	}
+	.container {
+		padding: 20rpx 0 120rpx 0;
+		box-sizing: border-box;
+	}
+	.title {
+		height: 50upx;
+		line-height: 50upx;
+		font-size: 16px;
+	}
+	.mycanvas {
+		width: 100%;
+		height: calc(100vh - 420upx);
+		background-color: #ececec;
+	}
+	.footer {
+		font-size: 14px;
+		height: 120upx;
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+	}
+	.left,
+	.right,
+	.close {
+		line-height: 100upx;
+		height: 100upx;
+		width: 220upx;
+		text-align: center;
+		font-weight: bold;
+		color: white;
+		border-radius: 5upx;
+	}
+	.left {
+		background: #007aff;
+	}
+	.right {
+		background: orange;
+	}
+	.close {
+		background: #a3a3a3;
+	}
+</style>
