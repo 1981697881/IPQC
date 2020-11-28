@@ -8,7 +8,7 @@ import store from '@/store';
 import login from '@/api/login';
 import basic from '@/api/basic';
 import { mapState } from 'vuex';
-export default {
+export default { 
 	data() {
 		return {
 			PageCur: 'component',
@@ -86,7 +86,7 @@ export default {
 		  }, false);
 	},
 	onLoad() {
-		this.plusReady();
+		/* this.plusReady();
 		var that = this;
 		uni.getSystemInfo({
 			success: res => {
@@ -94,7 +94,7 @@ export default {
 					that.AndroidCheckUpdate();
 				}
 			}
-		});
+		}); */
 	},
 	methods: {
 		NavChange: function(e) {
@@ -111,7 +111,7 @@ export default {
 		AndroidCheckUpdate2() {
 			var that = this;
 			uni.request({
-				url: 'http://61.146.130.53:50432/pda/output.json', //获取最新版本号
+				url: service.getUrls().url+'/pda/output.json', //获取最新版本号
 				method: 'GET',
 				data: {},
 				success: res => {
@@ -134,7 +134,7 @@ export default {
 
 						//res.data.androidurl    是apk的下载链接
 						console.log('准备');
-						var dtask = plus.downloader.createDownload('http://61.146.130.53:50432/pda/fzwmxy.apk', {}, function(d, status) {
+						var dtask = plus.downloader.createDownload(service.getUrls().url+'/pda/ipqc.apk', {}, function(d, status) {
 							console.log('开始');
 							// 下载完成
 							if (status == 200) {
@@ -165,7 +165,7 @@ export default {
 			var _this = this;
 			uni.request({
 				//请求地址，设置为自己的服务器链接
-				url: 'http://61.146.130.53:50432/pda/output.json',
+				url: service.getUrls().url+'/pda/output.json',
 				method: 'GET',
 				data: {},
 				success: resMz => {
@@ -213,7 +213,7 @@ export default {
 		},
 		downWgt: function() {
 			var that = this;
-			var downloadApkUrl = 'http://61.146.130.53:50432/pda/fzwmxy.apk';
+			var downloadApkUrl = service.getUrls().url+'/pda/ipqc.apk';
 			var dtask = plus.downloader.createDownload(downloadApkUrl, {}, function(d, status) {
 				// 下载完成
 				if (status == 200) {
@@ -292,7 +292,7 @@ export default {
 								}); */
 								that.downWgt(); //下载文件
 								/* //设置 最新版本apk的下载链接
-								var downloadApkUrl = 'http://61.146.130.53:50432/pda/fzwmxy.apk';
+								var downloadApkUrl = service.getUrls().url+'/pda/ipqc.apk';
 								var dtask = plus.downloader.createDownload(downloadApkUrl, {}, function(d, status) {
 									// 下载完成
 									if (status == 200) {

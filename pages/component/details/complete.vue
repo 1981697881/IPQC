@@ -133,30 +133,6 @@ export default {
 				}, 1000);
 			}
 		});
-		/* if (service.getUsers().length > 0) {
-			if (service.getUsers()[0].account != '' && service.getUsers()[0].account != 'undefined') {
-				me.form.fbillerID = service.getUsers()[0].userId;
-				me.form.username = service.getUsers()[0].username;
-				uni.getSystemInfo({
-					success: function(res) {
-						// res - 各种参数
-						let info = uni.createSelectorQuery().select('.getheight');
-						let customHead = uni.createSelectorQuery().select('.customHead');
-						var headHeight = 0;
-						customHead
-							.boundingClientRect(function(data) {
-								//data - 各种参数
-								headHeight = data.height;
-							})
-							.exec();
-						setTimeout(function() {
-							me.pageHeight = res.windowHeight - headHeight;
-						}, 1000);
-					}
-				});
-				me.initMain();
-			}
-		} */
 	},
 	methods: {
 		IsCard(e,item) {

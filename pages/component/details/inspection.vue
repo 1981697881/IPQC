@@ -7,7 +7,7 @@
 		</cu-custom>
 		<uni-fab v-show="isFab" :pattern="pattern" :horizontal="horizontal" :vertical="vertical" cuIcon="add" :popMenu="popMenu" :direction="direction" @fabClick="fabClick"></uni-fab>
 		<view class="cu-modal" style="z-index: 1111" :class="modalName2 == 'Modal' ? 'show' : ''">
-			<view class="cu-dialog bg-white" style="height: 320upx;">
+			<view class="cu-dialog bg-white" style="height: 400upx;">
 				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
 					<view class="content text-sl">检查登记</view>
 					<view class="action" @tap="hideModal"><text class="cuIcon-close text-red"></text></view>
@@ -39,6 +39,11 @@
 							v-model="winForm.checkId"
 							@change="checkListChange"
 						></ld-select>
+					</view>
+				</view><view class="cu-bar solid-bottom" style="height: 60upx;">
+					<view class="action">
+						<view style="width: 70px;">陪同人员:</view>
+					<input placeholder="请输入" v-model="winForm.escort" name="input"></input>
 					</view>
 				</view>
 				<view style="clear: both;" class="cu-bar bg-white justify-end padding-bottom-xl margin-top">
@@ -189,6 +194,7 @@ export default {
 			winForm: {
 				checkId: [],
 				planId:'',
+				escort:'',
 			},
 			pattern: {
 				color: '#7A7E83',
@@ -214,9 +220,9 @@ export default {
 				.then(res => {
 					if (res.flag) {
 						if(res.data == null){
-							me.isFab = false
-						}else{
 							me.isFab = true
+						}else{
+							me.isFab = false
 							me.cuIList.push(res.data)
 						}
 						console.log(res.data)

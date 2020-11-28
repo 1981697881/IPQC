@@ -100,10 +100,10 @@
 		</view>
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<view class="bg-white evan-step-show__title text-center"><text class="evan-step-show__title__item"></text></view>
-			<evan-steps :active="1" class="bg-white" style="padding-left: 30%;">
+			<evan-steps :active="4" class="bg-white" style="padding-left: 30%;">
 				<navigator
 					hover-class="none"
-					:url="'/pages/' + item.path+'?planId='+form.planId"
+					:url="'/pages/' + item.path+'?planId='+form.planId+'&isType='+item.isType"
 					navigateTo
 					:style="[{ animation: 'show ' + ((index + 1) * 0.2 + 1) + 's 1' }]"
 					v-for="(item, index) in elements"
@@ -183,6 +183,7 @@ export default {
 				{
 					title: '打卡',
 					status: '',
+					isType: true,
 					path: 'ClockIn/ClockIn',
 					icon: 'location',
 					description: '2020-10-10 12:20:30'
@@ -190,6 +191,7 @@ export default {
 				{
 					title: '巡检登记',
 					icon: '',
+					isType: false,
 					status: '',/* error */
 					path: 'component/details/inspection',
 					description: '2020-10-10 12:20:30'
@@ -198,12 +200,14 @@ export default {
 					title: '整改登记',
 					icon: '',
 					status: '',
-					path: 'component/details/feedback',
+					isType: false,
+					path: 'ClockIn/ClockIn',
 					description: '2020-10-10 12:20:30'
 				},
 				{
 					title: '完成反馈',
 					icon: '',
+					isType: false,
 					status: '',
 					path: 'component/details/abarbeitung',
 					description: '2020-10-10 12:20:30'
@@ -218,6 +222,7 @@ export default {
 				{
 					title: '完成',
 					icon: '',
+					isType: false,
 					status: '',
 					path: '',
 					description: '2020-10-10 12:20:30'

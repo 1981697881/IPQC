@@ -160,13 +160,13 @@
 					case 'finish':
 						return 'rgba(0,0,0,0.45)'
 					case 'process':
-						return 'rgba(0,0,0,0.65)'
+						return 'rgba(0,0,0,0.55)'
 					case 'wait':
 						return 'rgba(0,0,0,0.45)'
 					case 'error':
 						return this.errorColor
 					default:
-						return 'rgba(0,0,0,0.85)'
+						return 'rgba(0,0,0,0.65)'
 				}
 			},
 			customIconColor() {

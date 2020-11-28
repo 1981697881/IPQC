@@ -139,6 +139,9 @@ export default {
 		if (JSON.stringify(option) != '{}') {
 			this.form.planId = option.planId
 			 this.form.deptName = option.deptName
+			 this.form.isType = Boolean(option.isType)
+			console.log(this.form)
+			 
 		}
 		this.initMain()
 		this.GetCurrentAddress();
@@ -216,25 +219,34 @@ export default {
 			this.form.checkStaff != null && this.form.checkStaff != '' ? rqData.checkStaff = this.form.checkStaff : null
 			address != null && address != '' ? rqData.clockLocation = address : null
 			rqData.clockTime = this.getDay('', 0).date
-			basic.pollingRecordAdd(rqData).then(reso => {
-				if (reso.flag) {
-					setTimeout(function() {
-						uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true});
-						uni.navigateBack({
-							url: '../component/polling'
+			if(this.form.isType == 'true'){
+				basic.pollingRecordAdd(rqData).then(reso => {
+					if (reso.flag) {
+						setTimeout(function() {
+							uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true});
+							uni.navigateBack({
+								url: '../component/polling'
+							});
+						}, 1000);
+						uni.showToast({
+							icon: 'success',
+							title: reso.msg
 						});
-					}, 1000);
-					uni.showToast({
-						icon: 'success',
-						title: reso.msg
+					} else {
+						uni.showToast({
+							icon: 'none',
+							title: reso.msg
+						});
+					}
 					});
-				} else {
-					uni.showToast({
-						icon: 'none',
-						title: reso.msg
+			}else{
+				uni.$emit('handleClockIn', rqData);
+				setTimeout(function() {
+					uni.navigateTo({
+						url: '../component/feedback'
 					});
-				}
-			});
+				}, 1000);
+			}
 			// 保存打卡数据
 			/* uniCloud
 				.callFunction({

@@ -73,18 +73,18 @@ export default {
 			return true;
 		},
 		checkUpload() {
-			var that = this;
+			/* var that = this;
 			uni.getSystemInfo({
 				success: res => {
 					if (res.platform == 'android') {
 						that.AndroidCheckUpdate();
 					}
 				}
-			});
+			}); */
 		},
 		downWgt: function() {
 			var that = this;
-			var downloadApkUrl = 'http://61.146.130.53:50432/pda/fzwmxy.apk';
+			var downloadApkUrl = service.getUrls().url+'/pda/ipqc.apk';
 			var dtask = plus.downloader.createDownload(downloadApkUrl, {}, function(d, status) {
 				// 下载完成
 				if (status == 200) {
@@ -135,7 +135,7 @@ export default {
 		AndroidCheckUpdate() {
 			var that = this;
 			uni.request({
-				url: 'http://61.146.130.53:50432/pda/output.json', //获取最新版本号
+				url: service.getUrls().url+'/pda/output.json', //获取最新版本号
 				method: 'GET',
 				data: {}, 
 				success: res => {
@@ -168,7 +168,7 @@ export default {
 											}); */
 										that.downWgt();
 										//设置 最新版本apk的下载链接
-										/* var downloadApkUrl = 'http://61.146.130.53:50432/pda/fzwmxy.apk';
+										/* var downloadApkUrl = service.getUrls().url+'/pda/ipqc.apk';
 											var dtask = plus.downloader.createDownload(downloadApkUrl, {}, function(d, status) {
 												// 下载完成
 												if (status == 200) {

@@ -38,32 +38,44 @@
 					:key="index"
 					@tap="$manyCk(showList(index, item))"
 				>
-					<view class="text-grey padding-xs">公司: {{item.deptName}}</view>
-					<view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
-						<view class="flex-sub text-sl ">
-							<text class=" cuIcon-roundcheckfill text-green"><text class="text-grey text-sm">巡检</text></text>
+					<view class="text-grey cu-bar bg-white" style="height: 30px;">
+						<view class="action">
+							公司: {{item.deptName}}
 						</view>
-						<view class="flex-sub text-sl ">
-							<text class=" cuIcon-warnfill text-red"><text class="text-grey text-sm">整改</text></text>
-						</view>
-						<view class="flex-sub text-sl ">
-							<text class=" cuIcon-infofill text-grey"><text class="text-grey text-sm">完成</text></text>
+						<view class="action">
+							单号: {{item.planNo}}
 						</view>
 					</view>
-					<view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
+					<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
+						<view class="flex-sub text-xl ">
+							<text :class="'cuIcon-roundcheckfill text-green'"><text class="text-grey text-sm">巡检</text></text>
+						</view>
+						<view class="flex-sub text-xl ">
+							<text :class="'cuIcon-timefill text-grey'"><text class="text-grey text-sm">整改</text></text>
+						</view>
+						<view class="flex-sub text-xl ">
+							<text :class="'cuIcon-timefill text-grey'"><text class="text-grey text-sm">完成</text></text>
+						</view>
+					</view> -->
+					<evan-steps :active="1" direction="horizontal" primaryColor="green">
+								<evan-step title="巡检" :description='item.planTime'></evan-step>
+								<evan-step title="整改" description="----/--/--"></evan-step>
+								<evan-step title="完成" description="----/--/--"></evan-step>
+							</evan-steps>
+					<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
 						<view class="flex-sub solid-bottom text-gray text-sm">
 							<text class="cuIcon-remind margin-lr-xs"></text>
-							10-10/10-11
+							{{item.planTime}}
 						</view>
 						<view class="flex-sub solid-bottom text-gray text-sm">
 							<text class="cuIcon-remind margin-lr-xs"></text>
-							2020-10-10
+							----/--/--
 						</view>
 						<view class="flex-sub solid-bottom text-gray text-sm">
 							<text class="cuIcon-remind margin-lr-xs"></text>
-							2020-10-10
+							----/--/--
 						</view>
-					</view>
+					</view> -->
 					<!-- <view class="cu-avatar round lg" style="background-image:url(https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg);"></view>
 						<view class="content">
 							<view class="text-grey">公司:A项目组</view>
@@ -91,10 +103,12 @@
 import service from '@/service.js';
 import ruiDatePicker from '@/components/rattenking-dtpicker/rattenking-dtpicker.vue';
 import basic from '@/api/basic';
+import EvanSteps from '@/components/evan-steps/evan-steps.vue';
+import EvanStep from '@/components/evan-steps/evan-step.vue';
 var _self,
 	page = 1;
 export default {
-	components: { ruiDatePicker },
+	components: { ruiDatePicker,EvanSteps,EvanStep },
 	data() {
 		return {
 			start: '',

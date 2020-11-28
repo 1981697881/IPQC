@@ -60,6 +60,7 @@
 				isClick: false,
 				loadModal: false,
 				index: -1,
+				onoff: true,
 				picker: ['喵喵喵', '汪汪汪', '哼唧哼唧'],
 				multiIndex: [0, 0, 0],
 				date: '2020-12-25',

@@ -13,9 +13,13 @@
 				<form>
 					<view class="cu-form-group">
 						<view class="title">延期期限</view>
-						<picker mode="date" :value="winForm.delayTimeLimit" start="2020-12-01" end="2030-09-01" @change="DateChange($event,'delayTimeLimit')">
+						<picker mode="date" :value="winForm.delayTimeLimit" start="2020-12-01" end="2030-09-01" @change="DateChange($event, 'delayTimeLimit')">
 							<view class="picker">{{ winForm.delayTimeLimit }}</view>
 						</picker>
+					</view>
+					<view class="cu-form-group">
+						<view class="title">延期原因</view>
+						<input placeholder="请输入" v-model="winForm.delayReason" name="input"></input>
 					</view>
 					<view class="cu-form-group">
 						<view class="title">申请人</view>
@@ -25,7 +29,7 @@
 					</view>
 					<view class="cu-form-group">
 						<view class="title">申请日期</view>
-						<picker mode="date" :value="winForm.applicationDate" start="2020-12-01" end="2030-09-01" @change="DateChange($event,'applicationDate')">
+						<picker mode="date" :value="winForm.applicationDate" start="2020-12-01" end="2030-09-01" @change="DateChange($event, 'applicationDate')">
 							<view class="picker">{{ winForm.applicationDate }}</view>
 						</picker>
 					</view>
@@ -53,8 +57,14 @@
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<form>
 				<view class="cu-form-group">
-					<view class="title">通知单号</view>
-					<text>{{ form.planNo }}</text>
+					<view class="title">被检人员</view>
+					<picker @change="checkStaffChange" :range-key="'username'" :value="index3" :range="userList">
+						<view class="picker">{{ form.checkStaffName != '' ? form.checkStaffName : '请选择' }}</view>
+					</picker>
+				</view>
+				<view class="cu-form-group">
+					<view class="title">陪同人员</view>
+					<input placeholder="请输入" v-model="form.escort" name="input"></input>
 				</view>
 				<view class="cu-form-group align-start">
 					<view class="title">整改情况</view>
@@ -81,7 +91,7 @@
 				</view>
 				<view class="cu-form-group">
 					<view class="title">要求整改完成时间</view>
-					<picker mode="date" :value="form.rectifyPlanDate" start="2020-12-01" end="2030-09-01" @change="DateChangeT($event,'rectifyPlanDate')">
+					<picker mode="date" :value="form.rectifyPlanDate" start="2020-12-01" end="2030-09-01" @change="DateChangeT($event, 'rectifyPlanDate')">
 						<view class="picker">{{ form.rectifyPlanDate }}</view>
 					</picker>
 				</view>
@@ -107,15 +117,19 @@ export default {
 			pageHeight: 0,
 			isClick: false,
 			loadModal: false,
+			onoff: true,
 			form: {
 				rectifyPlanDate: null,
 				rectifyImg: [],
+				checkStaffName: '',
+				checkStaff: '',
 				rectifyName: '',
-				rectifyUid: ''
+				rectifyUid: '',
 			},
 			index: -1,
 			index1: -1,
 			index2: -1,
+			index3: -1,
 			date: '2018-12-25',
 			winForm: {
 				delayTimeLimit: null,
@@ -124,6 +138,7 @@ export default {
 				proposerName: '',
 				ratify: '',
 				approvalTime: '',
+				delayReason: '',
 				applicationDate: null
 			},
 			userList: [],
@@ -133,6 +148,14 @@ export default {
 			textareaBValue: ''
 		};
 	},
+	onShow: function (option){
+		let me = this
+		uni.$on("handleClockIn", res => {
+			me.form.clockTime = res.clockTime
+			me.form.clockLocation = res.clockLocation
+		})
+		
+	},		
 	onLoad: function(option) {
 		let me = this;
 		if (JSON.stringify(option) != '{}') {
@@ -144,14 +167,17 @@ export default {
 				.then(res => {
 					if (res.flag) {
 						if (res.data != null) {
-							/* me.form = res.data; */
-							me.form.rectifyPlanDate = me.getDay("",0).date
-							me.winForm.delayTimeLimit = me.getDay("",0).date
-							me.winForm.rectifyPlanDate = me.getDay("",0).date
-						}else{
-							me.form.rectifyPlanDate = me.getDay("",0).date
-							me.winForm.delayTimeLimit = me.getDay("",0).date
-							me.winForm.rectifyPlanDate = me.getDay("",0).date
+							me.form = res.data;
+							me.form.rectifyName = '';
+							me.form.rectifyPlanDate == null ? (me.form.rectifyPlanDate = me.getDay('', 0).date) : res.data.rectifyPlanDate;
+							me.winForm.delayTimeLimit == null ? (me.winForm.delayTimeLimit = me.getDay('', 0).date) : res.data.delayTimeLimit;
+							me.winForm.rectifyPlanDate == null ? (me.winForm.rectifyPlanDate = me.getDay('', 0).date) : res.data.rectifyPlanDate;
+							me.winForm.applicationDate == null ? (me.winForm.applicationDate = me.getDay('', 0).date) : res.data.applicationDate;
+						} else {
+							me.form.rectifyPlanDate = me.getDay('', 0).date;
+							me.winForm.delayTimeLimit = me.getDay('', 0).date;
+							me.winForm.rectifyPlanDate = me.getDay('', 0).date;
+							me.winForm.applicationDate = me.getDay('', 0).date;
 						}
 						uni.showToast({
 							icon: 'success',
@@ -226,59 +252,78 @@ export default {
 					title: '请选择日期！'
 				});
 			}
-			me.form.delayTimeLimit = me.winForm.delayTimeLimit
-			me.form.applicationDate = me.winForm.delayTimeLimit
-			me.form.proposer = me.winForm.delayTimeLimit
+			me.form.delayTimeLimit = me.winForm.delayTimeLimit;
+			me.form.applicationDate = me.winForm.delayTimeLimit;
+			me.form.proposer = me.winForm.delayTimeLimit;
+			me.form.delayReason = me.winForm.delayReason;
 			me.modalName2 = null;
 		},
 		saveData() {
-			if (this.cuIList.length > 0) {
-				this.isClick = true;
-				let result = [];
-				let list = JSON.parse(JSON.stringify(this.cuIList));
-				let me = this;
-				let array = [];
-				delete list[0].rectifyImg;
-				basic
-					.pollingRecordAdd(list[0])
-					.then(res => {
-						if (res.flag) {
-							this.cuIList = [];
-							uni.showToast({
-								icon: 'success',
-								title: res.msg
-							});
-							const uploadTask = uni.uploadFile({
-								url: service.getUrls().url + 'file/imgUpload',
-								filePath: me.cuIList[0].rectifyImg,
-								name: 'imgS',
-								success: function(uploadFileRes) {
-									console.log(uploadFileRes.data);
-									me.initMain();
-									setTimeout(function() {
-										uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true });
-										uni.navigateBack({
-											url: '../component/polling'
-										});
-									}, 1000);
-								}
-							});
-							uploadTask.onProgressUpdate(function(res) {
-								_self.percent = res.progress;
-								console.log('上传进度' + res.progress);
-								console.log('已经上传的数据长度' + res.totalBytesSent);
-								console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
-							});
-						}
-					})
-					.catch(err => {
-						uni.showToast({
-							icon: 'none',
-							title: err.msg
-						});
-						this.isClick = false;
-					});
+			let me = this;
+			if (me.form.checkContent == '' || typeof this.form.checkContent == 'undefined') {
+				return uni.showToast({
+					icon: 'none',
+					title: '请输入整改情况！'
+				});
 			}
+			if (me.form.rectifyUid == '' || typeof this.form.rectifyUid == 'undefined') {
+				return uni.showToast({
+					icon: 'none',
+					title: '请选择人员！'
+				});
+			}
+			if (me.form.rectifyPlanDate == '' || typeof this.form.rectifyPlanDate == 'undefined') {
+				return uni.showToast({
+					icon: 'none',
+					title: '请选择日期！'
+				});
+			}
+			this.isClick = true;
+			let result = [];
+			let array = [];
+			delete me.form.recordCheckList
+			basic
+				.recordRectifyAdd(me.form)
+				.then(res => {
+					if (res.flag) {
+						this.cuIList = [];
+						uni.showToast({
+							icon: 'success',
+							title: res.msg
+						});
+						
+						const uploadTask = uni.uploadFile({
+							url: service.getUrls().url + 'file/imgUpload',
+							filePath: me.cuIList[0].rectifyImg,
+							name: 'imgS',
+							success: function(uploadFileRes) {
+								console.log(uploadFileRes.data);
+								me.initMain();
+								// 清除监听
+								uni.$off('handleClockIn')
+								setTimeout(function() {
+									uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true });
+									uni.navigateBack({
+										url: '../component/polling'
+									});
+								}, 1000);
+							}
+						});
+						uploadTask.onProgressUpdate(function(res) {
+							_self.percent = res.progress;
+							console.log('上传进度' + res.progress);
+							console.log('已经上传的数据长度' + res.totalBytesSent);
+							console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+						});
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+					this.isClick = false;
+				});
 		},
 		applyFor() {
 			this.modalName2 = 'Modal';
@@ -289,18 +334,22 @@ export default {
 		hideModal(e) {
 			this.modalName2 = null;
 		},
-		rectifyChange(e){
-			this.$set(this.form,'rectifyUid', this.userList[e.detail.value].uid);
-			this.$set(this.form,'rectifyName', this.userList[e.detail.value].username);
-		},proposerChange(e){
-			this.$set(this.winForm,'proposer', this.userList[e.detail.value].uid);
-			this.$set(this.winForm,'proposerName', this.userList[e.detail.value].username);
+		rectifyChange(e) {
+			this.$set(this.form, 'rectifyUid', this.userList[e.detail.value].uid);
+			this.$set(this.form, 'rectifyName', this.userList[e.detail.value].username);
+		},checkStaffChange(e) {
+			this.$set(this.form, 'checkStaff', this.userList[e.detail.value].uid);
+			this.$set(this.form, 'checkStaffName', this.userList[e.detail.value].username);
 		},
-		DateChange(e,val) {
+		proposerChange(e) {
+			this.$set(this.winForm, 'proposer', this.userList[e.detail.value].uid);
+			this.$set(this.winForm, 'proposerName', this.userList[e.detail.value].username);
+		},
+		DateChange(e, val) {
 			this.$set(this.winForm, val, e.detail.value);
 		},
-		DateChangeT(e,val){
-		this.$set(this.form, val, e.detail.value);
+		DateChangeT(e, val) {
+			this.$set(this.form, val, e.detail.value);
 		},
 		ChooseImage() {
 			uni.chooseImage({
@@ -366,7 +415,7 @@ export default {
 				m = '0' + month;
 			}
 			return m;
-		},
+		}
 	}
 };
 </script>
