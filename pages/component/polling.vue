@@ -100,14 +100,14 @@
 		</view>
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<view class="bg-white evan-step-show__title text-center"><text class="evan-step-show__title__item"></text></view>
-			<evan-steps :active="4" class="bg-white" style="padding-left: 30%;">
-				<navigator
-					hover-class="none"
-					:url="'/pages/' + item.path+'?planId='+form.planId+'&isType='+item.isType"
-					navigateTo
+			<evan-steps :active="4" class="bg-white" style="padding-left: 30%;margin-top: 5%;">
+				<view
+					style="width: 100%;"
+					class="cu-item"
 					:style="[{ animation: 'show ' + ((index + 1) * 0.2 + 1) + 's 1' }]"
 					v-for="(item, index) in elements"
 					:key="index"
+					@tap="showList(index, item)"
 				>
 				<evan-step :icon="item.icon"  :status="item.status" :title="item.title" :description="item.description"></evan-step>
 				<!-- <evan-step title="延期申请" description="2020-10-10 10:10:10">
@@ -115,7 +115,7 @@
 						<image class="evan-step-show__show" src="/static/logo.png"></image>
 					</template>
 				</evan-step> -->
-				</navigator>
+				</view>
 			</evan-steps>
 			<view class="cu-tabbar-height"></view>
 			<!-- <view v-for="(item,index) in cuIconList" :key="index">
@@ -182,8 +182,10 @@ export default {
 			elements: [
 				{
 					title: '打卡',
+					msg: '已打卡',
 					status: '',
 					isType: true,
+					isOpen: true,
 					path: 'ClockIn/ClockIn',
 					icon: 'location',
 					description: '2020-10-10 12:20:30'
@@ -192,6 +194,7 @@ export default {
 					title: '巡检登记',
 					icon: '',
 					isType: false,
+					isOpen: true,
 					status: '',/* error */
 					path: 'component/details/inspection',
 					description: '2020-10-10 12:20:30'
@@ -208,6 +211,7 @@ export default {
 					title: '完成反馈',
 					icon: '',
 					isType: false,
+					isOpen: true,
 					status: '',
 					path: 'component/details/abarbeitung',
 					description: '2020-10-10 12:20:30'
@@ -223,6 +227,7 @@ export default {
 					title: '完成',
 					icon: '',
 					isType: false,
+					isOpen: true,
 					status: '',
 					path: '',
 					description: '2020-10-10 12:20:30'
@@ -233,18 +238,23 @@ export default {
 	onShow: function (option){
 		let me = this
 		uni.$on("handleBack", res => {
+			console.log(res)
 		    me.form.planId = res.planId
 		    me.form.deptName = res.deptName
 		    basic
-		    	.pollingRecordByPlanId(option.planId)
+		    	.pollingRecordByPlanId(res.planId)
 		    	.then(res => {
-		    		if (res.flag) {
-		    			me.$set(me,"form",res.data)
-		    			me.form.deptName = option.deptName
-		    			uni.showToast({
-		    				icon: 'success',
-		    				title: err.msg
-		    			});
+		    		if (reso.flag) {
+		    			if (reso.data == null) {
+		    				/* me.modalName = 'Modal'; */
+		    				me.winForm.recordDate = me.getDay('', 0).date;
+		    				me.form.deptName = res.deptName
+		    			}else{
+		    				me.isAlter = true;
+		    				me.$set(me,"form",reso.data)
+		    				me.form.deptName = option.deptName
+		    				/* me.elements[0].isOpen = false */
+		    			}
 		    		}
 		    	})
 		    	.catch(err => {
@@ -289,6 +299,7 @@ export default {
 							me.isAlter = true;
 							me.$set(me,"form",res.data)
 							me.form.deptName = option.deptName
+							/* me.elements[0].isOpen = false */
 							/* me.getNewsList({recordId: res.data.recordId}) */
 						}
 						uni.showToast({
@@ -306,7 +317,7 @@ export default {
 				
 		}
 	},
-	onShow: function() {
+	onReady: function() {
 		var me = this;
 		uni.getSystemInfo({
 			success: function(res) {
@@ -326,6 +337,9 @@ export default {
 					})
 					.exec();
 				setTimeout(function() {
+					console.log(infoHeight)
+					console.log(headHeight)
+					console.log(res.windowHeight)
 					me.pageHeight = res.windowHeight - infoHeight - headHeight;
 				}, 1000);
 			}
@@ -334,9 +348,17 @@ export default {
 	},
 	methods: {
 		showList(index, item){
-			uni.navigateTo({
-				url: '../ClockIn/ClockIn?recordId='+item.recordId+'&deptName='+this.form.deptName
-			}); 
+			if(item.isOpen){
+				console.log(this.form)
+				uni.navigateTo({
+					url: '../'+item.path+'?planId='+this.form.planId+'&isType='+item.isType+'&deptName='+this.form.deptName
+				}); 
+			}else{
+				uni.showToast({
+					icon: 'none',
+					title: item.msg
+				});
+			}
 		},
 		/* showList(index, item){
 			console.log(index)

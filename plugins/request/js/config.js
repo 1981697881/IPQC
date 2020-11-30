@@ -37,8 +37,7 @@ globalInterceptor.request.use(
     (config) => {
         console.log('is global request interceptor');
         getToken() && (config.header.Authorization = getToken());
-		console.log(config)
-        return config;
+		return config;
     },
     (err) => {
         console.error('is global fail request interceptor: ', err);
@@ -85,7 +84,9 @@ globalInterceptor.response.use(
         console.error('err: ', err);
         console.error('config: ', config);
         showToast(err);
-        return Promise.reject(err);
+        store.commit("setToken", {token: ''})
+        saveToken('')
+		return Promise.reject(err);
         // return false;
     }
 );
@@ -127,11 +128,17 @@ function saveToken(token) {
  * @return {object|Promise<reject>}
  */
 function handleCode({ data, status, config, res }) {
+	console.log(status)
 	const STATUS = {
         '20000'() {
 			if(store.state.token == '' || typeof store.state.token == 'undefined'){
-				store.commit("setToken", {token: res.header.authorization})
-				saveToken(res.header.authorization)
+				if(typeof res.header.Authorization == 'undefined'){
+					store.commit("setToken", {token: res.header.authorization})
+					saveToken(res.header.authorization)
+				}else{
+					store.commit("setToken", {token: res.header.Authorization})
+					saveToken(res.header.Authorization)
+				}
 			}
 			return data;
         },
@@ -155,7 +162,6 @@ function handleCode({ data, status, config, res }) {
 
             config.count++; // count字段自增，可以用来判断请求次数，避免多次发送重复的请求
             config.url = config.instanceURL; // 重置 config的相对地址，避免 `params` 多次添加
-
             return getApiToken(2460392754)
                 .then(saveToken)
                 .then(() => Request().request(config));

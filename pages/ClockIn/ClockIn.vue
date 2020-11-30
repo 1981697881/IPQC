@@ -103,16 +103,7 @@ export default {
 	},
 
 	onShow() {
-		//获取设定好的地址坐标（经纬度）
-		uni.getLocation({
-			type: 'gcj02',
-			success: res => {
-				this.lng_In = res.Longitude;
-				this.lat_In = res.Latitude;
-				this.Distance_In = 0.005;
-				this.Distance_Out = 0.005;
-			},
-		})
+		
 		/* uniCloud
 			.callFunction({
 				name: 'ClockIn-get-location'
@@ -136,15 +127,25 @@ export default {
 		}, 1000);
 	},
 	onLoad(option) {
+		//获取设定好的地址坐标（经纬度）
+		uni.getLocation({
+			type: 'gcj02',
+			success: res => {
+				this.lng_In = res.longitude;
+				this.lat_In = res.latitude;
+				this.Distance_In = 0.005;
+				this.Distance_Out = 0.005;
+				this.GetCurrentAddress();
+			},
+		})
 		if (JSON.stringify(option) != '{}') {
 			this.form.planId = option.planId
 			 this.form.deptName = option.deptName
 			 this.form.isType = Boolean(option.isType)
 			console.log(this.form)
-			 
 		}
 		this.initMain()
-		this.GetCurrentAddress();
+		
 	},
 	methods: {
 		initMain() {
@@ -216,34 +217,28 @@ export default {
 			
 			let rqData = {}
 			rqData.planId = this.form.planId
+			rqData.deptName = this.form.deptName
 			this.form.checkStaff != null && this.form.checkStaff != '' ? rqData.checkStaff = this.form.checkStaff : null
 			address != null && address != '' ? rqData.clockLocation = address : null
 			rqData.clockTime = this.getDay('', 0).date
-			if(this.form.isType == 'true'){
-				basic.pollingRecordAdd(rqData).then(reso => {
-					if (reso.flag) {
-						setTimeout(function() {
-							uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true});
-							uni.navigateBack({
-								url: '../component/polling'
-							});
-						}, 1000);
-						uni.showToast({
-							icon: 'success',
-							title: reso.msg
-						});
-					} else {
-						uni.showToast({
-							icon: 'none',
-							title: reso.msg
-						});
-					}
+			uni.showToast({
+				icon: 'success',
+				title: '打卡成功'
+			});
+			if(this.form.isType == true){
+				console.log(this.form)
+				uni.$emit('recordClockIn', rqData);
+				uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true});
+				setTimeout(function() {
+					uni.navigateBack({
+						url: '../component/polling'
 					});
+				}, 1000);
 			}else{
 				uni.$emit('handleClockIn', rqData);
 				setTimeout(function() {
 					uni.navigateTo({
-						url: '../component/feedback'
+						url: '../component/details/feedback'
 					});
 				}, 1000);
 			}
@@ -339,6 +334,7 @@ export default {
 			}); */
 		},
 		getLocationName(){
+			let _this = this
 			let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
 			let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3';//你申请的开发者密钥（Key）  一般放在后台获取过来
 			let getAddressUrl = URL + _this.lat_current + ',' + _this.lng_current + `&key=${key}`;
@@ -397,6 +393,8 @@ export default {
 				let Y_square = Math.pow(X_L, 2);
 				let XY_square = X_square + Y_square;
 				let Limit_R = Math.sqrt(XY_square);
+				console.log(Max_L)
+				console.log(L)
 				if (Limit_R <= this.Distance_In) {
 					this.IS_Range = true;
 					this.IS_Range_Content = '你已在打卡范围内';

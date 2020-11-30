@@ -122,7 +122,6 @@
 												v-model="item.concerns"
 												maxlength="-1"
 												:disabled="modalName != null"
-												@input="textareaBInput"
 												placeholder="隐患问题"
 											></textarea>
 										</view>
@@ -167,8 +166,10 @@ export default {
 	components: { ruiDatePicker, ldSelect, uniFab, loading, citySelect },
 	data() {
 		return {
+			percent:0,
+			  loading:false,
+			  disabled:false,
 			pageHeight: 0,
-			isOrder: false,
 			isDis: false,
 			onoff: true,
 			isFab: true,
@@ -181,8 +182,6 @@ export default {
 			modalName: null,
 			modalName2: null,
 			gridCol: 3,
-			skin: false,
-			checked: true,
 			projectCheckList: [],
 			userList: [],
 			listTouchStart: 0,
@@ -195,6 +194,8 @@ export default {
 				checkId: [],
 				planId:'',
 				escort:'',
+				clockTime:'',
+				clockLocation:'',
 			},
 			pattern: {
 				color: '#7A7E83',
@@ -204,41 +205,22 @@ export default {
 			},
 			isCard: false,
 			cuIList: [],
-			startDate: null,
-			endDate: null
 		};
 	},
+	onShow: function (option){
+		let me = this
+		uni.$on("recordClockIn", res => {
+			me.winForm.clockTime = res.clockTime
+			me.winForm.clockLocation = res.clockLocation
+		})
+	},		
 	onLoad: function(option) {
 		let me = this;
 		console.log(option)
 		if (JSON.stringify(option) != '{}') {
-			this.isOrder = true;
 			this.planId = option.planId;
 			this.deptName = option.deptName;
-			basic
-				.pollingRecordByPlanId(option.planId)
-				.then(res => {
-					if (res.flag) {
-						if(res.data == null){
-							me.isFab = true
-						}else{
-							me.isFab = false
-							me.cuIList.push(res.data)
-						}
-						console.log(res.data)
-						uni.showToast({
-							icon: 'success',
-							title: err.msg
-						});
-						
-					}
-				})
-				.catch(err => {
-					uni.showToast({
-						icon: 'none',
-						title: err.msg
-					});
-				});
+			me.getList(option.planId)
 		}
 	},
 	onReady: function() {
@@ -258,13 +240,43 @@ export default {
 					.exec();
 				console.log(res.windowHeight);
 				setTimeout(function() {
-					me.pageHeight = res.windowHeight - headHeight - 30;
+					me.pageHeight = res.windowHeight - headHeight - 34;
 				}, 1000);
 			}
 		});
 		me.initMain();
 	},
 	methods: {
+		getList(option){
+			let me = this
+			basic
+				.pollingRecordByPlanId(option)
+				.then(res => {
+					if (res.flag) {
+						if(res.data == null){
+							me.isFab = true
+						}else{
+							me.isFab = false
+							me.cuIList.push(res.data)
+							let recodList = me.cuIList[0].recordCheckList
+							recodList.forEach((item)=>{
+								item.checked = true
+							})
+						}
+						uni.showToast({
+							icon: 'success',
+							title: err.msg
+						});
+						
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+		},
 		del(index, item) {
 			this.cuIList.splice(index, 1);
 		},
@@ -294,6 +306,8 @@ export default {
 								if (res.flag) {
 									let data = res.data;
 									let str = item2.concerns
+									me.winForm.clockTime = res.data.clockTime
+									me.winForm.clockLocation = res.data.clockLocation
 									data.forEach((items,indexs)=>{
 										str += (indexs+1+''+items.concerns+'\n')
 									})
@@ -442,22 +456,26 @@ export default {
 				let me = this;
 				let array = [];
 				delete list[0].rectifyImg
+				console.log(list[0])
 				basic
 					.pollingRecordAdd(list[0])
 					.then(res => {
 						if (res.flag) {
-							this.cuIList = [];
+							console.log(res)
 							uni.showToast({
 								icon: 'success',
 								title: res.msg
 							});
-							const uploadTask = uni.uploadFile({
+							uni.uploadFile({
 							      url : service.getUrls().url+'file/imgUpload',
 							      filePath: me.cuIList[0].rectifyImg,
 							      name: 'imgS',
 							      success: function (uploadFileRes) {
 							       console.log(uploadFileRes.data);
-								   me.initMain();
+								   this.cuIList = [];
+								   me.getList(me.planId);
+								   // 清除监听
+								   uni.$off('recordClockIn')
 								   setTimeout(function() {
 								   	uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true});
 								   	uni.navigateBack({
@@ -466,11 +484,12 @@ export default {
 								   }, 1000);
 							      }
 							     });
-							     uploadTask.onProgressUpdate(function (res) {
-							      _self.percent = res.progress;
-							      console.log('上传进度' + res.progress);
-							      console.log('已经上传的数据长度' + res.totalBytesSent);
-							      console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+							     uploadTask.onProgressUpdate(function (reso) {
+							      console.log(reso)
+								  me.percent = reso.progress;
+							      console.log('上传进度' + reso.progress);
+							      console.log('已经上传的数据长度' + reso.totalBytesSent);
+							      console.log('预期需要上传的数据总长度' + reso.totalBytesExpectedToSend);
 							     });
 						}
 					})

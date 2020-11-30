@@ -34,8 +34,8 @@ export default {
 							.login(data)
 							.then(res => {
 								if (res.flag) {
-									data.userId = res.data['userId'];
-									data.username = res.data['username'];
+									/* data.userId = res.data['userId'];
+									data.username = res.data['username']; */
 									store.commit('login', data);
 									service.clearUser();
 									service.addUser(data);

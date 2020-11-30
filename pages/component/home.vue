@@ -129,29 +129,6 @@ export default {
 	},
 	created() {
 		_self = this;
-		/* if (service.getUsers().length > 0) {
-			if (service.getUsers()[0].username != '' && service.getUsers()[0].username != 'undefined') {
-				 basic
-					.getSysMenuById(-1)
-					.then(rest => {
-						this.elements = rest.data;
-					})
-					.catch(errt => {
-						uni.showToast({
-							icon: 'none',
-							title: errt.msg
-						});
-					}); 
-			} else { 
-				return uni.reLaunch({
-					url: '../login/login'
-				});
-			}
-		} else {
-			return uni.reLaunch({
-				url: '../login/login'
-			});
-		} */
 		var me = this;
 		uni.getSystemInfo({
 			success: function(res) {
@@ -175,11 +152,23 @@ export default {
 				}, 1000);
 			}
 		});
-		this.start = this.getDay('', -3).date;
-		this.end = this.getDay('', 0).date;
-		me.getLists()
+		me.start = me.getDay('', -3).date;
+		me.end = me.getDay('', 0).date;
+		if (service.getUsers().length > 0) {
+			if (service.getUsers()[0].username != '' && service.getUsers()[0].username != 'undefined') {
+				 me.getLists()
+			} else { 
+				return uni.reLaunch({
+					url: '../login/login'
+				});
+			}
+		} else {
+			return uni.reLaunch({
+				url: '../login/login'
+			});
+		}
 	},
-	onLoad(){
+	onShow(){
 		var me = this;
 		
 	},
@@ -276,10 +265,10 @@ export default {
 						uni.stopPullDownRefresh(); //得到数据后停止下拉刷新
 					}
 				})
-				.catch(err => {
+				.catch(res => {
 					uni.showToast({
 						icon: 'none',
-						title: err.msg
+						title: res.msg
 					});
 				});
 		},

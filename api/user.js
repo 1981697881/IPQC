@@ -28,15 +28,3 @@ export function logout(data) {
     method: 'post',
   })
 }
-// 修改密码
-export function changePassword(data) {
-  return request({
-    headers: {
-      'Content-Type': 'application/json',
-      'authorization': getToken('apsrx'),
-    },
-    url: '/user/changePass',
-    method: 'post',
-    data
-  })
-}
