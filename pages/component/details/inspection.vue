@@ -5,7 +5,19 @@
 			<block slot="backText">返回</block>
 			<block slot="content">巡检登记</block>
 		</cu-custom>
-		<uni-fab v-show="isFab" :pattern="pattern" :horizontal="horizontal" :vertical="vertical" cuIcon="add" :popMenu="popMenu" :direction="direction" @fabClick="fabClick"></uni-fab>
+		<uni-fab
+			v-show="isFab"
+			:pattern="pattern"
+			:horizontal="horizontal"
+			:vertical="vertical"
+			cuIcon="add"
+			:popMenu="popMenu"
+			:direction="direction"
+			@fabClick="fabClick"
+		></uni-fab>
+		<view>
+		   <progress :percent="percent" stroke-width="10"></progress>
+		  </view>
 		<view class="cu-modal" style="z-index: 1111" :class="modalName2 == 'Modal' ? 'show' : ''">
 			<view class="cu-dialog bg-white" style="height: 400upx;">
 				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
@@ -40,10 +52,11 @@
 							@change="checkListChange"
 						></ld-select>
 					</view>
-				</view><view class="cu-bar solid-bottom" style="height: 60upx;">
+				</view>
+				<view class="cu-bar solid-bottom" style="height: 60upx;">
 					<view class="action">
 						<view style="width: 70px;">陪同人员:</view>
-					<input placeholder="请输入" v-model="winForm.escort" name="input"></input>
+						<input placeholder="请输入" v-model="winForm.escort" name="input" />
 					</view>
 				</view>
 				<view style="clear: both;" class="cu-bar bg-white justify-end padding-bottom-xl margin-top">
@@ -118,12 +131,7 @@
 										</view>
 										<view v-show="item.isThrough" class="cu-form-group align-start">
 											<view class="title">隐患问题</view>
-											<textarea
-												v-model="item.concerns"
-												maxlength="-1"
-												:disabled="modalName != null"
-												placeholder="隐患问题"
-											></textarea>
+											<textarea v-model="item.concerns" maxlength="-1" :disabled="modalName != null" placeholder="隐患问题"></textarea>
 										</view>
 										<view v-show="item.isThrough" class="cu-bar bg-white">
 											<view class="action">隐患图片</view>
@@ -131,9 +139,15 @@
 										</view>
 										<view v-show="item.isThrough" class="cu-form-group">
 											<view class="grid col-3 grid-square flex-sub">
-												<view class="bg-img" v-for="(item3, index3) in item.rectifyImg" :key="index3" @tap="ViewImage($event,item)" :data-url="item.rectifyImg[index3]">
+												<view
+													class="bg-img"
+													v-for="(item3, index3) in item.rectifyImg"
+													:key="index3"
+													@tap="ViewImage($event, item)"
+													:data-url="item.rectifyImg[index3]"
+												>
 													<image :src="item.rectifyImg[index3]" mode="aspectFill"></image>
-													<view class="cu-tag bg-red" @tap.stop="DelImg($event,item)" :data-index="index3"><text class="cuIcon-close"></text></view>
+													<view class="cu-tag bg-red" @tap.stop="DelImg($event, item)" :data-index="index3"><text class="cuIcon-close"></text></view>
 												</view>
 												<view class="solids" @tap="ChooseImage(item)" v-if="item.rectifyImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
 											</view>
@@ -166,9 +180,9 @@ export default {
 	components: { ruiDatePicker, ldSelect, uniFab, loading, citySelect },
 	data() {
 		return {
-			percent:0,
-			  loading:false,
-			  disabled:false,
+			percent: 0,
+			loading: false,
+			disabled: false,
 			pageHeight: 0,
 			isDis: false,
 			onoff: true,
@@ -192,10 +206,10 @@ export default {
 			direction: 'horizontal',
 			winForm: {
 				checkId: [],
-				planId:'',
-				escort:'',
-				clockTime:'',
-				clockLocation:'',
+				planId: '',
+				escort: '',
+				clockTime: '',
+				clockLocation: ''
 			},
 			pattern: {
 				color: '#7A7E83',
@@ -204,23 +218,23 @@ export default {
 				buttonColor: '#007AFF'
 			},
 			isCard: false,
-			cuIList: [],
+			cuIList: []
 		};
 	},
-	onShow: function (option){
-		let me = this
-		uni.$on("recordClockIn", res => {
-			me.winForm.clockTime = res.clockTime
-			me.winForm.clockLocation = res.clockLocation
-		})
-	},		
+	onShow: function(option) {
+		let me = this;
+		uni.$on('recordClockIn', res => {
+			me.winForm.clockTime = res.clockTime;
+			me.winForm.clockLocation = res.clockLocation;
+		});
+	},
 	onLoad: function(option) {
 		let me = this;
-		console.log(option)
+		console.log(option);
 		if (JSON.stringify(option) != '{}') {
 			this.planId = option.planId;
 			this.deptName = option.deptName;
-			me.getList(option.planId)
+			me.getList(option.planId);
 		}
 	},
 	onReady: function() {
@@ -247,27 +261,26 @@ export default {
 		me.initMain();
 	},
 	methods: {
-		getList(option){
-			let me = this
+		getList(option) {
+			let me = this;
 			basic
 				.pollingRecordByPlanId(option)
 				.then(res => {
 					if (res.flag) {
-						if(res.data == null){
-							me.isFab = true
-						}else{
-							me.isFab = false
-							me.cuIList.push(res.data)
-							let recodList = me.cuIList[0].recordCheckList
-							recodList.forEach((item)=>{
-								item.checked = true
-							})
+						if (res.data == null) {
+							me.isFab = true;
+						} else {
+							me.isFab = false;
+							me.cuIList.push(res.data);
+							let recodList = me.cuIList[0].recordCheckList;
+							recodList.forEach(item => {
+								item.checked = true;
+							});
 						}
 						uni.showToast({
 							icon: 'success',
 							title: err.msg
 						});
-						
 					}
 				})
 				.catch(err => {
@@ -292,7 +305,7 @@ export default {
 		},
 		//event:默认参数,item: 子数据,item2:父数据
 		CheckboxChange(e, item, item2) {
-			let me = this
+			let me = this;
 			if (item.checked) {
 				me.$set(item2, 'concerns', '');
 				this.$set(item, 'checked', false);
@@ -305,12 +318,12 @@ export default {
 							.then(res => {
 								if (res.flag) {
 									let data = res.data;
-									let str = item2.concerns
-									me.winForm.clockTime = res.data.clockTime
-									me.winForm.clockLocation = res.data.clockLocation
-									data.forEach((items,indexs)=>{
-										str += (indexs+1+''+items.concerns+'\n')
-									})
+									let str = item2.concerns;
+									me.winForm.clockTime = res.data.clockTime;
+									me.winForm.clockLocation = res.data.clockLocation;
+									data.forEach((items, indexs) => {
+										str += indexs + 1 + '' + items.concerns + '\n';
+									});
 									me.$set(item2, 'concerns', str);
 								}
 							})
@@ -339,10 +352,11 @@ export default {
 		},
 		ChooseImage(item) {
 			uni.chooseImage({
-				count: 4, //默认9
+				count: 3, //默认9
 				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 				sourceType: ['album'], //从相册选择
 				success: res => {
+					console.log(res.tempFilePaths);
 					if (item.rectifyImg.length != 0) {
 						item.rectifyImg = item.rectifyImg.concat(res.tempFilePaths);
 					} else {
@@ -357,7 +371,7 @@ export default {
 				current: e.currentTarget.dataset.url
 			});
 		},
-		DelImg(e,item) {
+		DelImg(e, item) {
 			uni.showModal({
 				title: '注意',
 				content: '是否删除该图片？',
@@ -449,48 +463,76 @@ export default {
 			me.modalName2 = null;
 		},
 		saveData() {
-			if(this.cuIList.length > 0){
+			if (this.cuIList.length > 0) {
 				this.isClick = true;
 				let result = [];
 				let list = JSON.parse(JSON.stringify(this.cuIList));
 				let me = this;
 				let array = [];
-				delete list[0].rectifyImg
-				console.log(list[0])
+				delete list[0].rectifyImg;
+				console.log(list[0]);
 				basic
 					.pollingRecordAdd(list[0])
 					.then(res => {
 						if (res.flag) {
-							console.log(res)
+							uni.$off('recordClockIn');
+							uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true });
 							uni.showToast({
 								icon: 'success',
 								title: res.msg
 							});
-							uni.uploadFile({
-							      url : service.getUrls().url+'file/imgUpload',
-							      filePath: me.cuIList[0].rectifyImg,
-							      name: 'imgS',
-							      success: function (uploadFileRes) {
-							       console.log(uploadFileRes.data);
-								   this.cuIList = [];
-								   me.getList(me.planId);
-								   // 清除监听
-								   uni.$off('recordClockIn')
-								   setTimeout(function() {
-								   	uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true});
-								   	uni.navigateBack({
-								   		url: '../component/polling'
-								   	});
-								   }, 1000);
-							      }
-							     });
-							     uploadTask.onProgressUpdate(function (reso) {
-							      console.log(reso)
-								  me.percent = reso.progress;
-							      console.log('上传进度' + reso.progress);
-							      console.log('已经上传的数据长度' + reso.totalBytesSent);
-							      console.log('预期需要上传的数据总长度' + reso.totalBytesExpectedToSend);
-							     });
+							console.log(me.cuIList[0].rectifyImg[0]);
+							let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
+								return {
+									name: 'imgS',
+									uri: value
+								};
+							});
+							
+							for (let i = 0; i < me.cuIList[0].rectifyImg.length; i++) {
+							const uploadTask = uni.uploadFile({
+								url: service.getUrls().url+'file/imgUpload',
+								filePath: me.cuIList[0].rectifyImg[i],
+								name: 'imgS',
+								header: {
+									'Authorization': this.$store.state.token
+								},
+								success: function(uploadFileRes) {
+									let data = JSON.parse(uploadFileRes.data)
+									if(data.flag){
+										if((i+1) == me.cuIList[0].rectifyImg.length){
+											this.cuIList = [];
+											me.getList(me.planId);
+											// 清除监听
+											/* setTimeout(function() { */
+												uni.navigateBack({
+													url: '../component/polling'
+												});
+											/* }, 1000); */
+										}
+									}
+									uni.showToast({
+										icon: 'success',
+										title: data.msg
+									});
+								},
+								fail: err => {
+									console.log('uploadImage fail', err);
+									uni.showModal({
+										content: err.errMsg,
+										showCancel: false
+									});
+								}
+							});
+							uploadTask.onProgressUpdate(function(reso) {
+								/* console.log(reso); */
+								me.percent = reso.progress;
+								/* console.log('上传进度' + reso.progress);
+								console.log('已经上传的数据长度' + reso.totalBytesSent);
+								console.log('预期需要上传的数据总长度' + reso.totalBytesExpectedToSend); */
+							});
+							}
+							
 						}
 					})
 					.catch(err => {
@@ -504,7 +546,7 @@ export default {
 		},
 		del(index, item) {
 			this.cuIList.splice(index, 1);
-			this.isFab = true
+			this.isFab = true;
 		},
 		// 查询前后三天日期
 		getDay(date, day) {
@@ -534,6 +576,7 @@ export default {
 		},
 		hideModal(e) {
 			this.modalName2 = null;
+			this.isFab = true;
 		},
 		checkListChange(val) {
 			this.winForm.checkId = val;
@@ -547,6 +590,7 @@ export default {
 				}
 			});
 		},
+
 		fabClick() {
 			var that = this;
 			this.winForm = {
@@ -559,7 +603,7 @@ export default {
 				isCard: true,
 				dispatchNum: 0
 			}); */
-			that.isFab = false
+			that.isFab = false;
 		}, // ListTouch触摸开始
 		ListTouchStart(e) {
 			this.listTouchStart = e.touches[0].pageX;

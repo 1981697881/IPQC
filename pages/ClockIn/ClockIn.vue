@@ -141,7 +141,7 @@ export default {
 		if (JSON.stringify(option) != '{}') {
 			this.form.planId = option.planId
 			 this.form.deptName = option.deptName
-			 this.form.isType = Boolean(option.isType)
+			 this.form.isType = option.isType
 			console.log(this.form)
 		}
 		this.initMain()
@@ -183,6 +183,7 @@ export default {
 			return m;
 		},
 		Submit() {
+			let me = this
 			let type = 0;
 			let address = '';
 			if (this.activeType) {
@@ -233,14 +234,15 @@ export default {
 					uni.navigateBack({
 						url: '../component/polling'
 					});
-				}, 1000);
+				}, 500);
 			}else{
 				uni.$emit('handleClockIn', rqData);
 				setTimeout(function() {
+					console.log(me.form)
 					uni.navigateTo({
-						url: '../component/details/feedback'
+						url: '../component/details/feedback?planId='+me.form.planId+'&deptName='+me.form.deptName
 					});
-				}, 1000);
+				}, 500);
 			}
 			// 保存打卡数据
 			/* uniCloud

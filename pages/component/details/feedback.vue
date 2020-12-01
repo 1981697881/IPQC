@@ -19,7 +19,7 @@
 					</view>
 					<view class="cu-form-group">
 						<view class="title">延期原因</view>
-						<input placeholder="请输入" v-model="winForm.delayReason" name="input"></input>
+						<input placeholder="请输入" v-model="winForm.delayReason" name="input"/>
 					</view>
 					<view class="cu-form-group">
 						<view class="title">申请人</view>
@@ -110,6 +110,7 @@
 </template>
 
 <script>
+import service from '@/service.js';
 import basic from '@/api/basic';
 export default {
 	data() {
@@ -158,6 +159,7 @@ export default {
 	},		
 	onLoad: function(option) {
 		let me = this;
+		console.log(option)
 		if (JSON.stringify(option) != '{}') {
 			this.isOrder = true;
 			this.planId = option.planId;
@@ -165,10 +167,16 @@ export default {
 			basic
 				.pollingRecordByPlanId(option.planId)
 				.then(res => {
+						console.log(res)
 					if (res.flag) {
 						if (res.data != null) {
 							me.form = res.data;
 							me.form.rectifyName = '';
+							for(let i in me.userList){
+								if(me.userList[i].uid == parseInt(me.form.checkStaff)){
+									me.$set(me.form, 'checkStaffName', me.userList[i].username);
+								}
+							}
 							me.form.rectifyPlanDate == null ? (me.form.rectifyPlanDate = me.getDay('', 0).date) : res.data.rectifyPlanDate;
 							me.winForm.delayTimeLimit == null ? (me.winForm.delayTimeLimit = me.getDay('', 0).date) : res.data.delayTimeLimit;
 							me.winForm.rectifyPlanDate == null ? (me.winForm.rectifyPlanDate = me.getDay('', 0).date) : res.data.rectifyPlanDate;
@@ -281,40 +289,66 @@ export default {
 			this.isClick = true;
 			let result = [];
 			let array = [];
+			let form = JSON.parse(JSON.stringify(this.form));
+			delete form.rectifyImg;
 			delete me.form.recordCheckList
 			basic
-				.recordRectifyAdd(me.form)
+				.recordRectifyAdd(form)
 				.then(res => {
+					console.log(res)
 					if (res.flag) {
-						this.cuIList = [];
+						uni.$off('handleClockIn');
+						uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true });
 						uni.showToast({
 							icon: 'success',
-							title: res.msg
+							title: res.msg,
+							duration: 2000
 						});
 						
+						for (let i = 0; i < me.form.rectifyImg.length; i++) {
 						const uploadTask = uni.uploadFile({
-							url: service.getUrls().url + 'file/imgUpload',
-							filePath: me.cuIList[0].rectifyImg,
+							url: service.getUrls().url+'file/imgUpload',
+							filePath: me.form.rectifyImg[i],
 							name: 'imgS',
+							header: {
+								'Authorization': this.$store.state.token
+							},
 							success: function(uploadFileRes) {
-								console.log(uploadFileRes.data);
-								me.initMain();
-								// 清除监听
-								uni.$off('handleClockIn')
-								setTimeout(function() {
-									uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true });
-									uni.navigateBack({
-										url: '../component/polling'
-									});
-								}, 1000);
+								console.log(uploadFileRes)
+								let data = JSON.parse(uploadFileRes.data)
+								if(data.flag){
+									if((i+1) == me.cuIList[0].rectifyImg.length){
+										this.cuIList = [];
+										me.getList(me.planId);
+										// 清除监听
+										/* setTimeout(function() { */
+											uni.navigateBack({
+												url: '../component/polling'
+											});
+										/* }, 1000); */
+									}
+								}
+								uni.showToast({
+									icon: 'success',
+									title: data.msg
+								});
+							},
+							fail: err => {
+								console.log('uploadImage fail', err);
+								uni.showModal({
+									content: err.errMsg,
+									showCancel: false
+								});
 							}
 						});
-						uploadTask.onProgressUpdate(function(res) {
-							_self.percent = res.progress;
-							console.log('上传进度' + res.progress);
-							console.log('已经上传的数据长度' + res.totalBytesSent);
-							console.log('预期需要上传的数据总长度' + res.totalBytesExpectedToSend);
+						uploadTask.onProgressUpdate(function(reso) {
+							/* console.log(reso); */
+							me.percent = reso.progress;
+							/* console.log('上传进度' + reso.progress);
+							console.log('已经上传的数据长度' + reso.totalBytesSent);
+							console.log('预期需要上传的数据总长度' + reso.totalBytesExpectedToSend); */
 						});
+						}
 					}
 				})
 				.catch(err => {
@@ -337,9 +371,11 @@ export default {
 		rectifyChange(e) {
 			this.$set(this.form, 'rectifyUid', this.userList[e.detail.value].uid);
 			this.$set(this.form, 'rectifyName', this.userList[e.detail.value].username);
-		},checkStaffChange(e) {
+		},
+		checkStaffChange(e) {
 			this.$set(this.form, 'checkStaff', this.userList[e.detail.value].uid);
 			this.$set(this.form, 'checkStaffName', this.userList[e.detail.value].username);
+			console.log(this.form)
 		},
 		proposerChange(e) {
 			this.$set(this.winForm, 'proposer', this.userList[e.detail.value].uid);
@@ -372,6 +408,7 @@ export default {
 			});
 		},
 		DelImg(e) {
+			let me = this
 			uni.showModal({
 				title: '温馨提醒',
 				content: '是否删除该图片',
@@ -379,7 +416,7 @@ export default {
 				confirmText: '取消',
 				success: res => {
 					if (res.confirm) {
-						this.form.rectifyImg.splice(e.currentTarget.dataset.index, 1);
+						me.form.rectifyImg.splice(e.currentTarget.dataset.index, 1);
 					}
 				}
 			});

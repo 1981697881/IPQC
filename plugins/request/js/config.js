@@ -149,6 +149,13 @@ function handleCode({ data, status, config, res }) {
 			store.commit("setToken", {token: ''})
 			saveToken('')
 			return data;
+		},'20001'() {
+			uni.reLaunch({
+				url: '../login/login'
+			});
+			store.commit("setToken", {token: ''})
+			saveToken('')
+			return data;
 		},
         '400'() {
             // return { status, msg: '请求错误' };

@@ -204,6 +204,7 @@ export default {
 					icon: '',
 					status: '',
 					isType: false,
+					isOpen: true,
 					path: 'ClockIn/ClockIn',
 					description: '2020-10-10 12:20:30'
 				},
@@ -243,8 +244,9 @@ export default {
 		    me.form.deptName = res.deptName
 		    basic
 		    	.pollingRecordByPlanId(res.planId)
-		    	.then(res => {
+		    	.then(reso => {
 		    		if (reso.flag) {
+						console.log(reso.data)
 		    			if (reso.data == null) {
 		    				/* me.modalName = 'Modal'; */
 		    				me.winForm.recordDate = me.getDay('', 0).date;
@@ -252,9 +254,11 @@ export default {
 		    			}else{
 		    				me.isAlter = true;
 		    				me.$set(me,"form",reso.data)
-		    				me.form.deptName = option.deptName
+		    				me.form.deptName = res.deptName
 		    				/* me.elements[0].isOpen = false */
 		    			}
+						// 清除监听
+						uni.$off('handleBack')
 		    		}
 		    	})
 		    	.catch(err => {
@@ -263,8 +267,7 @@ export default {
 		    			title: err.msg
 		    		});
 		    	});
-			// 清除监听
-		    uni.$off('handleBack')
+			
 		})
 	},
 	onLoad: function(option) {
@@ -286,7 +289,6 @@ export default {
 			}
 			me.winForm.planId = option.planId
 			me.form.planId = option.planId
-			
 			basic
 				.pollingRecordByPlanId(option.planId)
 				.then(res => {
@@ -349,7 +351,7 @@ export default {
 	methods: {
 		showList(index, item){
 			if(item.isOpen){
-				console.log(this.form)
+				console.log(item)
 				uni.navigateTo({
 					url: '../'+item.path+'?planId='+this.form.planId+'&isType='+item.isType+'&deptName='+this.form.deptName
 				}); 

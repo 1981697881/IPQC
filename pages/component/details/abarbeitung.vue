@@ -327,8 +327,8 @@ export default {
 							.then(res => {
 								if (res.flag) {
 									that.cuIList = [];
+									uni.$emit('handleBack', { planId: that.planId, deptName: that.deptName, isback: true});
 									setTimeout(function() {
-										uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true});
 										uni.navigateBack({
 											url: '../component/polling'
 										});
