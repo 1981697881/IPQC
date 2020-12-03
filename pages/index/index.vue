@@ -86,7 +86,7 @@ export default {
 		  }, false);
 	},
 	onLoad() {
-		/* this.plusReady();
+		this.plusReady();
 		var that = this;
 		uni.getSystemInfo({
 			success: res => {
@@ -94,7 +94,7 @@ export default {
 					that.AndroidCheckUpdate();
 				}
 			}
-		}); */
+		});
 	},
 	methods: {
 		NavChange: function(e) {

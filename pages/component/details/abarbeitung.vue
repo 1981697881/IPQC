@@ -4,9 +4,11 @@
 		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">完成反馈</block>
+			<block slot="right"><text @tap="$manyCk(handleShare)" class="cuIcon-forward margin-right-xs">分享</text></block>
 		</cu-custom>
+		<view><progress :percent="percent" stroke-width="10"></progress></view>
 		<view class="cu-modal" style="z-index: 1111" :class="modalName2 == 'Modal' ? 'show' : ''">
-			<view class="cu-dialog bg-white" style="height: 80%;">
+			<view class="cu-dialog bg-white" style="height: 65%;">
 				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
 					<view class="content text-sl">签名确认</view>
 					<view class="action" @tap="hideModal"><text class="cuIcon-close text-red"></text></view>
@@ -66,19 +68,14 @@
 			</view> -->
 			<view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
 				<view class="cu-list menu-avatar">
-					<view
-						class="cu-item"
-						style="width: 100%;margin-top: 2px;height: auto;"
-					>
+					<view class="cu-item" style="width: 100%;margin-top: 2px;height: auto;">
 						<view style="clear: both;width: 100%;">
 							<view class="cu-bar bg-white solid-bottom">
 								<view class="action">
 									<text class="cuIcon-titles text-orange"></text>
 									被检人员:{{ item.checkStaffName }}
 								</view>
-								<view class="action">
-									登记日期：{{ item.recordDate }}
-								</view>
+								<view class="action">登记日期：{{ item.recordDate }}</view>
 							</view>
 							<view class="cu-card no-card case">
 								<view class="cu-item shadow">
@@ -95,13 +92,7 @@
 										</view>
 										<view class="cu-form-group align-start">
 											<view class="title">隐患问题</view>
-											<textarea
-												v-model="item.concerns"
-												maxlength="-1"
-												:disabled="modalName != null"
-												@input="textareaBInput"
-												placeholder="隐患问题"
-											></textarea>
+											<textarea v-model="item.concerns" maxlength="-1" :disabled="modalName != null" placeholder="隐患问题"></textarea>
 										</view>
 										<view class="cu-bar bg-white">
 											<view class="action">隐患图片</view>
@@ -109,11 +100,17 @@
 										</view>
 										<view class="cu-form-group">
 											<view class="grid col-3 grid-square flex-sub">
-												<view class="bg-img" v-for="(item3, index3) in item.rectifyImg" :key="index3" @tap="ViewImage($event,item)" :data-url="item.rectifyImg[index3]">
+												<view
+													class="bg-img"
+													v-for="(item3, index3) in item.rectifyImg"
+													:key="index3"
+													@tap="ViewImage($event, item)"
+													:data-url="item.rectifyImg[index3]"
+												>
 													<image :src="item.rectifyImg[index3]" mode="aspectFill"></image>
-													<view class="cu-tag bg-red" @tap.stop="DelImg($event,item)" :data-index="index3"><text class="cuIcon-close"></text></view>
+													<view class="cu-tag bg-red" @tap.stop="DelImg($event, item)" :data-index="index3"><text class="cuIcon-close"></text></view>
 												</view>
-												<view class="solids" v-if="item.rectifyImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
+												<view @tap="ChooseImage(item)" class="solids" v-if="item.rectifyImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
 											</view>
 										</view>
 									</view>
@@ -141,6 +138,7 @@ export default {
 	components: { loading },
 	data() {
 		return {
+			percent: 0,
 			showCanvas: false,
 			ctx: '', //绘图图像
 			points: [], //路径点集合
@@ -153,7 +151,7 @@ export default {
 			modalName: null,
 			modalName2: null,
 			gridCol: 3,
-			cuIList: [],
+			cuIList: []
 		};
 	},
 	onLoad: function(option) {
@@ -166,15 +164,14 @@ export default {
 				.pollingRecordByPlanId(option.planId)
 				.then(res => {
 					if (res.flag) {
-						if(res.data != null){
-							me.cuIList.push(res.data)
+						if (res.data != null) {
+							me.cuIList.push(res.data);
 						}
-						console.log(res.data)
+						console.log(res.data);
 						uni.showToast({
 							icon: 'success',
 							title: err.msg
 						});
-						
 					}
 				})
 				.catch(err => {
@@ -207,9 +204,9 @@ export default {
 		});
 	},
 	methods: {
-		onCanvs(){
-			this.modalName2 = 'Modal'
-			this.createCanvas()
+		onCanvs() {
+			this.modalName2 = 'Modal';
+			this.createCanvas();
 		},
 		//关闭并清空画布
 		close: function() {
@@ -234,7 +231,7 @@ export default {
 			//每次触摸开始，开启新的路径
 			this.ctx.beginPath();
 		},
-		
+
 		//触摸移动，获取到路径点
 		touchmove: function(e) {
 			let moveX = e.changedTouches[0].x;
@@ -246,12 +243,12 @@ export default {
 				this.draw(); //绘制路径
 			}
 		},
-		
+
 		// 触摸结束，将未绘制的点清空防止对后续路径产生干扰
 		touchend: function() {
 			this.points = [];
 		},
-		
+
 		/* ***********************************************
 			#   绘制笔迹
 			#	1.为保证笔迹实时显示，必须在移动的同时绘制笔迹
@@ -267,7 +264,7 @@ export default {
 			this.ctx.stroke();
 			this.ctx.draw(true);
 		},
-		
+
 		//清空画布
 		clear: function() {
 			let that = this;
@@ -299,6 +296,21 @@ export default {
 				date: tYear + '-' + tMonth + '-' + tDate
 			};
 		},
+		handleShare(){
+			console.log(123)
+			uni.share({
+			    provider: "weixin",
+			    scene: "WXSceneSession",
+			    type: 1,
+			    summary: "测试",
+			    success: function (res) {
+			        console.log("success:" + JSON.stringify(res));
+			    },
+			    fail: function (err) {
+			        console.log("fail:" + JSON.stringify(err));
+			    }
+			});
+		},
 		doHandleMonth(month) {
 			var m = month;
 			if (month.toString().length == 1) {
@@ -309,172 +321,225 @@ export default {
 		//完成绘画并保存到本地
 		finish: function() {
 			let that = this;
-			if(that.cuIList.length > 0){
-			uni.canvasToTempFilePath({
-				canvasId: 'mycanvas',
-				success: function(res) {
-					if(res.tempFilePath != '' && typeof res.tempFilePath != "undefined"){
-						console.log(res);
-						that.isClick = true;
-						let list = that.cuIList[0];
-						basic
-							.completeRectify({
-								recordId: list.recordId,
-								rectifyFinishDate: that.getDay('',0).date,
-								rectifyImg: list.rectifyImg,
-								rectifyUid: list.rectifyUid,
-							})
-							.then(res => {
-								if (res.flag) {
-									that.cuIList = [];
-									uni.$emit('handleBack', { planId: that.planId, deptName: that.deptName, isback: true});
-									setTimeout(function() {
-										uni.navigateBack({
-											url: '../component/polling'
-										});
-									}, 1000);
+			let rectifyImg = [];
+			let signature = '';
+			if (that.cuIList.length > 0) {
+				
+				uni.canvasToTempFilePath({
+					canvasId: 'mycanvas',
+					success: function(res) {
+						let cutImg = that.cuIList[0].rectifyImg;
+						if (cutImg.length != 0) {
+							cutImg = cutImg.concat(res.tempFilePath);
+						} else {
+							cutImg = res.tempFilePath;
+						}
+						console.log(cutImg);
+						for (let i = 0; i < cutImg.length; i++) {
+							const uploadTask = uni.uploadFile({
+								url: service.getUrls().url + 'file/imgUpload',
+								filePath: cutImg[i],
+								name: 'imgS',
+								header: {
+									Authorization: that.$store.state.token
+								},
+								success: function(uploadFileRes) {
+									console.log(uploadFileRes);
+									let data = JSON.parse(uploadFileRes.data);
+									if (data.flag) {
+										uni.$emit('handleBack', { planId: that.planId, deptName: that.deptName, isback: true });
+										if (i + 1 == cutImg.length) {
+											signature = data.data;
+											that.isClick = true;
+											let list = that.cuIList[0];
+											basic
+												.completeRectify({
+													recordId: list.recordId,
+													rectifyFinishDate: that.getDay('', 0).date,
+													rectifyImg: rectifyImg.toString(),
+													signature: signature,
+												})
+												.then(reso => {
+													if (reso.flag) {
+														setTimeout(function() {
+															uni.navigateBack({
+																url: '../component/polling'
+															});
+														}, 500);
+														uni.showToast({
+															icon: 'success',
+															title: reso.msg
+														});
+													}
+												})
+												.catch(err => {
+													uni.showToast({
+														icon: 'none',
+														title: err.msg
+													});
+													that.isClick = false;
+												});
+										} else {
+											rectifyImg.push(data.data);
+										}
+									}
 									uni.showToast({
 										icon: 'success',
-										title: res.msg
+										title: data.msg
 									});
-									
+								},
+								fail: err => {
+									console.log('uploadImage fail', err);
+									uni.showModal({
+										content: err.errMsg,
+										showCancel: false
+									});
 								}
-							})
-							.catch(err => {
-								uni.showToast({
-									icon: 'none',
-									title: err.msg
-								});
-								that.isClick = false;
 							});
-						//上传到服务器
-						/* that.api.uploadFile({
-							url: 'user/upload/one',
-							filePath: res.tempFilePath,
-							name: 'file',
-							success: uploadFileRes => {
-								console.log(uploadFileRes);
-								that.signature = uploadFileRes.data.url;
-								that.clear();
-								that.showCanvas = false;
-							}
-						}); */
-						//保存到本地
-						/* 
-						let path = res.tempFilePath;
-						uni.saveImageToPhotosAlbum({
-							filePath:path,
-						}) */
+							uploadTask.onProgressUpdate(function(reso) {
+								console.log(reso);
+								that.percent = reso.progress;
+							});
+						}
 					}
-					
+				});
+			}
+			//上传到服务器
+			/* that.api.uploadFile({
+				url: 'user/upload/one',
+				filePath: res.tempFilePath,
+				name: 'file',
+				success: uploadFileRes => {
+					console.log(uploadFileRes);
+					that.signature = uploadFileRes.data.url;
+					that.clear();
+					that.showCanvas = false;
+				}
+			}); */
+			//保存到本地
+			/* 
+			let path = res.tempFilePath;
+			uni.saveImageToPhotosAlbum({
+				filePath:path,
+			}) */
+		},
+		ChooseImage(item) {
+			uni.chooseImage({
+				count: 3, //默认9
+				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
+				sourceType: ['album'], //从相册选择
+				success: res => {
+					if (item.rectifyImg.length != 0) {
+						item.rectifyImg = item.rectifyImg.concat(res.tempFilePaths);
+					} else {
+						item.rectifyImg = res.tempFilePaths;
+					}
 				}
 			});
-			}
 		},
-		handlerOpin(){
+		handlerOpin() {
 			uni.navigateTo({
 				url: '../details/opinion'
 			});
 		},
-		handlerSign(){
+		handlerSign() {
 			uni.navigateTo({
 				url: '../details/endorse'
 			});
-		},	
+		},
 		// 预览图片多张
-		    previewImage() {
-					let imgList = ['https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg','https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg']
-					uni.previewImage({
-						current: imgList.length,
-						urls: imgList
-					});
-				},
-				hideModal(e) {
-					this.modalName2 = null;
-				},
-		
+		previewImage() {
+			let imgList = ['https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg', 'https://ossweb-img.qq.com/images/lol/web201310/skin/big10006.jpg'];
+			uni.previewImage({
+				current: imgList.length,
+				urls: imgList
+			});
+		},
+		hideModal(e) {
+			this.modalName2 = null;
+		}
 	}
 };
 </script>
 <style>
-	.input {
-		height: 30px;
-	}
-	.box {
-		width: 100%;
-	}
-	.uni-input-placeholder,
-	.uni-input-input {
-		font-size: 13px;
-	}
-	.cu-list.menu-avatar > .cu-item .action {
-		width: auto !important;
-	}
-	.action,
-	.content {
-		font-size: 13px !important;
-	}
-	.ruidata {
-		font-size: 13px;
-		height: 7vw !important;
-	}
-	.cu-bar {
-		min-height: 30px;
-	}
-	.cu-list.menu-avatar > .cu-item .action {
-		width: auto !important;
-	}
-	/* .page {
+.input {
+	height: 30px;
+}
+.box {
+	width: 100%;
+}
+.uni-input-placeholder,
+.uni-input-input {
+	font-size: 13px;
+}
+.cu-list.menu-avatar > .cu-item .action {
+	width: auto !important;
+}
+.action,
+.content {
+	font-size: 13px !important;
+}
+.ruidata {
+	font-size: 13px;
+	height: 7vw !important;
+}
+.cu-bar {
+	min-height: 30px;
+}
+.cu-list.menu-avatar > .cu-item .action {
+	width: auto !important;
+}
+/* .page {
 			height: calc(100vh - 320upx);
 		} */
-	.nav-title::first-letter {
-		font-size: 16px;
-		margin-right: 2px;
-	}
-	.signature {
-		position: relative;
-		z-index: 999;
-		width: auto;
-	}
-	.container {
-		padding: 20rpx 0 120rpx 0;
-		box-sizing: border-box;
-	}
-	.title {
-		height: 50upx;
-		line-height: 50upx;
-		font-size: 16px;
-	}
-	.mycanvas {
-		width: 100%;
-		height: calc(100vh - 420upx);
-		background-color: #ececec;
-	}
-	.footer {
-		font-size: 14px;
-		height: 120upx;
-		display: flex;
-		justify-content: space-around;
-		align-items: center;
-	}
-	.left,
-	.right,
-	.close {
-		line-height: 100upx;
-		height: 100upx;
-		width: 220upx;
-		text-align: center;
-		font-weight: bold;
-		color: white;
-		border-radius: 5upx;
-	}
-	.left {
-		background: #007aff;
-	}
-	.right {
-		background: orange;
-	}
-	.close {
-		background: #a3a3a3;
-	}
+.nav-title::first-letter {
+	font-size: 16px;
+	margin-right: 2px;
+}
+.signature {
+	position: relative;
+	z-index: 999;
+	width: auto;
+}
+.container {
+	padding: 20rpx 0 120rpx 0;
+	box-sizing: border-box;
+}
+.title {
+	height: 50upx;
+	line-height: 50upx;
+	font-size: 16px;
+}
+.mycanvas {
+	width: 100%;
+	height: calc(100vh - 52vh);
+	background-color: #ececec;
+}
+.footer {
+	font-size: 14px;
+	height: 120upx;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+.left,
+.right,
+.close {
+	line-height: 100upx;
+	height: 100upx;
+	width: 220upx;
+	text-align: center;
+	font-weight: bold;
+	color: white;
+	border-radius: 5upx;
+}
+.left {
+	background: #007aff;
+}
+.right {
+	background: orange;
+}
+.close {
+	background: #a3a3a3;
+}
 </style>

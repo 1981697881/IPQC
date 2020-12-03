@@ -73,14 +73,14 @@ export default {
 			return true;
 		},
 		checkUpload() {
-			/* var that = this;
+			var that = this;
 			uni.getSystemInfo({
 				success: res => {
 					if (res.platform == 'android') {
 						that.AndroidCheckUpdate();
 					}
 				}
-			}); */
+			});
 		},
 		downWgt: function() {
 			var that = this;

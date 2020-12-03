@@ -4,6 +4,7 @@
 		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">巡检登记</block>
+			<block slot="right"><text @tap="$manyCk(handleShare)" class="cuIcon-forward margin-right-xs">分享</text></block>
 		</cu-custom>
 		<uni-fab
 			v-show="isFab"
@@ -178,7 +179,7 @@ import service from '@/service.js';
 import loading from '@/components/loading';
 export default {
 	components: { ruiDatePicker, ldSelect, uniFab, loading, citySelect },
-	data() {
+	data() { 
 		return {
 			percent: 0,
 			loading: false,
@@ -223,17 +224,21 @@ export default {
 	},
 	onShow: function(option) {
 		let me = this;
+		console.log(12213113)
 		uni.$on('recordClockIn', res => {
+			console.log(res)
 			me.winForm.clockTime = res.clockTime;
 			me.winForm.clockLocation = res.clockLocation;
 		});
 	},
 	onLoad: function(option) {
 		let me = this;
-		console.log(option);
+		console.log(option)
 		if (JSON.stringify(option) != '{}') {
-			this.planId = option.planId;
-			this.deptName = option.deptName;
+			me.planId = option.planId;
+			me.deptName = option.deptName;
+			me.winForm.clockTime = option.clockTime
+			me.winForm.clockLocation = option.clockLocation
 			me.getList(option.planId);
 		}
 	},
@@ -261,6 +266,20 @@ export default {
 		me.initMain();
 	},
 	methods: {
+		handleShare(){
+			uni.share({
+			    provider: "weixin",
+			    scene: "WXSceneSession",
+			    type: 1,
+			    summary: "测试",
+			    success: function (res) {
+			        console.log("success:" + JSON.stringify(res));
+			    },
+			    fail: function (err) {
+			        console.log("fail:" + JSON.stringify(err));
+			    }
+			});
+		},
 		getList(option) {
 			let me = this;
 			basic
@@ -455,6 +474,8 @@ export default {
 				planId: me.planId,
 				concerns: '',
 				checkStaff: me.winForm.checkStaff,
+				clockLocation: me.winForm.clockLocation,
+				clockTime: me.winForm.clockTime,
 				checkStaffName: me.winForm.checkStaffName,
 				recordDate: me.getDay('', 0).date,
 				recordCheckList: recordCheckList
@@ -464,84 +485,79 @@ export default {
 		},
 		saveData() {
 			if (this.cuIList.length > 0) {
+				uni.$off('recordClockIn');
+				
 				this.isClick = true;
-				let result = [];
 				let list = JSON.parse(JSON.stringify(this.cuIList));
 				let me = this;
-				let array = [];
+				let rectifyImg = [];
 				delete list[0].rectifyImg;
-				console.log(list[0]);
-				basic
-					.pollingRecordAdd(list[0])
-					.then(res => {
-						if (res.flag) {
-							uni.$off('recordClockIn');
-							uni.$emit('handleBack', { planId: this.planId, deptName: this.deptName, isback: true });
-							uni.showToast({
-								icon: 'success',
-								title: res.msg
-							});
-							console.log(me.cuIList[0].rectifyImg[0]);
-							let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
-								return {
-									name: 'imgS',
-									uri: value
-								};
-							});
-							
-							for (let i = 0; i < me.cuIList[0].rectifyImg.length; i++) {
-							const uploadTask = uni.uploadFile({
-								url: service.getUrls().url+'file/imgUpload',
-								filePath: me.cuIList[0].rectifyImg[i],
-								name: 'imgS',
-								header: {
-									'Authorization': this.$store.state.token
-								},
-								success: function(uploadFileRes) {
-									let data = JSON.parse(uploadFileRes.data)
-									if(data.flag){
-										if((i+1) == me.cuIList[0].rectifyImg.length){
-											this.cuIList = [];
-											me.getList(me.planId);
-											// 清除监听
-											/* setTimeout(function() { */
-												uni.navigateBack({
-													url: '../component/polling'
-												});
-											/* }, 1000); */
+				for (let i = 0; i < me.cuIList[0].rectifyImg.length; i++) {
+				const uploadTask = uni.uploadFile({
+					url: service.getUrls().url+'file/imgUpload',
+					filePath: me.cuIList[0].rectifyImg[i],
+					name: 'imgS',
+					header: {
+						'Authorization': this.$store.state.token
+					},
+					success: function(uploadFileRes) {
+						let data = JSON.parse(uploadFileRes.data)
+						if(data.flag){
+							rectifyImg.push(data.data)
+							console.log(rectifyImg)
+							if((i+1) == me.cuIList[0].rectifyImg.length){
+								list[0].concernsImg = rectifyImg.toString()
+								console.log(list[0])
+								basic
+									.pollingRecordAdd(list[0])
+									.then(res => {
+										if (res.flag) {
+											uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+											uni.showToast({
+												icon: 'success',
+												title: res.msg
+											});
+											uni.navigateBack({
+												delta:2,  
+												url: '../component/polling'
+											});
+											/* let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
+												return {
+													name: 'imgS',
+													uri: value
+												};
+											}); */
+											
 										}
-									}
-									uni.showToast({
-										icon: 'success',
-										title: data.msg
+									})
+									.catch(err => {
+										uni.showToast({
+											icon: 'none',
+											title: err.msg
+										});
+										this.isClick = false;
 									});
-								},
-								fail: err => {
-									console.log('uploadImage fail', err);
-									uni.showModal({
-										content: err.errMsg,
-										showCancel: false
-									});
-								}
-							});
-							uploadTask.onProgressUpdate(function(reso) {
-								/* console.log(reso); */
-								me.percent = reso.progress;
-								/* console.log('上传进度' + reso.progress);
-								console.log('已经上传的数据长度' + reso.totalBytesSent);
-								console.log('预期需要上传的数据总长度' + reso.totalBytesExpectedToSend); */
-							});
+									
 							}
-							
 						}
-					})
-					.catch(err => {
 						uni.showToast({
-							icon: 'none',
-							title: err.msg
+							icon: 'success',
+							title: data.msg
 						});
-						this.isClick = false;
-					});
+					},
+					fail: err => {
+						console.log('uploadImage fail', err);
+						uni.showModal({
+							content: err.errMsg,
+							showCancel: false
+						});
+					}
+				});
+				uploadTask.onProgressUpdate(function(reso) {
+					me.percent = reso.progress;
+				});
+				}
+				
 			}
 		},
 		del(index, item) {
@@ -595,7 +611,9 @@ export default {
 			var that = this;
 			this.winForm = {
 				checkId: [],
-				checkStaff: ''
+				checkStaff: '',
+				clockLocation: that.winForm.clockLocation,
+				clockTime: that.winForm.clockTime,
 			};
 			that.modalName2 = 'Modal';
 			/* that.cuIList.push({

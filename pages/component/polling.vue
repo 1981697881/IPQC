@@ -180,7 +180,7 @@ export default {
 			userList: [],
 			projectCheckList: [],
 			elements: [
-				{
+				/* {
 					title: '打卡',
 					msg: '已打卡',
 					status: '',
@@ -188,16 +188,18 @@ export default {
 					isOpen: true,
 					path: 'ClockIn/ClockIn',
 					icon: 'location',
-					description: '2020-10-10 12:20:30'
-				},
+					description: ''
+				}, */
 				{
 					title: '巡检登记',
-					icon: '',
-					isType: false,
+					msg: '已登记',
+					icon: 'location',
+					isType: true,
 					isOpen: true,
 					status: '',/* error */
-					path: 'component/details/inspection',
-					description: '2020-10-10 12:20:30'
+					path: 'ClockIn/ClockIn',
+					/* path: 'component/details/inspection', */
+					description: ''
 				},
 				{
 					title: '整改登记',
@@ -206,7 +208,7 @@ export default {
 					isType: false,
 					isOpen: true,
 					path: 'ClockIn/ClockIn',
-					description: '2020-10-10 12:20:30'
+					description: ''
 				},
 				{
 					title: '完成反馈',
@@ -215,7 +217,7 @@ export default {
 					isOpen: true,
 					status: '',
 					path: 'component/details/abarbeitung',
-					description: '2020-10-10 12:20:30'
+					description: ''
 				},
 				 /* {
 					title: '延期申请',
@@ -231,7 +233,7 @@ export default {
 					isOpen: true,
 					status: '',
 					path: '',
-					description: '2020-10-10 12:20:30'
+					description: ''
 				}
 			]
 		};
@@ -252,11 +254,13 @@ export default {
 		    				me.winForm.recordDate = me.getDay('', 0).date;
 		    				me.form.deptName = res.deptName
 		    			}else{
-		    				me.isAlter = true;
+		    				/* me.isAlter = true; */
 		    				me.$set(me,"form",reso.data)
 		    				me.form.deptName = res.deptName
-		    				/* me.elements[0].isOpen = false */
-		    			}
+							console.log(reso.clockTime)
+		    				me.elements[0].isOpen = false
+		    				me.elements[0].description = reso.data.clockTime
+						}
 						// 清除监听
 						uni.$off('handleBack')
 		    		}
@@ -273,8 +277,6 @@ export default {
 	onLoad: function(option) {
 		let me = this;
 		_self = this
-		console.log(option)
-		console.log(123)
 		if (JSON.stringify(option) != '{}') {
 			if(typeof option.checkStaff !='undefined'){
 				me.winForm.checkStaff = option.checkStaff
@@ -298,9 +300,11 @@ export default {
 							me.winForm.recordDate = me.getDay('', 0).date;
 							me.form.deptName = option.deptName
 						}else{
-							me.isAlter = true;
+							/* me.isAlter = true; */
 							me.$set(me,"form",res.data)
 							me.form.deptName = option.deptName
+							me.elements[0].isOpen = false
+							me.elements[0].description = res.data.clockTime
 							/* me.elements[0].isOpen = false */
 							/* me.getNewsList({recordId: res.data.recordId}) */
 						}
@@ -492,11 +496,9 @@ export default {
 				}
 			});
 		},
-		
 		hideModal(e) {
 			this.modalName = null;
 		},
-		
 		checkListChange(val) {
 			this.winForm.checkId = val;
 		},

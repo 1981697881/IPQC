@@ -128,7 +128,9 @@ function saveToken(token) {
  * @return {object|Promise<reject>}
  */
 function handleCode({ data, status, config, res }) {
-	console.log(status)
+	console.log(config)
+	console.log(res)
+	console.log(data)
 	const STATUS = {
         '20000'() {
 			if(store.state.token == '' || typeof store.state.token == 'undefined'){
@@ -149,14 +151,15 @@ function handleCode({ data, status, config, res }) {
 			store.commit("setToken", {token: ''})
 			saveToken('')
 			return data;
-		},'20001'() {
+		},
+		/* '20001'() {
 			uni.reLaunch({
 				url: '../login/login'
 			});
 			store.commit("setToken", {token: ''})
 			saveToken('')
 			return data;
-		},
+		}, */
         '400'() {
             // return { status, msg: '请求错误' };
             return Promise.reject({ status, msg: '请求错误' });

@@ -8,7 +8,6 @@
 			</block> -->
 		</cu-custom>
 		<view class="ClockIn_conten">
-			
 			<!-- <view class="header">
 				<view class="header_Type" @click="Tabs_Type" :class="{ choose: activeType === false }">公司打卡</view>
 				<view class="header_Type" @click="Tabs_Type" :class="{ choose: activeType === true }">外出打卡</view>
@@ -72,9 +71,7 @@ export default {
 	components: { uploadImg, ldSelect },
 	data() {
 		return {
-			form: {
-				
-			},
+			form: {},
 			IsChange: false, //控制“添加备注”
 			autoBool: false, //textarea自动聚焦
 			keycode: '', //输入框的值
@@ -103,7 +100,6 @@ export default {
 	},
 
 	onShow() {
-		
 		/* uniCloud
 			.callFunction({
 				name: 'ClockIn-get-location'
@@ -136,23 +132,21 @@ export default {
 				this.Distance_In = 0.005;
 				this.Distance_Out = 0.005;
 				this.GetCurrentAddress();
-			},
-		})
+			}
+		});
 		if (JSON.stringify(option) != '{}') {
-			this.form.planId = option.planId
-			 this.form.deptName = option.deptName
-			 this.form.isType = option.isType
-			console.log(this.form)
+			this.form.planId = option.planId;
+			this.form.deptName = option.deptName;
+			this.form.isType = option.isType;
+			console.log(this.form);
 		}
-		this.initMain()
-		
+		this.initMain();
 	},
 	methods: {
 		initMain() {
 			var me = this;
-			
 		},
-		
+
 		// 查询前后三天日期
 		getDay(date, day) {
 			var today = new Date();
@@ -172,7 +166,7 @@ export default {
 			return {
 				day: tDate,
 				week: week,
-				date: tYear + '-' + tMonth + '-' + tDate + ' ' + hour + ':' + minute+ ':' + second
+				date: tYear + '-' + tMonth + '-' + tDate + ' ' + hour + ':' + minute + ':' + second
 			};
 		},
 		doHandleMonth(month) {
@@ -183,9 +177,10 @@ export default {
 			return m;
 		},
 		Submit() {
-			let me = this
+			let me = this;
 			let type = 0;
 			let address = '';
+			console.log(this.ClockInObj)
 			if (this.activeType) {
 				//出差打卡
 				type = 1;
@@ -197,7 +192,7 @@ export default {
 			} else {
 				//公司打卡
 				type = 0;
-				address = this.ClockInObj.Details;
+				address = this.ClockInObj.address;
 				if (this.IS_Range === false) {
 					this.showToast_Tips('你已超出打卡范围', 'none');
 					return false;
@@ -215,34 +210,34 @@ export default {
 				Remark: this.keycode,
 				PhotoUrl: this.ImgArr
 			};
-			
-			let rqData = {}
-			rqData.planId = this.form.planId
-			rqData.deptName = this.form.deptName
-			this.form.checkStaff != null && this.form.checkStaff != '' ? rqData.checkStaff = this.form.checkStaff : null
-			address != null && address != '' ? rqData.clockLocation = address : null
-			rqData.clockTime = this.getDay('', 0).date
+
+			let rqData = {};
+			rqData.planId = this.form.planId;
+			rqData.deptName = this.form.deptName;
+			this.form.checkStaff != null && this.form.checkStaff != '' ? (rqData.checkStaff = this.form.checkStaff) : null;
+			address != null && address != '' ? (rqData.clockLocation = address) : null;
+			rqData.clockTime = this.getDay('', 0).date;
 			uni.showToast({
 				icon: 'success',
 				title: '打卡成功'
 			});
-			if(this.form.isType == true){
-				console.log(this.form)
-				uni.$emit('recordClockIn', rqData);
-				uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true});
-				setTimeout(function() {
-					uni.navigateBack({
-						url: '../component/polling'
-					});
-				}, 500);
-			}else{
-				uni.$emit('handleClockIn', rqData);
-				setTimeout(function() {
-					console.log(me.form)
-					uni.navigateTo({
-						url: '../component/details/feedback?planId='+me.form.planId+'&deptName='+me.form.deptName
-					});
-				}, 500);
+			if (this.form.isType == 'true') {
+				console.log(this.form);
+				uni.$emit('recordClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation});
+				/* uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true }); */
+				uni.navigateTo({
+					url: '../component/details/inspection?planId=' + me.form.planId + '&deptName=' + me.form.deptName+ '&clockTime=' + rqData.clockTime+ '&clockLocation=' + rqData.clockLocation
+				});
+				/* uni.navigateBack({
+					url: '../component/polling'
+				}); */
+			} else {
+				console.log(rqData);
+				uni.$emit('handleClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation});
+				console.log(me.form);
+				uni.navigateTo({
+					url: '../component/details/feedback?planId=' + me.form.planId + '&deptName=' + me.form.deptName+ '&clockTime=' + rqData.clockTime+ '&clockLocation=' + rqData.clockLocation
+				});
 			}
 			// 保存打卡数据
 			/* uniCloud
@@ -318,32 +313,32 @@ export default {
 			/* uni.authorize({
 				scope: 'scope.userLocation',
 				success() { */
-					uni.getLocation({
-						type: 'gcj02',
-						success: res => {
-							_this.lat_current = res.latitude;
-							_this.lng_current = res.longitude;
-							_this.getMaxLongitudeLatitude();
-							let Position = {
-								latitude: res.latitude,
-								longitude: res.longitude
-							};
-							_this.covers.push(Position);
-							_this.getLocationName()
-						}
-					});
-				/* }
+			uni.getLocation({
+				type: 'gcj02',
+				success: res => {
+					_this.lat_current = res.latitude;
+					_this.lng_current = res.longitude;
+					_this.getMaxLongitudeLatitude();
+					let Position = {
+						latitude: res.latitude,
+						longitude: res.longitude
+					};
+					_this.covers.push(Position);
+					_this.getLocationName();
+				}
+			});
+			/* }
 			}); */
 		},
-		getLocationName(){
-			let _this = this
+		getLocationName() {
+			let _this = this;
 			let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
-			let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3';//你申请的开发者密钥（Key）  一般放在后台获取过来
+			let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3'; //你申请的开发者密钥（Key）  一般放在后台获取过来
 			let getAddressUrl = URL + _this.lat_current + ',' + _this.lng_current + `&key=${key}`;
 			wx.request({
 				url: getAddressUrl,
 				success: result => {
-					console.log(result) 
+					console.log(result);
 					let Res_Data = result.data.result;
 					_this.ClockInObj.street = Res_Data.address;
 					_this.ClockInObj.Details = Res_Data.formatted_addresses.recommend;
@@ -365,11 +360,10 @@ export default {
 				//公司外出打卡
 				L = this.lng_current; //当前经度
 				T = this.lat_current; //当前纬度
-				if(res!==undefined){
-					Max_L = res.longitude ; //选择的位置 中心点
-					Max_T = res.latitude ; //选择的位置  中心点
+				if (res !== undefined) {
+					Max_L = res.longitude; //选择的位置 中心点
+					Max_T = res.latitude; //选择的位置  中心点
 				}
-
 
 				let X_T = Max_T - T;
 				let X_L = Max_L - L;
@@ -395,8 +389,8 @@ export default {
 				let Y_square = Math.pow(X_L, 2);
 				let XY_square = X_square + Y_square;
 				let Limit_R = Math.sqrt(XY_square);
-				console.log(Max_L)
-				console.log(L)
+				console.log(Max_L);
+				console.log(L);
 				if (Limit_R <= this.Distance_In) {
 					this.IS_Range = true;
 					this.IS_Range_Content = '你已在打卡范围内';
@@ -614,29 +608,30 @@ export default {
 		}
 	}
 }
-.cu-item{
-		float: left;
-		width: 50%;
-	}
-	.cu-item .content{
-		float: left;
-	}
-	.cu-list.menu-avatar>.cu-item .content{
-		left: 5px;
-	}
-	.cu-list.menu-avatar>.cu-item .action{
-		
-	}
-	.input{
-		height: 30px;
-	}
-	.box{
-		width: 100%;
-	}
-	.uni-input-placeholder, .uni-input-input{
-		font-size: 13px;
-	}
-	.action,.content{
-		font-size: 13px !important;
-	}
+.cu-item {
+	float: left;
+	width: 50%;
+}
+.cu-item .content {
+	float: left;
+}
+.cu-list.menu-avatar > .cu-item .content {
+	left: 5px;
+}
+.cu-list.menu-avatar > .cu-item .action {
+}
+.input {
+	height: 30px;
+}
+.box {
+	width: 100%;
+}
+.uni-input-placeholder,
+.uni-input-input {
+	font-size: 13px;
+}
+.action,
+.content {
+	font-size: 13px !important;
+}
 </style>
