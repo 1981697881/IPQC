@@ -37,7 +37,7 @@
 							<view class="picker">{{ winForm.applicationDate }}</view>
 						</picker>
 					</view>
-					<view class="cu-form-group">
+					<!-- <view class="cu-form-group">
 						<view class="title">批准人</view>
 						<text>{{ winForm.ratify }}</text>
 					</view>
@@ -48,6 +48,10 @@
 					<view class="cu-form-group">
 						<view class="title">整改完成日期</view>
 						<text>{{ winForm.rectifyFinishDate }}</text>
+					</view> -->
+					<view class="cu-form-group align-start">
+						<view class="title">整改完成情况</view>
+						<textarea maxlength="-1" v-model="winForm.rectifyContent" :disabled="modalName != null"  placeholder="整改完成情况"></textarea>
 					</view>
 				</form>
 				<view style="clear: both;" class="cu-bar bg-white justify-end padding-bottom-xl margin-top">
@@ -71,8 +75,8 @@
 					<input placeholder="请输入" v-model="form.escort" name="input"></input>
 				</view>
 				<view class="cu-form-group align-start">
-					<view class="title">整改情况</view>
-					<textarea maxlength="-1" v-model="form.checkContent" :disabled="modalName != null" @input="textareaBInput" placeholder="多行文本输入框"></textarea>
+					<view class="title">整改内容</view>
+					<textarea maxlength="-1" v-model="form.checkContent" :disabled="modalName != null" placeholder="整改内容"></textarea>
 				</view>
 				<view class="cu-bar bg-white">
 					<view class="action">整改图片</view>
@@ -145,6 +149,7 @@ export default {
 				ratify: '',
 				approvalTime: '',
 				delayReason: '',
+				rectifyContent: '',
 				applicationDate: null
 			},
 			userList: [],
@@ -171,10 +176,10 @@ export default {
 			this.isOrder = true;
 			this.planId = option.planId;
 			this.deptName = option.deptName;
-			
 			basic
 				.pollingRecordByPlanId(option.planId)
 				.then(res => {
+					console.log(res)
 					if (res.flag) {
 						if (res.data != null) {
 							me.form = res.data;
@@ -274,6 +279,7 @@ export default {
 			me.form.applicationDate = me.winForm.delayTimeLimit;
 			me.form.proposer = me.winForm.delayTimeLimit;
 			me.form.delayReason = me.winForm.delayReason;
+			me.form.rectifyContent = me.winForm.rectifyContent;
 			me.modalName2 = null;
 		},
 		saveData() {
@@ -317,6 +323,7 @@ export default {
 						rectifyImg.push(data.data)
 						if((i+1) == me.form.rectifyImg.length){
 							form.rectifyImg = rectifyImg.toString()
+							console.log(form)
 							basic
 								.recordRectifyAdd(form)
 								.then(res => {

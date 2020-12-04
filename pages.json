@@ -58,8 +58,7 @@
 		{
 			"path": "pages/ClockIn/ClockIn",
 			"style": {
-				"navigationBarTitleText": "打卡",
-				"enablePullDownRefresh": true
+				
 			}
 		},
 		{

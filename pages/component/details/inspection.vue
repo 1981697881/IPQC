@@ -74,11 +74,7 @@
 					<view
 						class="cu-item"
 						style="width: 100%;margin-top: 2px;height: auto;"
-						:class="modalName == 'move-box-' + index ? 'move-cur' : ''"
-						@touchstart="ListTouchStart"
-						@touchmove="ListTouchMove"
-						@touchend="ListTouchEnd"
-						:data-target="'move-box-' + index"
+						@longpress='del(index, item)'
 					>
 						<view style="clear: both;width: 100%;">
 							<view class="cu-bar bg-white solid-bottom">
@@ -110,6 +106,9 @@
 												<text class="cuIcon-close text-red" style="font-size: 21px;"></text>
 											</view>
 										</view> -->
+										<view class="cu-bar bg-white">
+											<view class="action">检查项目</view>
+										</view>
 										<view class="cu-list menu">
 											<view v-for="(item2, index2) in item.recordCheckList" :key="index2" class="cu-item" style="height: 30px;">
 												<view class="content padding-sm" style="left: 0;">
@@ -130,9 +129,32 @@
 												</view>
 											</view>
 										</view>
+										<view v-show="item.isThrough" class="cu-bar bg-white">
+											<view class="action">隐患问题</view>
+										</view>
+										<view v-show="item.isThrough" class="cu-list menu">
+											<view v-for="(item2, index2) in item.concerns" :key="index2" class="cu-item" style="height: auto;">
+												<view class="content padding-sm" style="left: 0;">
+													<view>
+														<text class="cuIcon-warn text-blue margin-right-xs"></text>
+														{{ item2.concerns }}
+													</view>
+												</view>
+												<view class="action" style="position: absolute;right:0;">
+													<checkbox-group class="block" @change="CheckConIdChange($event, item2, item)">
+														<checkbox
+															class="round blue"
+															:class="item2.checked ? 'checked' : ''"
+															:checked="item2.checked ? true : false"
+															:value="item2.conId"
+														></checkbox>
+													</checkbox-group>
+												</view>
+											</view>
+										</view>
 										<view v-show="item.isThrough" class="cu-form-group align-start">
-											<view class="title">隐患问题</view>
-											<textarea v-model="item.concerns" maxlength="-1" :disabled="modalName != null" placeholder="隐患问题"></textarea>
+											<view class="title">整改内容</view>
+											<textarea v-model="item.opinion" maxlength="-1" :disabled="modalName != null" placeholder="整改内容"></textarea>
 										</view>
 										<view v-show="item.isThrough" class="cu-bar bg-white">
 											<view class="action">隐患图片</view>
@@ -157,7 +179,6 @@
 								</view>
 							</view>
 						</view>
-						<view class="move"><view class="bg-red" @tap="del(index, item)">删除</view></view>
 					</view>
 				</view>
 			</view>
@@ -310,7 +331,19 @@ export default {
 				});
 		},
 		del(index, item) {
-			this.cuIList.splice(index, 1);
+			let me = this
+			uni.showModal({
+				title: '温馨提示',
+				content: '是否删除当前行,删除将无法复原？',
+				cancelText: '取消',
+				confirmText: '确定',
+				success: res => {
+					if (res.confirm) { 
+						me.cuIList.splice(index, 1);
+						me.isFab = true;
+					}
+				}
+			});
 		},
 		unfoldSetting() {
 			this.$set(this, 'isThrough', true);
@@ -326,7 +359,7 @@ export default {
 		CheckboxChange(e, item, item2) {
 			let me = this;
 			if (item.checked) {
-				me.$set(item2, 'concerns', '');
+				me.$set(item2, 'concerns', []);
 				this.$set(item, 'checked', false);
 				this.$set(item2, 'isThrough', true);
 				let arr = item2.recordCheckList;
@@ -338,10 +371,13 @@ export default {
 								if (res.flag) {
 									let data = res.data;
 									let str = item2.concerns;
-									me.winForm.clockTime = res.data.clockTime;
-									me.winForm.clockLocation = res.data.clockLocation;
 									data.forEach((items, indexs) => {
-										str += indexs + 1 + '' + items.concerns + '\n';
+										str.push({
+											conId:items.conId.toString(),
+											concerns:items.concerns,
+											opinion:items.opinion,
+											checked: false,
+										})
 									});
 									me.$set(item2, 'concerns', str);
 								}
@@ -364,8 +400,36 @@ export default {
 					}
 				});
 				if (isThrough) {
-					this.$set(item2, 'concerns', '');
+					this.$set(item2, 'concerns', []);
 					this.$set(item2, 'isThrough', false);
+				}
+			}
+		},//event:默认参数,item: 子数据,item2:父数据
+		CheckConIdChange(e, item, item2) {
+			let me = this;
+			if (!item.checked) {
+				me.$set(item2, 'opinion', '');
+				this.$set(item, 'checked', true);
+				let arr = item2.concerns;
+				let str = item2.opinion;
+				arr.forEach((items, indexs) => {
+					if (items.checked) { 
+						console.log(items)
+						str += indexs + 1 + '' + items.opinion + '\n';
+					}
+				});
+				me.$set(item2, 'opinion', str);
+			} else { 
+				this.$set(item, 'checked', false);
+				let arr = item2.concerns;
+				let isThrough = true;
+				arr.map(i => {
+					if (i.checked) {
+						isThrough = false;
+					}
+				});
+				if (isThrough) {
+					this.$set(item2, 'opinion', '');
 				}
 			}
 		},
@@ -486,7 +550,6 @@ export default {
 		saveData() {
 			if (this.cuIList.length > 0) {
 				uni.$off('recordClockIn');
-				
 				this.isClick = true;
 				let list = JSON.parse(JSON.stringify(this.cuIList));
 				let me = this;
@@ -506,6 +569,13 @@ export default {
 							rectifyImg.push(data.data)
 							console.log(rectifyImg)
 							if((i+1) == me.cuIList[0].rectifyImg.length){
+								let concernsData = []
+								list[0].concerns.forEach((items,indexs)=>{
+									if(items.checked){
+										concernsData.push(items.concerns)
+									}
+								})
+								list[0].concerns = concernsData.toString()
 								list[0].concernsImg = rectifyImg.toString()
 								console.log(list[0])
 								basic
@@ -560,10 +630,7 @@ export default {
 				
 			}
 		},
-		del(index, item) {
-			this.cuIList.splice(index, 1);
-			this.isFab = true;
-		},
+	
 		// 查询前后三天日期
 		getDay(date, day) {
 			var today = new Date();
@@ -622,25 +689,7 @@ export default {
 				dispatchNum: 0
 			}); */
 			that.isFab = false;
-		}, // ListTouch触摸开始
-		ListTouchStart(e) {
-			this.listTouchStart = e.touches[0].pageX;
 		},
-
-		// ListTouch计算方向
-		ListTouchMove(e) {
-			this.listTouchDirection = e.touches[0].pageX - this.listTouchStart > 0 ? 'right' : 'left';
-		},
-
-		// ListTouch计算滚动
-		ListTouchEnd(e) {
-			if (this.listTouchDirection == 'left') {
-				this.modalName = e.currentTarget.dataset.target;
-			} else {
-				this.modalName = null;
-			}
-			this.listTouchDirection = null;
-		}
 	}
 };
 </script>
@@ -662,6 +711,11 @@ export default {
 .action,
 .content {
 	font-size: 13px !important;
+	
+}
+.cu-item .content {
+	width: calc(100% - 35px) !important;
+	position: inherit !important;
 }
 .ruidata {
 	font-size: 13px;

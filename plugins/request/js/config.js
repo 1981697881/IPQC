@@ -144,14 +144,14 @@ function handleCode({ data, status, config, res }) {
 			}
 			return data;
         },
-		'20010'() {
+		/* '20010'() {
 			uni.reLaunch({
 				url: '../login/login'
 			});
 			store.commit("setToken", {token: ''})
 			saveToken('')
 			return data;
-		},
+		}, */
 		/* '20001'() {
 			uni.reLaunch({
 				url: '../login/login'
