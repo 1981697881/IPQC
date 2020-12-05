@@ -66,18 +66,21 @@
 <script>
 import uploadImg from '@/components/uploadImg/uploadImg.vue';
 import basic from '@/api/basic';
+import amap from '@/jsSdk/amap-wx.js';
 import ldSelect from '@/components/ld-select/ld-select.vue';
 export default {
 	components: { uploadImg, ldSelect },
 	data() {
 		return {
+			amapPlugin: null,
+			mapKey : '24a00acc49bc8b7e4c70ae19ae4c7231',
 			form: {},
 			IsChange: false, //控制“添加备注”
 			autoBool: false, //textarea自动聚焦
 			keycode: '', //输入框的值
 			conBoll: true,
 			ImgArr: [],
-			userList: [],
+			userList: [], 
 			covers: [],
 			activeType: false,
 			time: '',
@@ -123,6 +126,7 @@ export default {
 		}, 1000);
 	},
 	onLoad(option) {
+		
 		//获取设定好的地址坐标（经纬度）
 		uni.getLocation({
 			type: 'gcj02',
@@ -180,7 +184,7 @@ export default {
 			let me = this;
 			let type = 0;
 			let address = '';
-			console.log(this.ClockInObj)
+			console.log(this.ClockInObj);
 			if (this.activeType) {
 				//出差打卡
 				type = 1;
@@ -223,20 +227,36 @@ export default {
 			});
 			if (this.form.isType == 'true') {
 				console.log(this.form);
-				uni.$emit('recordClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation});
+				uni.$emit('recordClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation });
 				/* uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true }); */
 				uni.navigateTo({
-					url: '../component/details/inspection?planId=' + me.form.planId + '&deptName=' + me.form.deptName+ '&clockTime=' + rqData.clockTime+ '&clockLocation=' + rqData.clockLocation
+					url:
+						'../component/details/inspection?planId=' +
+						me.form.planId +
+						'&deptName=' +
+						me.form.deptName +
+						'&clockTime=' +
+						rqData.clockTime +
+						'&clockLocation=' +
+						rqData.clockLocation
 				});
 				/* uni.navigateBack({
 					url: '../component/polling'
 				}); */
 			} else {
 				console.log(rqData);
-				uni.$emit('handleClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation});
+				uni.$emit('handleClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation });
 				console.log(me.form);
 				uni.navigateTo({
-					url: '../component/details/feedback?planId=' + me.form.planId + '&deptName=' + me.form.deptName+ '&clockTime=' + rqData.clockTime+ '&clockLocation=' + rqData.clockLocation
+					url:
+						'../component/details/feedback?planId=' +
+						me.form.planId +
+						'&deptName=' +
+						me.form.deptName +
+						'&clockTime=' +
+						rqData.clockTime +
+						'&clockLocation=' +
+						rqData.clockLocation
 				});
 			}
 			// 保存打卡数据
@@ -315,7 +335,14 @@ export default {
 				success() { */
 			uni.getLocation({
 				type: 'gcj02',
+				geocode: true,
 				success: res => {
+					uni.showToast({
+						icon: 'none',
+						duration: 2000,
+						title: res.latitude + '(' + res.longitude + ')'
+					}); 
+					console.log(res);
 					_this.lat_current = res.latitude;
 					_this.lng_current = res.longitude;
 					_this.getMaxLongitudeLatitude();
@@ -340,6 +367,7 @@ export default {
 				success: result => {
 					console.log(result);
 					let Res_Data = result.data.result;
+					
 					_this.ClockInObj.street = Res_Data.address;
 					_this.ClockInObj.Details = Res_Data.formatted_addresses.recommend;
 					_this.ClockInObj.address = Res_Data.address + '(' + Res_Data.formatted_addresses.recommend + ')';
@@ -348,6 +376,29 @@ export default {
 					}, 300);
 				}
 			});
+			//高德定位
+			/* this.amapPlugin = new amap.AMapWX({
+				key: this.mapKey //该key 是在高德中申请的微信小程序key
+			});
+			this.amapPlugin.getRegeo({
+				type: 'wgs84', //map 组件使用的经纬度是国测局坐标， type 为 gcj02
+				success: function(res) {
+					uni.showToast({
+						icon: 'none',
+						duration: 2000,
+						title: res[0].name + '(' + res[0].desc + ')'
+					});
+					_this.ClockInObj.street = res[0].name;
+					_this.ClockInObj.Details = res[0].desc;
+					_this.ClockInObj.address = res[0].name + '(' + res[0].desc + ')';
+					setTimeout(() => {
+						uni.hideLoading();
+					}, 300);
+				},
+				fail: res => {
+					console.log(JSON.stringify(res));
+				}
+			}); */
 		},
 		//公司地址范围限制
 		getMaxLongitudeLatitude(res) {
