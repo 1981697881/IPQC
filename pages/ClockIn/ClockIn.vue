@@ -142,7 +142,7 @@ export default {
 			this.form.planId = option.planId;
 			this.form.deptName = option.deptName;
 			this.form.isType = option.isType;
-			console.log(this.form);
+			console.log(option);
 		}
 		this.initMain();
 	},

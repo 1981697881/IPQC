@@ -54,6 +54,10 @@
 			"path": "pages/component/details/endorse",
 			"style": {
 			}
+		},{
+			"path": "pages/component/details/applicationRecord",
+			"style": {
+			}
 		},
 		{
 			"path": "pages/ClockIn/ClockIn",

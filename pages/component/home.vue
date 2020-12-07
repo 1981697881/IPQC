@@ -38,12 +38,20 @@
 					:key="index"
 					@tap="$manyCk(showList(index, item))"
 				>
-					<view class="text-grey cu-bar bg-white" style="height: 30px;">
-						<view class="action">
+					<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px;">
+						<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
 							公司: {{item.deptName}}
 						</view>
 						<view class="action">
 							单号: {{item.planNo}}
+						</view>
+					</view>
+					<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px">
+						<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
+							项目: {{item.proName}}
+						</view>
+						<view class="action">
+							检查人员: {{item.inspector}}
 						</view>
 					</view>
 					<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
@@ -57,10 +65,10 @@
 							<text :class="'cuIcon-timefill text-grey'"><text class="text-grey text-sm">完成</text></text>
 						</view>
 					</view> -->
-					<evan-steps :active="1" direction="horizontal" primaryColor="green">
-								<evan-step title="巡检" :description='item.planTime'></evan-step>
-								<evan-step title="整改" description="----/--/--"></evan-step>
-								<evan-step title="完成" description="----/--/--"></evan-step>
+					<evan-steps class="solid-bottom" :active="item.status=='结束'?2:(item.status=='整改待检查'?1:0)" direction="horizontal" primaryColor="green">
+								<evan-step title="巡检"></evan-step>
+								<evan-step title="整改"></evan-step>
+								<evan-step title="完成"></evan-step>
 							</evan-steps>
 					<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
 						<view class="flex-sub solid-bottom text-gray text-sm">

@@ -207,7 +207,7 @@ export default {
 					status: '',
 					isType: false,
 					isOpen: true,
-					path: 'ClockIn/ClockIn',
+					path: 'component/details/applicationRecord',
 					description: ''
 				},
 				{
@@ -226,7 +226,7 @@ export default {
 					path: 'component/details/applyFor',
 					description: '2020-10-10 12:20:30'
 				}, */
-				{
+				/* {
 					title: '完成',
 					icon: '',
 					isType: false,
@@ -234,29 +234,29 @@ export default {
 					status: '',
 					path: '',
 					description: ''
-				}
+				} */
 			]
 		};
 	},
 	onShow: function (option){
 		let me = this
 		uni.$on("handleBack", res => {
-			console.log(res)
 		    me.form.planId = res.planId
 		    me.form.deptName = res.deptName
 		    basic
 		    	.pollingRecordByPlanId(res.planId)
 		    	.then(reso => {
 		    		if (reso.flag) {
-						console.log(reso.data)
 		    			if (reso.data == null) {
 		    				/* me.modalName = 'Modal'; */
 		    				me.winForm.recordDate = me.getDay('', 0).date;
 		    				me.form.deptName = res.deptName
+							me.form.recordId = res.data.recordId
 		    			}else{
 		    				/* me.isAlter = true; */
 		    				me.$set(me,"form",reso.data)
 		    				me.form.deptName = res.deptName
+		    				me.form.recordId = res.data.recordId
 							console.log(reso.clockTime)
 		    				me.elements[0].isOpen = false
 		    				me.elements[0].description = reso.data.clockTime
@@ -299,10 +299,12 @@ export default {
 							/* me.modalName = 'Modal'; */
 							me.winForm.recordDate = me.getDay('', 0).date;
 							me.form.deptName = option.deptName
+							me.form.recordId = res.data.recordId
 						}else{
 							/* me.isAlter = true; */
 							me.$set(me,"form",res.data)
 							me.form.deptName = option.deptName
+							me.form.recordId = res.data.recordId
 							me.elements[0].isOpen = false
 							me.elements[0].description = res.data.clockTime
 							/* me.elements[0].isOpen = false */
@@ -343,9 +345,6 @@ export default {
 					})
 					.exec();
 				setTimeout(function() {
-					console.log(infoHeight)
-					console.log(headHeight)
-					console.log(res.windowHeight)
 					me.pageHeight = res.windowHeight - infoHeight - headHeight;
 				}, 1000);
 			}
@@ -355,9 +354,9 @@ export default {
 	methods: {
 		showList(index, item){
 			if(item.isOpen){
-				console.log(item)
+				console.log(this.form)
 				uni.navigateTo({
-					url: '../'+item.path+'?planId='+this.form.planId+'&isType='+item.isType+'&deptName='+this.form.deptName
+					url: '../'+item.path+'?planId='+this.form.planId+'&isType='+item.isType+'&deptName='+this.form.deptName+'&recordId='+this.form.recordId
 				}); 
 			}else{
 				uni.showToast({

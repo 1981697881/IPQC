@@ -27,9 +27,10 @@
 					</view>
 					<view class="cu-form-group">
 						<view class="title">申请人</view>
-						<picker @change="proposerChange" :range-key="'username'" :value="index" :range="userList">
+						<input placeholder="请输入" v-model="winForm.proposerName" name="input"/>
+						<!-- <picker @change="proposerChange" :range-key="'username'" :value="index" :range="userList">
 							<view class="picker">{{ winForm.proposerName != '' ? winForm.proposerName : '请选择' }}</view>
-						</picker>
+						</picker> -->
 					</view>
 					<view class="cu-form-group">
 						<view class="title">申请日期</view>
@@ -317,7 +318,6 @@ export default {
 				},
 				success: function(uploadFileRes) {
 					uni.$off('handleClockIn');
-					
 					let data = JSON.parse(uploadFileRes.data)
 					if(data.flag){
 						rectifyImg.push(data.data)
