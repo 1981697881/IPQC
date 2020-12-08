@@ -9,7 +9,7 @@
 			<view v-for="(item, index) in cuIconList" :key="index">
 				<view class="cu-list menu-avatar">
 					<view class="cu-item" style="width: 100%;margin-top: 2px;height: 200upx;">
-						<view style="clear: both; width: 100%;" class="grid text-left col-2" @tap="$manyCk(showList(index, item))" data-target="Modal" data-number="item.number">
+						<view style="clear: both; width: 100%;" class="grid text-left col-2" @tap="showList(index, item)" data-target="Modal">
 							<view class="text-grey">检查时间:{{ item.checkTime }}</view>
 							<view class="text-grey">打卡人:{{ item.clockName }}</view>
 							<view class="text-grey">被检人:{{ item.clockName }}</view>
@@ -122,7 +122,9 @@ export default {
 					item.recordId +
 					'&planId=' +
 					this.planId +
-					'&isOrder=true' +
+					'&rectifyId=' +
+					item.rectifyId +
+					'&isOrder=false' +
 					'&deptName=' +
 					this.deptName
 			});

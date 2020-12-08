@@ -34,11 +34,12 @@
 			<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
 				<view class="action">
 					被检项目:
-					<view style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" v-for="(item, index) in form.recordCheckList"
-					:key="index">
-						<text class="cuIcon-text text-blue margin-right-xs"></text>{{index+1}} {{item.checkName}}</view>
+					<view style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;" v-for="(item, index) in form.recordCheckList" :key="index">
+						<text class="cuIcon-text text-blue margin-right-xs"></text>
+						{{ index + 1 }} {{ item.checkName }}
+					</view>
 				</view>
-				<button v-if='isAlter' class="cu-btn round lines-blue line-blue shadow" @tap="$manyCk(alterData)">修改</button>
+				<button v-if="isAlter" class="cu-btn round lines-blue line-blue shadow" @tap="$manyCk(alterData)">修改</button>
 			</view>
 		</view>
 		<view class="cu-modal" style="z-index: 333" :class="modalName == 'Modal' ? 'show' : ''">
@@ -53,7 +54,7 @@
 						<ld-select
 							:multiple="true"
 							:list="projectCheckList"
-							list-key="checkName" 
+							list-key="checkName"
 							value-key="checkId"
 							placeholder="请选择"
 							clearable
@@ -109,8 +110,8 @@
 					:key="index"
 					@tap="showList(index, item)"
 				>
-				<evan-step :icon="item.icon"  :status="item.status" :title="item.title" :description="item.description"></evan-step>
-				<!-- <evan-step title="延期申请" description="2020-10-10 10:10:10">
+					<evan-step :icon="item.icon" :status="item.status" :title="item.title" :description="item.description"></evan-step>
+					<!-- <evan-step title="延期申请" description="2020-10-10 10:10:10">
 					<template v-slot:icon>
 						<image class="evan-step-show__show" src="/static/logo.png"></image>
 					</template>
@@ -143,7 +144,7 @@ import EvanSteps from '@/components/evan-steps/evan-steps.vue';
 import EvanStep from '@/components/evan-steps/evan-step.vue';
 import UniIcons from '@/components/uni-icons/uni-icons.vue';
 var _self,
-		page = 1;
+	page = 1;
 export default {
 	components: {
 		ldSelect,
@@ -164,13 +165,13 @@ export default {
 				deptName: '',
 				checkNo: '',
 				recordDate: '',
-				auditStatus: '',
+				auditStatus: ''
 			},
 			winForm: {
 				checkStaff: '',
 				checkId: [],
 				recordDate: null,
-				escort: '',
+				escort: ''
 			},
 			onoff: true,
 			modalName: null,
@@ -196,7 +197,7 @@ export default {
 					icon: 'location',
 					isType: true,
 					isOpen: true,
-					status: '',/* error */
+					status: '' /* error */,
 					path: 'ClockIn/ClockIn',
 					/* path: 'component/details/inspection', */
 					description: ''
@@ -204,6 +205,7 @@ export default {
 				{
 					title: '整改登记',
 					icon: '',
+					msg: '',
 					status: '',
 					isType: false,
 					isOpen: true,
@@ -213,13 +215,14 @@ export default {
 				{
 					title: '完成反馈',
 					icon: '',
+					msg: '',
 					isType: false,
 					isOpen: true,
 					status: '',
 					path: 'component/details/abarbeitung',
 					description: ''
-				},
-				 /* {
+				}
+				/* {
 					title: '延期申请',
 					icon: '',
 					status: '',
@@ -238,59 +241,64 @@ export default {
 			]
 		};
 	},
-	onShow: function (option){
-		let me = this
-		uni.$on("handleBack", res => {
-		    me.form.planId = res.planId
-		    me.form.deptName = res.deptName
-		    basic
-		    	.pollingRecordByPlanId(res.planId)
-		    	.then(reso => {
-		    		if (reso.flag) {
-		    			if (reso.data == null) {
-		    				/* me.modalName = 'Modal'; */
-		    				me.winForm.recordDate = me.getDay('', 0).date;
-		    				me.form.deptName = res.deptName
-							me.form.recordId = res.data.recordId
-		    			}else{
-		    				/* me.isAlter = true; */
-		    				me.$set(me,"form",reso.data)
-		    				me.form.deptName = res.deptName
-		    				me.form.recordId = res.data.recordId
-							console.log(reso.clockTime)
-		    				me.elements[0].isOpen = false
-		    				me.elements[0].description = reso.data.clockTime
+	onShow: function(option) {
+		let me = this;
+		uni.$on('handleBack', res => {
+			me.form.planId = res.planId;
+			me.form.deptName = res.deptName;
+			basic
+				.pollingRecordByPlanId(res.planId)
+				.then(reso => {
+					if (reso.flag) {
+						if (reso.data == null) {
+							/* me.modalName = 'Modal'; */
+							me.winForm.recordDate = me.getDay('', 0).date;
+							me.form.deptName = res.deptName;
+							// 无登记数据情况下 需要控制不必要调整
+							me.elements[1].isOpen = false;
+							me.elements[1].msg = '请先登记检查项目';
+							me.elements[2].isOpen = false;
+							me.elements[2].msg = '请先登记检查项目';
+							console.log(me.elements)
+						} else {
+							/* me.isAlter = true; */
+							me.$set(me, 'form', reso.data);
+							me.form.deptName = res.deptName;
+							me.form.recordId = reso.data.recordId;
+							me.elements[0].isOpen = false;
+							me.elements[0].description = reso.data.clockTime;
+							me.elements[1].isOpen = true;
+							me.elements[2].isOpen = true;
 						}
 						// 清除监听
-						uni.$off('handleBack')
-		    		}
-		    	})
-		    	.catch(err => {
-		    		uni.showToast({
-		    			icon: 'none',
-		    			title: err.msg
-		    		});
-		    	});
-			
-		})
+						uni.$off('handleBack');
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+		});
 	},
 	onLoad: function(option) {
 		let me = this;
-		_self = this
+		_self = this;
 		if (JSON.stringify(option) != '{}') {
-			if(typeof option.checkStaff !='undefined'){
-				me.winForm.checkStaff = option.checkStaff
+			if (typeof option.checkStaff != 'undefined') {
+				me.winForm.checkStaff = option.checkStaff;
 			}
-			if(typeof option.recordCheckList !='undefined'){
-				let checkList = JSON.parse(option.recordCheckList)
-				let check = []
-				checkList.map((item,index)=>{
-					check.push(item.checkId)
-				})
-				me.winForm.checkId = check
+			if (typeof option.recordCheckList != 'undefined') {
+				let checkList = JSON.parse(option.recordCheckList);
+				let check = [];
+				checkList.map((item, index) => {
+					check.push(item.checkId);
+				});
+				me.winForm.checkId = check;
 			}
-			me.winForm.planId = option.planId
-			me.form.planId = option.planId
+			me.winForm.planId = option.planId;
+			me.form.planId = option.planId;
 			basic
 				.pollingRecordByPlanId(option.planId)
 				.then(res => {
@@ -298,15 +306,20 @@ export default {
 						if (res.data == null) {
 							/* me.modalName = 'Modal'; */
 							me.winForm.recordDate = me.getDay('', 0).date;
-							me.form.deptName = option.deptName
-							me.form.recordId = res.data.recordId
-						}else{
+							me.form.deptName = option.deptName;
+							me.elements[1].isOpen = false;
+							me.elements[1].msg = '请先登记检查项目';
+							me.elements[2].isOpen = false;
+							me.elements[2].msg = '请先登记检查项目';
+						} else {
 							/* me.isAlter = true; */
-							me.$set(me,"form",res.data)
-							me.form.deptName = option.deptName
-							me.form.recordId = res.data.recordId
-							me.elements[0].isOpen = false
-							me.elements[0].description = res.data.clockTime
+							me.$set(me, 'form', res.data);
+							me.form.deptName = option.deptName;
+							me.form.recordId = res.data.recordId;
+							me.elements[0].isOpen = false;
+							me.elements[0].description = res.data.clockTime;
+							me.elements[1].isOpen = true;
+							me.elements[2].isOpen = true;
 							/* me.elements[0].isOpen = false */
 							/* me.getNewsList({recordId: res.data.recordId}) */
 						}
@@ -322,7 +335,6 @@ export default {
 						title: err.msg
 					});
 				});
-				
 		}
 	},
 	onReady: function() {
@@ -349,16 +361,16 @@ export default {
 				}, 1000);
 			}
 		});
-		me.initMain()
+		me.initMain();
 	},
 	methods: {
-		showList(index, item){
-			if(item.isOpen){
-				console.log(this.form)
+		showList(index, item) {
+			console.log(item.isOpen)
+			if (item.isOpen) {
 				uni.navigateTo({
-					url: '../'+item.path+'?planId='+this.form.planId+'&isType='+item.isType+'&deptName='+this.form.deptName+'&recordId='+this.form.recordId
-				}); 
-			}else{
+					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId
+				});
+			} else {
 				uni.showToast({
 					icon: 'none',
 					title: item.msg
@@ -378,7 +390,7 @@ export default {
 				.then(res => {
 					if (res.flag) {
 						_self.cuIconList = res.data;
-					} 
+					}
 				})
 				.catch(err => {
 					uni.showToast({
@@ -393,7 +405,7 @@ export default {
 				.userList()
 				.then(res => {
 					if (res.flag) {
-						me.$set(me,'userList',res.data)
+						me.$set(me, 'userList', res.data);
 					}
 				})
 				.catch(err => {
@@ -406,7 +418,7 @@ export default {
 				.projectCheckList()
 				.then(res => {
 					if (res.flag) {
-						me.$set(me,'projectCheckList',res.data)
+						me.$set(me, 'projectCheckList', res.data);
 					}
 				})
 				.catch(err => {
@@ -416,16 +428,15 @@ export default {
 					});
 				});
 		},
-		alterData(){
-			let me = this
+		alterData() {
+			let me = this;
 			/* me.$set(me.winForm,'checkStaff', me.form.checkStaff)
 			me.$set(me.winForm,'checkId', check) */
-			me.winForm.recordDate = me.form.recordDate
-			me.winForm.escort = me.form.escort
-			me.winForm.planId = me.form.planId
+			me.winForm.recordDate = me.form.recordDate;
+			me.winForm.escort = me.form.escort;
+			me.winForm.planId = me.form.planId;
 			me.modalName = 'Modal';
-			this.$forceUpdate()
-			
+			this.$forceUpdate();
 		},
 		// 查询前后三天日期
 		getDay(date, day) {
@@ -467,20 +478,20 @@ export default {
 					title: '请选择检查项目！'
 				});
 			}
-			let rqData = {}
-			let recordCheckList = []
-			let checkList = me.winForm.checkId
-			checkList.forEach((item,index)=>{
-				let obj = {}
-				obj.checkId = item
-				obj.qualifiedStatus = item.qualifiedStatus || 0
-				recordCheckList.push(obj)
-			})
-			rqData.planId = me.winForm.planId
-			rqData.recordCheckList = recordCheckList
-			me.winForm.checkStaff != null && me.winForm.checkStaff != '' ? rqData.checkStaff = me.winForm.checkStaff : null
-			me.winForm.recordDate != null && me.winForm.recordDate != '' ? rqData.recordDate = me.winForm.recordDate : null
-			me.winForm.escort != null && me.winForm.escort != '' ? rqData.escort = me.winForm.escort : null
+			let rqData = {};
+			let recordCheckList = [];
+			let checkList = me.winForm.checkId;
+			checkList.forEach((item, index) => {
+				let obj = {};
+				obj.checkId = item;
+				obj.qualifiedStatus = item.qualifiedStatus || 0;
+				recordCheckList.push(obj);
+			});
+			rqData.planId = me.winForm.planId;
+			rqData.recordCheckList = recordCheckList;
+			me.winForm.checkStaff != null && me.winForm.checkStaff != '' ? (rqData.checkStaff = me.winForm.checkStaff) : null;
+			me.winForm.recordDate != null && me.winForm.recordDate != '' ? (rqData.recordDate = me.winForm.recordDate) : null;
+			me.winForm.escort != null && me.winForm.escort != '' ? (rqData.escort = me.winForm.escort) : null;
 			basic.pollingRecordAdd(rqData).then(reso => {
 				if (reso.flag) {
 					uni.showToast({
@@ -506,51 +517,52 @@ export default {
 		},
 		DateChange(e) {
 			this.date = e.detail.value;
-		},
+		}
 	}
 };
 </script>
 
 <style lang="scss" scoped>
-	.cu-item{
-		float: left;
-		width: 50%;
-	}
-	.cu-item .content{
-		float: left;
-	}
-	.cu-list.menu-avatar>.cu-item .content{
-		left: 5px;
-	}
-	.cu-list.menu-avatar>.cu-item .action{
-		
-	}
-	.input{
-		height: 30px;
-	}
-	.box{
-		width: 100%;
-	}
-	.uni-input-placeholder, .uni-input-input{
-		font-size: 13px;
-	}
-	.action,.content{
-		font-size: 13px !important;
-	}
-	.ruidata{
-		font-size: 13px;
-		height: 7vw !important;
-	}
-	.cu-bar{
-		min-height: 30px;
-	}
-	/* .page {
+.cu-item {
+	float: left;
+	width: 50%;
+}
+.cu-item .content {
+	float: left;
+}
+.cu-list.menu-avatar > .cu-item .content {
+	left: 5px;
+}
+.cu-list.menu-avatar > .cu-item .action {
+}
+.input {
+	height: 30px;
+}
+.box {
+	width: 100%;
+}
+.uni-input-placeholder,
+.uni-input-input {
+	font-size: 13px;
+}
+.action,
+.content {
+	font-size: 13px !important;
+}
+.ruidata {
+	font-size: 13px;
+	height: 7vw !important;
+}
+.cu-bar {
+	min-height: 30px;
+}
+/* .page {
 		height: calc(100vh - 320upx);
 	} */
-	.nav-title::first-letter {
-	    font-size: 16px;
-	    margin-right: 2px;
-	}
+.nav-title::first-letter {
+	font-size: 16px;
+	margin-right: 2px;
+}
 /* #ifdef APP-PLUS*/
 /* .selectTrees {
 	margin-bottom: 180rpx;
@@ -612,11 +624,11 @@ export default {
 	}
 } */
 .loading-text {
-		height: 80upx;
-		line-height: 80upx;
-		font-size: 30upx;
-		display: flex;
-		flex-direction: row;
-		justify-content: space-around;
-	}
+	height: 80upx;
+	line-height: 80upx;
+	font-size: 30upx;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+}
 </style>

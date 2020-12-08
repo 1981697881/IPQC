@@ -96,21 +96,20 @@
 										</view>
 										<view class="cu-bar bg-white">
 											<view class="action">隐患图片</view>
-											<view class="action">{{ item.rectifyImg.length }}/3</view>
+											<view class="action">{{ item.concernsImg.length }}/3</view>
 										</view>
 										<view class="cu-form-group">
 											<view class="grid col-3 grid-square flex-sub">
 												<view
 													class="bg-img"
-													v-for="(item3, index3) in item.rectifyImg"
+													v-for="(item3, index3) in item.concernsImg"
 													:key="index3"
 													@tap="ViewImage($event, item)"
-													:data-url="item.rectifyImg[index3]"
+													:data-url="item.concernsImg[index3]"
 												>
-													<image :src="item.rectifyImg[index3]" mode="aspectFill"></image>
+													<image :src="item.concernsImg[index3]" mode="aspectFill"></image>
 													<view class="cu-tag bg-red" @tap.stop="DelImg($event, item)" :data-index="index3"><text class="cuIcon-close"></text></view>
 												</view>
-												<view @tap="ChooseImage(item)" class="solids" v-if="item.rectifyImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
 											</view>
 										</view>
 									</view>
@@ -165,7 +164,16 @@ export default {
 				.then(res => {
 					if (res.flag) {
 						if (res.data != null) {
+							res.data.concernsImg = res.data.concernsImg.split(',')
+							let concerns = res.data.concerns.split(',')
+							let str = ''
+							for(let i = 0;i< concerns.length;i++){
+								str += i + 1 + '' + concerns[i] + '\n';
+							}
+							res.data.concerns = str
 							me.cuIList.push(res.data);
+						}else{
+							me.isClick = true
 						}
 						console.log(res.data);
 						uni.showToast({
@@ -321,14 +329,14 @@ export default {
 		//完成绘画并保存到本地
 		finish: function() {
 			let that = this;
-			let rectifyImg = [];
+			let concernsImg = [];
 			let signature = '';
 			if (that.cuIList.length > 0) {
 				
 				uni.canvasToTempFilePath({
 					canvasId: 'mycanvas',
 					success: function(res) {
-						let cutImg = that.cuIList[0].rectifyImg;
+						let cutImg = that.cuIList[0].concernsImg;
 						if (cutImg.length != 0) {
 							cutImg = cutImg.concat(res.tempFilePath);
 						} else {
@@ -356,7 +364,7 @@ export default {
 												.completeRectify({
 													recordId: list.recordId,
 													rectifyFinishDate: that.getDay('', 0).date,
-													rectifyImg: rectifyImg.toString(),
+													concernsImg: concernsImg.toString(),
 													signature: signature,
 												})
 												.then(reso => {
@@ -380,7 +388,7 @@ export default {
 													that.isClick = false;
 												});
 										} else {
-											rectifyImg.push(data.data);
+											concernsImg.push(data.data);
 										}
 									}
 									uni.showToast({
@@ -429,10 +437,10 @@ export default {
 				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 				sourceType: ['album'], //从相册选择
 				success: res => {
-					if (item.rectifyImg.length != 0) {
-						item.rectifyImg = item.rectifyImg.concat(res.tempFilePaths);
+					if (item.concernsImg.length != 0) {
+						item.concernsImg = item.concernsImg.concat(res.tempFilePaths);
 					} else {
-						item.rectifyImg = res.tempFilePaths;
+						item.concernsImg = res.tempFilePaths;
 					}
 				}
 			});

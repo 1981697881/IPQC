@@ -9,7 +9,7 @@ function manyCk(fn) {
 		fn();
         setTimeout(function () {
             that.onoff = true;
-        }, 2000)
+        }, 500)
     } else {
 		that.onoff = false;
 		alert('请不要频繁点击')

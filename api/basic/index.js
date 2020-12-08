@@ -61,6 +61,11 @@ export default {
 			},
 			data: params
 	    });
+	},//反馈登记历史详情
+	findById(params) {
+	    return Request().get('/app/findById/'+params, {
+	        
+	    });
 	},//完成反馈
 	completeRectify(params) {
 	    return Request().post('/app/completeRectify', {

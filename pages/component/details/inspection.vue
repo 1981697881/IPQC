@@ -16,9 +16,7 @@
 			:direction="direction"
 			@fabClick="fabClick"
 		></uni-fab>
-		<view>
-		   <progress :percent="percent" stroke-width="10"></progress>
-		  </view>
+		<view><progress :percent="percent" stroke-width="10"></progress></view>
 		<view class="cu-modal" style="z-index: 1111" :class="modalName2 == 'Modal' ? 'show' : ''">
 			<view class="cu-dialog bg-white" style="height: 400upx;">
 				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
@@ -71,11 +69,7 @@
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
 				<view class="cu-list menu-avatar">
-					<view
-						class="cu-item"
-						style="width: 100%;margin-top: 2px;height: auto;"
-						@longpress='del(index, item)'
-					>
+					<view class="cu-item" style="width: 100%;margin-top: 2px;height: auto;" @longpress="del(index, item)">
 						<view style="clear: both;width: 100%;">
 							<view class="cu-bar bg-white solid-bottom">
 								<view class="action">
@@ -106,9 +100,7 @@
 												<text class="cuIcon-close text-red" style="font-size: 21px;"></text>
 											</view>
 										</view> -->
-										<view class="cu-bar bg-white">
-											<view class="action">检查项目</view>
-										</view>
+										<view class="cu-bar bg-white"><view class="action">检查项目</view></view>
 										<view class="cu-list menu">
 											<view v-for="(item2, index2) in item.recordCheckList" :key="index2" class="cu-item" style="height: 30px;">
 												<view class="content padding-sm" style="left: 0;">
@@ -129,9 +121,7 @@
 												</view>
 											</view>
 										</view>
-										<view v-show="item.isThrough" class="cu-bar bg-white">
-											<view class="action">隐患问题</view>
-										</view>
+										<view v-show="item.isThrough" class="cu-bar bg-white"><view class="action">隐患问题</view></view>
 										<view v-show="item.isThrough" class="cu-list menu">
 											<view v-for="(item2, index2) in item.concerns" :key="index2" class="cu-item" style="height: auto;">
 												<view class="content padding-sm" style="left: 0;">
@@ -200,7 +190,7 @@ import service from '@/service.js';
 import loading from '@/components/loading';
 export default {
 	components: { ruiDatePicker, ldSelect, uniFab, loading, citySelect },
-	data() { 
+	data() {
 		return {
 			percent: 0,
 			loading: false,
@@ -278,9 +268,8 @@ export default {
 						headHeight = data.height;
 					})
 					.exec();
-				console.log(res.windowHeight);
 				setTimeout(function() {
-					me.pageHeight = res.windowHeight - headHeight - 34;
+					me.pageHeight = res.windowHeight - headHeight - 40;
 				}, 1000);
 			}
 		});
@@ -338,7 +327,7 @@ export default {
 				cancelText: '取消',
 				confirmText: '确定',
 				success: res => {
-					if (res.confirm) { 
+					if (res.confirm) {
 						me.cuIList.splice(index, 1);
 						me.isFab = true;
 					}
@@ -413,13 +402,13 @@ export default {
 				let arr = item2.concerns;
 				let str = item2.opinion;
 				arr.forEach((items, indexs) => {
-					if (items.checked) { 
+					if (items.checked) {
 						console.log(items)
 						str += indexs + 1 + '' + items.opinion + '\n';
 					}
 				});
 				me.$set(item2, 'opinion', str);
-			} else { 
+			} else {
 				this.$set(item, 'checked', false);
 				let arr = item2.concerns;
 				let isThrough = true;
@@ -550,87 +539,94 @@ export default {
 		saveData() {
 			if (this.cuIList.length > 0) {
 				uni.$off('recordClockIn');
-				this.isClick = true;
+
 				let list = JSON.parse(JSON.stringify(this.cuIList));
 				let me = this;
 				let rectifyImg = [];
 				delete list[0].rectifyImg;
-				for (let i = 0; i < me.cuIList[0].rectifyImg.length; i++) {
-				const uploadTask = uni.uploadFile({
-					url: service.getUrls().url+'file/imgUpload',
-					filePath: me.cuIList[0].rectifyImg[i],
-					name: 'imgS',
-					header: {
-						'Authorization': this.$store.state.token
-					},
-					success: function(uploadFileRes) {
-						let data = JSON.parse(uploadFileRes.data)
-						if(data.flag){
-							rectifyImg.push(data.data)
-							console.log(rectifyImg)
-							if((i+1) == me.cuIList[0].rectifyImg.length){
-								let concernsData = []
-								list[0].concerns.forEach((items,indexs)=>{
-									if(items.checked){
-										concernsData.push(items.concerns)
-									}
-								})
-								list[0].concerns = concernsData.toString()
-								list[0].concernsImg = rectifyImg.toString()
-								console.log(list[0])
-								basic
-									.pollingRecordAdd(list[0])
-									.then(res => {
-										if (res.flag) {
-											uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
-											uni.showToast({
-												icon: 'success',
-												title: res.msg
-											});
-											uni.navigateBack({
-												delta:2,  
-												url: '../component/polling'
-											});
-											/* let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
-												return {
-													name: 'imgS',
-													uri: value
-												};
-											}); */
-											
+				if(me.cuIList[0].rectifyImg.length>0){
+					me.isClick = true;
+					for (let i = 0; i < me.cuIList[0].rectifyImg.length; i++) {
+					const uploadTask = uni.uploadFile({
+						url: service.getUrls().url+'file/imgUpload',
+						filePath: me.cuIList[0].rectifyImg[i],
+						name: 'imgS',
+						header: {
+							'Authorization': this.$store.state.token
+						},
+						success: function(uploadFileRes) {
+							let data = JSON.parse(uploadFileRes.data)
+							if(data.flag){
+								rectifyImg.push(data.data)
+								console.log(rectifyImg)
+								if((i+1) == me.cuIList[0].rectifyImg.length){
+									let concernsData = []
+									list[0].concerns.forEach((items,indexs)=>{
+										if(items.checked){
+											concernsData.push(items.concerns)
 										}
 									})
-									.catch(err => {
-										uni.showToast({
-											icon: 'none',
-											title: err.msg
+									list[0].concerns = concernsData.toString()
+									list[0].concernsImg = rectifyImg.toString()
+									console.log(list[0])
+									basic
+										.pollingRecordAdd(list[0])
+										.then(res => {
+											if (res.flag) {
+												uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+												uni.showToast({
+													icon: 'success',
+													title: res.msg
+												});
+												uni.navigateBack({
+													delta:2,
+													url: '../component/polling'
+												});
+												/* let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
+													return {
+														name: 'imgS',
+														uri: value
+													};
+												}); */
+
+											}
+										})
+										.catch(err => {
+											uni.showToast({
+												icon: 'none',
+												title: err.msg
+											});
+											this.isClick = false;
 										});
-										this.isClick = false;
-									});
-									
+
+								}
 							}
+							uni.showToast({
+								icon: 'success',
+								title: data.msg
+							});
+						},
+						fail: err => {
+							console.log('uploadImage fail', err);
+							uni.showModal({
+								content: err.errMsg,
+								showCancel: false
+							});
 						}
-						uni.showToast({
-							icon: 'success',
-							title: data.msg
-						});
-					},
-					fail: err => {
-						console.log('uploadImage fail', err);
-						uni.showModal({
-							content: err.errMsg,
-							showCancel: false
-						});
+					});
+					uploadTask.onProgressUpdate(function(reso) {
+						me.percent = reso.progress;
+					});
 					}
-				});
-				uploadTask.onProgressUpdate(function(reso) {
-					me.percent = reso.progress;
-				});
+				}else{
+					uni.showToast({
+						icon: 'none',
+						title: '请选择图片'
+					});
 				}
-				
 			}
 		},
-	
+
 		// 查询前后三天日期
 		getDay(date, day) {
 			var today = new Date();
@@ -711,7 +707,6 @@ export default {
 .action,
 .content {
 	font-size: 13px !important;
-	
 }
 .cu-item .content {
 	width: calc(100% - 35px) !important;

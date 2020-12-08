@@ -73,14 +73,15 @@ export default {
 	data() {
 		return {
 			amapPlugin: null,
-			mapKey : '24a00acc49bc8b7e4c70ae19ae4c7231',
+			mapKey: '24a00acc49bc8b7e4c70ae19ae4c7231',
 			form: {},
+			isClick: false,
 			IsChange: false, //控制“添加备注”
 			autoBool: false, //textarea自动聚焦
 			keycode: '', //输入框的值
 			conBoll: true,
 			ImgArr: [],
-			userList: [], 
+			userList: [],
 			covers: [],
 			activeType: false,
 			time: '',
@@ -118,15 +119,14 @@ export default {
 				}
 			}); */
 		// 获取当前时间
-		setInterval(() => {
-			var date = new Date();
-			var hour = date.getHours();
-			var minute = date.getMinutes() >= 10 ? date.getMinutes() : '0' + date.getMinutes();
-			this.time = hour + ':' + minute;
-		}, 1000);
+		//setInterval(() => {
+		var date = new Date();
+		var hour = date.getHours();
+		var minute = date.getMinutes() >= 10 ? date.getMinutes() : '0' + date.getMinutes();
+		this.time = hour + ':' + minute;
+		//}, 1000);
 	},
 	onLoad(option) {
-		
 		//获取设定好的地址坐标（经纬度）
 		uni.getLocation({
 			type: 'gcj02',
@@ -142,7 +142,8 @@ export default {
 			this.form.planId = option.planId;
 			this.form.deptName = option.deptName;
 			this.form.isType = option.isType;
-			console.log(option);
+			this.form.isOrder = option.isOrder;
+			this.form.recordId = option.recordId;
 		}
 		this.initMain();
 	},
@@ -150,7 +151,6 @@ export default {
 		initMain() {
 			var me = this;
 		},
-
 		// 查询前后三天日期
 		getDay(date, day) {
 			var today = new Date();
@@ -185,93 +185,104 @@ export default {
 			let type = 0;
 			let address = '';
 			console.log(this.ClockInObj);
-			if (this.activeType) {
-				//出差打卡
-				type = 1;
-				address = this.ClockInObj.address;
-				if (this.IS_Range_Out === false) {
-					this.showToast_Tips('请选择合适的范围打卡', 'none');
-					return false;
+			if (me.isClick) {
+				if (this.activeType) {
+					//出差打卡
+					type = 1;
+					address = this.ClockInObj.address;
+					if (this.IS_Range_Out === false) {
+						this.showToast_Tips('请选择合适的范围打卡', 'none');
+						return false;
+					}
+				} else {
+					//公司打卡
+					type = 0;
+					address = this.ClockInObj.address;
+					if (this.IS_Range === false) {
+						this.showToast_Tips('你已超出打卡范围', 'none');
+						return false;
+					}
 				}
-			} else {
-				//公司打卡
-				type = 0;
-				address = this.ClockInObj.address;
-				if (this.IS_Range === false) {
-					this.showToast_Tips('你已超出打卡范围', 'none');
-					return false;
+
+				this.ClockInObj.IsSuccess = true;
+				uni.showLoading({
+					title: '打卡中...'
+				});
+
+				let obj = {
+					ChockInPosition: address, //打卡位置
+					PositionType: type, //打卡类型
+					Remark: this.keycode,
+					PhotoUrl: this.ImgArr
+				};
+
+				let rqData = {};
+				rqData.planId = this.form.planId;
+				rqData.deptName = this.form.deptName;
+				this.form.checkStaff != null && this.form.checkStaff != '' ? (rqData.checkStaff = this.form.checkStaff) : null;
+				address != null && address != '' ? (rqData.clockLocation = address) : null;
+				rqData.clockTime = this.getDay('', 0).date;
+				uni.showToast({
+					icon: 'success',
+					title: '打卡成功'
+				});
+				if (this.form.isType == 'true') {
+					console.log(this.form);
+					uni.$emit('recordClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation });
+					/* uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true }); */
+					uni.navigateTo({
+						url:
+							'../component/details/inspection?planId=' +
+							me.form.planId +
+							'&deptName=' +
+							me.form.deptName +
+							'&clockTime=' +
+							rqData.clockTime +
+							'&clockLocation=' +
+							rqData.clockLocation
+					});
+					/* uni.navigateBack({
+						url: '../component/polling'
+					}); */
+				} else {
+					console.log(rqData);
+					uni.$emit('handleClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation });
+					console.log(me.form);
+					uni.navigateTo({
+						url:
+							'../component/details/feedback?planId=' +
+							me.form.planId +
+							'&deptName=' +
+							me.form.deptName +
+							'&recordId=' +
+							me.form.recordId +
+							'&isOrder=' +
+							me.form.isOrder +
+							'&clockTime=' +
+							rqData.clockTime +
+							'&clockLocation=' +
+							rqData.clockLocation
+					});
 				}
-			}
-
-			this.ClockInObj.IsSuccess = true;
-			uni.showLoading({
-				title: '打卡中...'
-			});
-
-			let obj = {
-				ChockInPosition: address, //打卡位置
-				PositionType: type, //打卡类型
-				Remark: this.keycode,
-				PhotoUrl: this.ImgArr
-			};
-
-			let rqData = {};
-			rqData.planId = this.form.planId;
-			rqData.deptName = this.form.deptName;
-			this.form.checkStaff != null && this.form.checkStaff != '' ? (rqData.checkStaff = this.form.checkStaff) : null;
-			address != null && address != '' ? (rqData.clockLocation = address) : null;
-			rqData.clockTime = this.getDay('', 0).date;
-			uni.showToast({
-				icon: 'success',
-				title: '打卡成功'
-			});
-			if (this.form.isType == 'true') {
-				console.log(this.form);
-				uni.$emit('recordClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation });
-				/* uni.$emit('handleBack', { planId: this.form.planId, deptName: this.form.deptName, isback: true }); */
-				uni.navigateTo({
-					url:
-						'../component/details/inspection?planId=' +
-						me.form.planId +
-						'&deptName=' +
-						me.form.deptName +
-						'&clockTime=' +
-						rqData.clockTime +
-						'&clockLocation=' +
-						rqData.clockLocation
-				});
-				/* uni.navigateBack({
-					url: '../component/polling'
-				}); */
+				// 保存打卡数据
+				/* uniCloud
+					.callFunction({
+						name: 'ClockIn-add',
+						data: obj
+					})
+					.then(res => {
+						setTimeout(() => {
+							this.ClockInObj.IsSuccess = false;
+							this.showToast_Tips('打卡成功', 'success');
+							uni.hideLoading();
+						}, 1500);
+					}); */
 			} else {
-				console.log(rqData);
-				uni.$emit('handleClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation });
-				console.log(me.form);
-				uni.navigateTo({
-					url:
-						'../component/details/feedback?planId=' +
-						me.form.planId +
-						'&deptName=' +
-						me.form.deptName +
-						'&clockTime=' +
-						rqData.clockTime +
-						'&clockLocation=' +
-						rqData.clockLocation
+				uni.showToast({
+					icon: 'error',
+					title: '地址读取中请稍等'
 				});
 			}
-			// 保存打卡数据
-			/* uniCloud
-				.callFunction({
-					name: 'ClockIn-add',
-					data: obj
-				})
-				.then(res => {
-					setTimeout(() => {
-						this.ClockInObj.IsSuccess = false;
-						this.showToast_Tips('打卡成功', 'success');
-						uni.hideLoading();
-					}, 1500);
-				}); */
 		},
 
 		//选择地址
@@ -337,11 +348,11 @@ export default {
 				type: 'gcj02',
 				geocode: true,
 				success: res => {
-					uni.showToast({
+					/* uni.showToast({
 						icon: 'none',
 						duration: 2000,
 						title: res.latitude + '(' + res.longitude + ')'
-					}); 
+					}); */
 					console.log(res);
 					_this.lat_current = res.latitude;
 					_this.lng_current = res.longitude;
@@ -365,9 +376,9 @@ export default {
 			wx.request({
 				url: getAddressUrl,
 				success: result => {
+					_this.isClick = true;
 					console.log(result);
 					let Res_Data = result.data.result;
-					
 					_this.ClockInObj.street = Res_Data.address;
 					_this.ClockInObj.Details = Res_Data.formatted_addresses.recommend;
 					_this.ClockInObj.address = Res_Data.address + '(' + Res_Data.formatted_addresses.recommend + ')';

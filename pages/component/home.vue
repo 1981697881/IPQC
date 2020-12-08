@@ -1,5 +1,5 @@
 <template name="components">
-	<view>
+	<view class="tier">
 		<view class="headerHei cu-bar bg-cyan">
 			<view></view>
 			<view class="content"></view>
@@ -7,19 +7,29 @@
 				<navigator :url="'/pages/component/setting'"><text class="cuIcon-settings" style="font-size: 21px;"></text></navigator>
 			</view>
 		</view>
-		<view class="box getheight">
-			<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
-				<view class="action">
-					开始时间:
-					<ruiDatePicker fields="day" class="ruidata" start="2010-00-00" end="2030-12-30" :value="start" @change="bindChange1"></ruiDatePicker>
-				</view>
-				<view class="action">
-					结束时间:
-					<ruiDatePicker fields="day" class="ruidata" start="2010-00-00" end="2030-12-30" :value="end" @change="bindChange2"></ruiDatePicker>
-				</view>
+		<view class="bg-green nav text-center">
+			<view class="cu-item" :class="0 == TabCur ? 'text-white cur' : ''" @tap="tabSelect" data-id="0">
+				<text class="cuIcon-camerafill"></text>
+				巡检计划
+			</view>
+			<view class="cu-item" :class="1 == TabCur ? 'text-white cur' : ''" @tap="tabSelect" data-id="1">
+				<text class="cuIcon-upstagefill"></text>
+				检查项目
 			</view>
 		</view>
-		<scroll-view class="page" :style="{ height: pageHeight + 'px' }">
+		<block v-if="TabCur == 0">
+			<view class="box getheight">
+				<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
+					<view class="action">
+						开始时间:
+						<ruiDatePicker fields="day" class="ruidata" start="2010-00-00" end="2030-12-30" :value="start" @change="bindChange1"></ruiDatePicker>
+					</view>
+					<view class="action">
+						结束时间:
+						<ruiDatePicker fields="day" class="ruidata" start="2010-00-00" end="2030-12-30" :value="end" @change="bindChange2"></ruiDatePicker>
+					</view>
+				</view>
+			</view>
 			<view style="margin-left: 10px;margin-right: 10px;" class="cu-bar bg-white solid-bottom margin-top">
 				<view class="action">
 					<text class="cuIcon-title text-orange "></text>
@@ -30,83 +40,73 @@
 					<switch class="blue" @change="SwitchB" :class="switchB ? 'checked' : ''" :checked="switchB ? true : false" color="#e54d42"></switch>
 				</view>
 			</view>
-			<view style="margin-left: 10px;margin-right: 10px;" class="cu-list bg-white">
-				<view
-					style="width: 100%;"
-					class="cu-item"
-					v-for="(item, index) in elements"
-					:key="index"
-					@tap="$manyCk(showList(index, item))"
-				>
-					<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px;">
-						<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
-							公司: {{item.deptName}}
+			<scroll-view :style="{ height: pageHeight + 'px' }" scroll-x class="page">
+				<view style="margin-left: 10px;margin-right: 10px;" class="cu-list bg-white">
+					<view style="width: 100%;" class="cu-item" v-for="(item, index) in elements" :key="index" @tap="$manyCk(showList(index, item))">
+						<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px;">
+							<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">公司: {{ item.deptName }}</view>
+							<view class="action">单号: {{ item.planNo }}</view>
 						</view>
-						<view class="action">
-							单号: {{item.planNo}}
+						<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px">
+							<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">项目: {{ item.proName }}</view>
+							<view class="action">检查人员: {{ item.inspector }}</view>
 						</view>
-					</view>
-					<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px">
-						<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">
-							项目: {{item.proName}}
-						</view>
-						<view class="action">
-							检查人员: {{item.inspector}}
-						</view>
-					</view>
-					<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
-						<view class="flex-sub text-xl ">
-							<text :class="'cuIcon-roundcheckfill text-green'"><text class="text-grey text-sm">巡检</text></text>
-						</view>
-						<view class="flex-sub text-xl ">
-							<text :class="'cuIcon-timefill text-grey'"><text class="text-grey text-sm">整改</text></text>
-						</view>
-						<view class="flex-sub text-xl ">
-							<text :class="'cuIcon-timefill text-grey'"><text class="text-grey text-sm">完成</text></text>
-						</view>
-					</view> -->
-					<evan-steps class="solid-bottom" :active="item.status=='结束'?2:(item.status=='整改待检查'?1:0)" direction="horizontal" primaryColor="green">
-								<evan-step title="巡检"></evan-step>
-								<evan-step title="整改"></evan-step>
-								<evan-step title="完成"></evan-step>
-							</evan-steps>
-					<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
-						<view class="flex-sub solid-bottom text-gray text-sm">
-							<text class="cuIcon-remind margin-lr-xs"></text>
-							{{item.planTime}}
-						</view>
-						<view class="flex-sub solid-bottom text-gray text-sm">
-							<text class="cuIcon-remind margin-lr-xs"></text>
-							----/--/--
-						</view>
-						<view class="flex-sub solid-bottom text-gray text-sm">
-							<text class="cuIcon-remind margin-lr-xs"></text>
-							----/--/--
-						</view>
-					</view> -->
-					<!-- <view class="cu-avatar round lg" style="background-image:url(https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg);"></view>
-						<view class="content">
-							<view class="text-grey">公司:A项目组</view>
-							<view class="text-gray text-sm flex">
-								<view class="text-cut">
-									<text class="cuIcon-infofill text-red  margin-right-xs"></text>
-									项目：施工安全
+						<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
+								<view class="flex-sub text-xl ">
+									<text :class="'cuIcon-roundcheckfill text-green'"><text class="text-grey text-sm">巡检</text></text>
 								</view>
-							</view>
-						</view>
-						<view class="action">
-							<view class="text-grey text-xs">2020-10-28</view>
-							<view class="cu-tag round bg-grey sm">5</view>
-						</view> -->
+								<view class="flex-sub text-xl ">
+									<text :class="'cuIcon-timefill text-grey'"><text class="text-grey text-sm">整改</text></text>
+								</view>
+								<view class="flex-sub text-xl ">
+									<text :class="'cuIcon-timefill text-grey'"><text class="text-grey text-sm">完成</text></text>
+								</view>
+							</view> -->
+						<evan-steps class="solid-bottom" :active="item.status == '结束' ? 2 : item.status == '整改待检查' ? 1 : 0" direction="horizontal" primaryColor="green">
+							<evan-step title="巡检"></evan-step>
+							<evan-step title="整改"></evan-step>
+							<evan-step title="完成"></evan-step>
+						</evan-steps>
+						<!-- <view style="width: 100%;" class="flex p-xs margin-bottom-sm mb-sm text-center">
+								<view class="flex-sub solid-bottom text-gray text-sm">
+									<text class="cuIcon-remind margin-lr-xs"></text>
+									{{item.planTime}}
+								</view>
+								<view class="flex-sub solid-bottom text-gray text-sm">
+									<text class="cuIcon-remind margin-lr-xs"></text>
+									----/--/--
+								</view>
+								<view class="flex-sub solid-bottom text-gray text-sm">
+									<text class="cuIcon-remind margin-lr-xs"></text>
+									----/--/--
+								</view>
+							</view> -->
+						<!-- <view class="cu-avatar round lg" style="background-image:url(https://ossweb-img.qq.com/images/lol/web201310/skin/big10001.jpg);"></view>
+								<view class="content">
+									<view class="text-grey">公司:A项目组</view>
+									<view class="text-gray text-sm flex">
+										<view class="text-cut">
+											<text class="cuIcon-infofill text-red  margin-right-xs"></text>
+											项目：施工安全
+										</view>
+									</view>
+								</view>
+								<view class="action">
+									<view class="text-grey text-xs">2020-10-28</view>
+									<view class="cu-tag round bg-grey sm">5</view>
+								</view> -->
+					</view>
 				</view>
-			</view>
-		</scroll-view>
-		<text v-if="isShow" class="loading-text">
+			</scroll-view>
+		</block> 
+		<block v-if="TabCur == 1">
+			<scroll-view class="page" :style="{ height: pageHeight + 'px' }"></scroll-view>
+		</block>
+		<!-- <text v-if="isShow" class="loading-text">
 			{{ loadingType === 0 ? contentText.contentdown : loadingType === 1 ? contentText.contentrefresh : contentText.contentnomore }}
-		</text>
+		</text> -->
 	</view>
 </template>
-
 <script>
 import service from '@/service.js';
 import ruiDatePicker from '@/components/rattenking-dtpicker/rattenking-dtpicker.vue';
@@ -116,9 +116,10 @@ import EvanStep from '@/components/evan-steps/evan-step.vue';
 var _self,
 	page = 1;
 export default {
-	components: { ruiDatePicker,EvanSteps,EvanStep },
+	components: { ruiDatePicker, EvanSteps, EvanStep },
 	data() {
 		return {
+			TabCur: 0,
 			start: '',
 			end: '',
 			switchB: true,
@@ -130,9 +131,7 @@ export default {
 				contentnomore: '没有更多数据了'
 			},
 			isShow: true,
-			elements: [
-				
-			]
+			elements: []
 		};
 	},
 	created() {
@@ -156,7 +155,9 @@ export default {
 					})
 					.exec();
 				setTimeout(function() {
-					me.pageHeight = res.windowHeight - infoHeight - headHeight;
+					console.log(res.windowHeight +','+ infoHeight +','+ headHeight)
+					me.pageHeight = res.windowHeight - infoHeight - headHeight -38;
+					console.log(me.pageHeight)
 				}, 1000);
 			}
 		});
@@ -164,8 +165,8 @@ export default {
 		me.end = me.getDay('', 0).date;
 		if (service.getUsers().length > 0) {
 			if (service.getUsers()[0].username != '' && service.getUsers()[0].username != 'undefined') {
-				 me.getLists()
-			} else { 
+				me.getLists();
+			} else {
 				return uni.reLaunch({
 					url: '../login/login'
 				});
@@ -176,9 +177,8 @@ export default {
 			});
 		}
 	},
-	onShow(){
+	onShow() {
 		var me = this;
-		
 	},
 	// 下拉刷新
 	onPullDownRefresh() {
@@ -231,22 +231,32 @@ export default {
 			});
 	},
 	methods: {
-		showList(index, item){
+		tabSelect(e) {
+			this.TabCur = e.currentTarget.dataset.id;
+		},
+		showList(index, item) {
 			basic
 				.pollingRecordByPlanId(item.planId)
 				.then(res => {
 					if (res.flag) {
-						console.log(res.data == null)
-						if(res.data == null){
+						console.log(res.data == null);
+						if (res.data == null) {
 							uni.navigateTo({
-								url: '/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName
+								url: '/pages/component/polling?planId=' + item.planId + '&deptName=' + item.deptName
 							});
-						}else{
+						} else {
 							uni.navigateTo({
-								url: '/pages/component/polling?planId=' + item.planId+'&deptName=' + item.deptName+'&checkStaff=' + res.data.checkStaff+'&recordCheckList='+encodeURIComponent(JSON.stringify(res.data.recordCheckList))
+								url:
+									'/pages/component/polling?planId=' +
+									item.planId +
+									'&deptName=' +
+									item.deptName +
+									'&checkStaff=' +
+									res.data.checkStaff +
+									'&recordCheckList=' +
+									encodeURIComponent(JSON.stringify(res.data.recordCheckList))
 							});
 						}
-						
 					}
 				})
 				.catch(err => {
@@ -255,7 +265,6 @@ export default {
 						title: err.msg
 					});
 				});
-			
 		},
 		//列表数据
 		getLists: function() {
@@ -266,7 +275,7 @@ export default {
 			basic
 				.pollingPlanList(this.qFilter())
 				.then(res => {
-						console.log(res);
+					console.log(res);
 					if (res.flag) {
 						_self.elements = res.data.records;
 						uni.hideNavigationBarLoading();
@@ -311,13 +320,13 @@ export default {
 		},
 		bindChange1(e) {
 			this.start = e;
-			this.search()
+			this.search();
 		},
 		bindChange2(e) {
 			this.end = e;
-			this.search()
+			this.search();
 		},
-		
+
 		// 查询条件过滤
 		qFilter() {
 			let obj = {};
@@ -327,14 +336,14 @@ export default {
 			obj.pageNum = 1;
 			return obj;
 		},
-		compareDate(date1,date2){
-		                  var oDate1 = new Date(date1);
-		                  var oDate2 = new Date(date2);
-		                  if(oDate1.getTime() > oDate2.getTime()){
-		                      return true; //第一个大
-		                  } else {
-		                      return false; //第二个大
-		                  }
+		compareDate(date1, date2) {
+			var oDate1 = new Date(date1);
+			var oDate2 = new Date(date2);
+			if (oDate1.getTime() > oDate2.getTime()) {
+				return true; //第一个大
+			} else {
+				return false; //第二个大
+			}
 		},
 		search() {
 			const me = this;
@@ -361,6 +370,14 @@ export default {
 </script>
 
 <style>
+	 .tier {
+	        width: 100%;
+	        height: 100%;
+	    }
+	    .tier::-webkit-scrollbar {
+	        display: none;
+	    }
+
 .action {
 	font-size: 13px !important;
 }
