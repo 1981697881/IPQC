@@ -7,6 +7,42 @@
 				<navigator :url="'/pages/component/setting'"><text class="cuIcon-settings" style="font-size: 21px;"></text></navigator>
 			</view>
 		</view>
+		<view class="cu-modal" style="z-index: 333" :class="modalName == 'Modal' ? 'show' : ''">
+			<view class="cu-dialog bg-white" style="height: 360upx;">
+				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
+					<view class="content text-sl">新建巡检</view>
+					<view class="action" @tap="hideModal"><text class="cuIcon-close text-red"></text></view>
+				</view>
+				<view class="cu-bar margin-top solid-bottom" style="height: 60upx;">
+					<view class="action">
+						<view style="width: 70px;">检查项目:</view>
+						<ld-select
+							:list="projectType"
+							list-key="typeName"
+							value-key="typeId"
+							placeholder="请选择"
+							clearable
+							v-model="winForm.typeId"
+							@change="checkListChange"
+						></ld-select>
+					</view>
+				</view>
+				<view class="cu-bar solid-bottom" style="height: 60upx;">
+					<view class="action">
+						<view style="width: 70px;">检查日期:</view>
+						<picker mode="date" :value="winForm.planTime" start="2020-09-01" end="2040-09-01" @change="DateChange">
+							<view class="picker">{{ winForm.planTime }}</view>
+						</picker>
+					</view>
+				</view>
+				<view style="clear: both;" class="cu-bar bg-white justify-end padding-bottom-xl">
+					<view class="action">
+						<button class="cu-btn line-green text-green" @tap="hideModal">取消</button>
+						<button class="cu-btn bg-green margin-left" @tap="$manyCk(saveCom)">确定</button>
+					</view>
+				</view>
+			</view>
+		</view>
 		<view class="bg-green nav text-center">
 			<view class="cu-item" :class="0 == TabCur ? 'text-white cur' : ''" @tap="tabSelect" data-id="0">
 				<text class="cuIcon-camerafill"></text>
@@ -41,7 +77,7 @@
 				</view>
 			</view>
 			<scroll-view :style="{ height: pageHeight + 'px' }" scroll-x class="page">
-				<view style="margin-left: 10px;margin-right: 10px;" class="cu-list bg-white">
+				<view style="margin-left: 10px;margin-right: 10px;overflow-y: auto;height: 100%;" class="cu-list bg-white">
 					<view style="width: 100%;" class="cu-item" v-for="(item, index) in elements" :key="index" @tap="$manyCk(showList(index, item))">
 						<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px;">
 							<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">公司: {{ item.deptName }}</view>
@@ -98,9 +134,26 @@
 					</view>
 				</view>
 			</scroll-view>
-		</block> 
+		</block>
 		<block v-if="TabCur == 1">
-			<scroll-view class="page" :style="{ height: pageHeight + 'px' }"></scroll-view>
+			<scroll-view class="page" :style="{ height: pageHeight2 + 'px' }">
+				<view style="overflow-y: auto;height: 100%;">
+					<view v-for="(item, index) in cuIconList" :key="index">
+						<view class="cu-list menu-avatar">
+							<view class="cu-item" style="width: 100%;margin-top: 2px;height: 160upx;">
+								<view style="clear: both;width: 100%;" class="grid text-left col-2" @tap="addPlan(index, item)" data-target="Modal" data-number="item.number">
+									<view class="text-grey">项目编号:{{ item.proCode }}</view>
+									<view class="text-grey">项目名称:{{ item.proName }}</view>
+									<view class="text-grey">负责人:{{ item.principal }}</view>
+									<view class="text-grey">联系电话:{{ item.tel }}</view>
+									<view class="text-grey" style="width: 100%;">所属公司:{{ item.deptName }}</view>
+									<view class="text-grey" style="width: 100%;">详细地址:{{ item.address }}</view>
+								</view>
+							</view>
+						</view>
+					</view>
+				</view>
+			</scroll-view>
 		</block>
 		<!-- <text v-if="isShow" class="loading-text">
 			{{ loadingType === 0 ? contentText.contentdown : loadingType === 1 ? contentText.contentrefresh : contentText.contentnomore }}
@@ -125,13 +178,21 @@ export default {
 			switchB: true,
 			loadingType: 0,
 			pageHeight: 0,
+			pageHeight2: 0,
+			modalName: null,
 			contentText: {
 				contentdown: '上拉显示更多',
 				contentrefresh: '正在加载...',
 				contentnomore: '没有更多数据了'
 			},
+			winForm: {
+				planTime: '',
+				typeId: ''
+			},
 			isShow: true,
-			elements: []
+			elements: [],
+			projectType: [],
+			cuIconList: []
 		};
 	},
 	created() {
@@ -155,9 +216,8 @@ export default {
 					})
 					.exec();
 				setTimeout(function() {
-					console.log(res.windowHeight +','+ infoHeight +','+ headHeight)
-					me.pageHeight = res.windowHeight - infoHeight - headHeight -38;
-					console.log(me.pageHeight)
+					me.pageHeight = res.windowHeight - 190;
+					me.pageHeight2 = res.windowHeight - 88;
 				}, 1000);
 			}
 		});
@@ -165,6 +225,7 @@ export default {
 		me.end = me.getDay('', 0).date;
 		if (service.getUsers().length > 0) {
 			if (service.getUsers()[0].username != '' && service.getUsers()[0].username != 'undefined') {
+				me.initMain();
 				me.getLists();
 			} else {
 				return uni.reLaunch({
@@ -231,6 +292,105 @@ export default {
 			});
 	},
 	methods: {
+		saveCom() {
+			var me = this;
+			if (me.winForm.typeId == '' || typeof this.winForm.typeId == 'undefined') {
+				return uni.showToast({
+					icon: 'none',
+					title: '请选择类别！'
+				});
+			}
+			if (me.winForm.planTime == '' || typeof this.winForm.planTime == 'undefined') {
+				return uni.showToast({
+					icon: 'none',
+					title: '请选择日期！'
+				});
+			}
+			basic
+				.addPollingPlan(me.winForm)
+				.then(res => {
+					if (res.flag) {
+						basic
+							.pollingRecordByPlanId(res.data.planId)
+							.then(reso => {
+								if (reso.flag) {
+									me.modalName = null;
+									me.getLists();
+									console.log(reso.data == null);
+									if (reso.data == null) {
+										uni.navigateTo({
+											url: '/pages/component/polling?planId=' + res.data.planId + '&deptName=' + me.winForm.deptName
+										});
+									} else {
+										uni.navigateTo({
+											url:
+												'/pages/component/polling?planId=' +
+												res.data.planId +
+												'&deptName=' +
+												me.winForm.deptName +
+												'&checkStaff=' +
+												reso.data.checkStaff +
+												'&recordCheckList=' +
+												encodeURIComponent(JSON.stringify(reso.data.recordCheckList))
+										});
+									}
+								}
+							})
+							.catch(erro => {
+								uni.showToast({
+									icon: 'none',
+									title: erro.msg
+								});
+							});
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+					me.isClick = false;
+				});
+		},
+		checkListChange(val) {
+			this.winForm.typeId = val;
+		},
+		DateChange(e) {
+			this.winForm.planTime = e.detail.value;
+		},
+		initMain() {
+			const me = this;
+			basic
+				.projectTypeList()
+				.then(res => {
+					if (res.flag) {
+						res.data.forEach(item => {
+							item.typeId = item.typeId.toString();
+						});
+						me.$set(me, 'projectType', res.data);
+					}
+				})
+				.catch(err => {
+					uni.showToast({
+						icon: 'none',
+						title: err.msg
+					});
+				});
+		},
+		addPlan(index, item) {
+			this.winForm = {
+				planTime: this.getDay('', 0).date,
+				typeId: '',
+				proId: item.proId,
+				address: item.address,
+				deptId: item.deptId,
+				deptName: item.deptName
+			};
+			this.modalName = 'Modal';
+		},
+		hideModal(e) {
+			this.modalName = null;
+		},
 		tabSelect(e) {
 			this.TabCur = e.currentTarget.dataset.id;
 		},
@@ -280,6 +440,19 @@ export default {
 						_self.elements = res.data.records;
 						uni.hideNavigationBarLoading();
 						uni.stopPullDownRefresh(); //得到数据后停止下拉刷新
+					}
+				})
+				.catch(res => {
+					uni.showToast({
+						icon: 'none',
+						title: res.msg
+					});
+				});
+			basic
+				.projectList(this.qFilter())
+				.then(res => {
+					if (res.flag) {
+						_self.cuIconList = res.data.records;
 					}
 				})
 				.catch(res => {
@@ -370,13 +543,13 @@ export default {
 </script>
 
 <style>
-	 .tier {
-	        width: 100%;
-	        height: 100%;
-	    }
-	    .tier::-webkit-scrollbar {
-	        display: none;
-	    }
+.tier {
+	width: 100%;
+	height: 100%;
+}
+.tier::-webkit-scrollbar {
+	display: none;
+}
 
 .action {
 	font-size: 13px !important;

@@ -129,7 +129,7 @@ export default {
 	onLoad(option) {
 		//获取设定好的地址坐标（经纬度）
 		uni.getLocation({
-			type: 'gcj02',
+			type: 'wgs84',
 			success: res => {
 				this.lng_In = res.longitude;
 				this.lat_In = res.latitude;
@@ -279,8 +279,8 @@ export default {
 					}); */
 			} else {
 				uni.showToast({
-					icon: 'error',
-					title: '地址读取中请稍等'
+					icon: 'none',
+					title: '地址读取中'
 				});
 			}
 		},
@@ -341,36 +341,36 @@ export default {
 				title: '加载中'
 			});
 			let _this = this;
-			/* uni.authorize({
+			uni.authorize({
 				scope: 'scope.userLocation',
-				success() { */
-			uni.getLocation({
-				type: 'gcj02',
-				geocode: true,
-				success: res => {
-					/* uni.showToast({
-						icon: 'none',
-						duration: 2000,
-						title: res.latitude + '(' + res.longitude + ')'
-					}); */
-					console.log(res);
-					_this.lat_current = res.latitude;
-					_this.lng_current = res.longitude;
-					_this.getMaxLongitudeLatitude();
-					let Position = {
-						latitude: res.latitude,
-						longitude: res.longitude
-					};
-					_this.covers.push(Position);
-					_this.getLocationName();
+				success() {
+					uni.getLocation({
+						type: 'gcj02',
+						geocode: true,
+						success: res => {
+							uni.showToast({
+								icon: 'none',
+								duration: 2000,
+								title: res.latitude + '(' + res.longitude + ')'
+							});
+							console.log(res);
+							_this.lat_current = res.latitude;
+							_this.lng_current = res.longitude;
+							_this.getMaxLongitudeLatitude();
+							let Position = {
+								latitude: res.latitude,
+								longitude: res.longitude
+							};
+							_this.covers.push(Position);
+							_this.getLocationName();
+						}
+					});
 				}
 			});
-			/* }
-			}); */
 		},
 		getLocationName() {
 			let _this = this;
-			let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
+			/* let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
 			let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3'; //你申请的开发者密钥（Key）  一般放在后台获取过来
 			let getAddressUrl = URL + _this.lat_current + ',' + _this.lng_current + `&key=${key}`;
 			wx.request({
@@ -386,14 +386,18 @@ export default {
 						uni.hideLoading();
 					}, 300);
 				}
-			});
-			//高德定位
+			}); */
+			//高德定位 小程序
 			/* this.amapPlugin = new amap.AMapWX({
 				key: this.mapKey //该key 是在高德中申请的微信小程序key
 			});
+			console.log(_this.lat_current + ',' + _this.lng_current,)
 			this.amapPlugin.getRegeo({
-				type: 'wgs84', //map 组件使用的经纬度是国测局坐标， type 为 gcj02
+				type: 'gcj02', //map 组件使用的经纬度是国测局坐标， type 为 gcj02
+				location: _this.lng_current + ',' + _this.lat_current, 
 				success: function(res) {
+					console.log(res)
+					_this.isClick = true;
 					uni.showToast({
 						icon: 'none',
 						duration: 2000,
@@ -410,6 +414,31 @@ export default {
 					console.log(JSON.stringify(res));
 				}
 			}); */
+			//高德定位 Android
+			let URL = 'https://restapi.amap.com/v3/geocode/regeo';
+			let key = 'ef196cee566aac0cbca74a0992733d01'; //你申请的开发者密钥（Key）  一般放在后台获取过来
+			wx.request({
+				url: URL,
+				method: 'GET',
+				data: { 
+					key: key,
+					location: _this.lng_current + ',' + _this.lat_current,
+					extensions: 'all'
+				},
+				success: result => {
+					_this.isClick = true;
+					console.log(result);
+					uni.showToast({
+						icon: 'none',
+						duration: 2000,
+						title: _this.lng_current + '(' + _this.lat_current + ')'
+					});
+					let Res_Data = result.data.regeocode;
+					_this.ClockInObj.street = Res_Data.formatted_address;
+					_this.ClockInObj.Details = Res_Data.formatted_address;
+					_this.ClockInObj.address = Res_Data.formatted_address;
+				}
+			});
 		},
 		//公司地址范围限制
 		getMaxLongitudeLatitude(res) {

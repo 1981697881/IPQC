@@ -8,9 +8,24 @@ export default {
 			},
 			data: params
 	    });
+	},//主页-项目列表
+	projectList(params) {
+	    return Request().post('/app/projectList/'+params.pageNum+'/'+params.pageSize, {
+	        header: {
+				contentType: 'application/json',
+			},
+			data: params
+	    });
 	},//获取人员
 	userList() {
 	    return Request().get('/user/format', {
+			header: {
+				accept: '*/*',
+			},
+	    });
+	},//获取项目信息
+	projectTypeList() {
+	    return Request().get('/project-type/format', {
 			header: {
 				accept: '*/*',
 			},
@@ -48,6 +63,14 @@ export default {
 	//巡检登记
 	pollingRecordAdd(params) {
 	    return Request().post('/app/pollingRecordAdd', {
+	        header: {
+				contentType: 'application/json',
+			},
+			data: params
+	    });
+	},//添加巡检计划
+	addPollingPlan(params) {
+	    return Request().post('/app/addPollingPlan', {
 	        header: {
 				contentType: 'application/json',
 			},

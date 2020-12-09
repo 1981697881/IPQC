@@ -539,7 +539,6 @@ export default {
 		saveData() {
 			if (this.cuIList.length > 0) {
 				uni.$off('recordClockIn');
-
 				let list = JSON.parse(JSON.stringify(this.cuIList));
 				let me = this;
 				let rectifyImg = [];
