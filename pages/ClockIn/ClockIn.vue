@@ -16,6 +16,7 @@
 				<!-- 公司打卡 -->
 				<view class="item_In" v-if="activeType === false">
 					<view class="address">{{ ClockInObj.address }}</view>
+					<!-- <view class="address">{{ lng_lug }}</view> -->
 					<image class="img" :src="IS_Range === true ? '../../static/OK.png' : '../../static/warn.png'" mode=""></image>
 					<view class="IS_Range" :class="{ IS_Range_No: IS_Range === false }">{{ IS_Range_Content }}</view>
 				</view>
@@ -85,6 +86,7 @@ export default {
 			covers: [],
 			activeType: false,
 			time: '',
+			lng_lug: '',
 			ClockInObj: {
 				street: '',
 				Details: '',
@@ -129,10 +131,11 @@ export default {
 	onLoad(option) {
 		//获取设定好的地址坐标（经纬度）
 		uni.getLocation({
-			type: 'wgs84',
+			type: 'gcj02',
 			success: res => {
-				this.lng_In = res.longitude;
-				this.lat_In = res.latitude;
+				this.lng_lug = res.longitude+','+res.latitude
+				this.lng_In = res.longitude + 0.005100;
+				this.lat_In = res.latitude - 0.002200;
 				this.Distance_In = 0.005;
 				this.Distance_Out = 0.005;
 				this.GetCurrentAddress();
@@ -263,7 +266,7 @@ export default {
 							'&clockLocation=' +
 							rqData.clockLocation
 					});
-				}
+				} 
 				// 保存打卡数据
 				/* uniCloud
 					.callFunction({
@@ -341,9 +344,9 @@ export default {
 				title: '加载中'
 			});
 			let _this = this;
-			uni.authorize({
+			/* uni.authorize({
 				scope: 'scope.userLocation',
-				success() {
+				success() { */
 					uni.getLocation({
 						type: 'gcj02',
 						geocode: true,
@@ -354,30 +357,29 @@ export default {
 								title: res.latitude + '(' + res.longitude + ')'
 							});
 							console.log(res);
-							_this.lat_current = res.latitude;
-							_this.lng_current = res.longitude;
+							_this.lat_current = res.latitude - 0.002200;
+							_this.lng_current = res.longitude + 0.005400;
 							_this.getMaxLongitudeLatitude();
 							let Position = {
-								latitude: res.latitude,
-								longitude: res.longitude
+								latitude: res.latitude - 0.002200,
+								longitude: res.longitude + 0.005400
 							};
 							_this.covers.push(Position);
 							_this.getLocationName();
 						}
 					});
-				}
-			});
+				/* }
+			}); */
 		},
 		getLocationName() {
-			let _this = this;
-			/* let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
+			let _this = this; 
+			let URL = 'https://apis.map.qq.com/ws/geocoder/v1/?location=';
 			let key = 'OKYBZ-EF4AJ-OJFFM-KJOVL-GFN5S-4MBY3'; //你申请的开发者密钥（Key）  一般放在后台获取过来
 			let getAddressUrl = URL + _this.lat_current + ',' + _this.lng_current + `&key=${key}`;
 			wx.request({
 				url: getAddressUrl,
 				success: result => {
 					_this.isClick = true;
-					console.log(result);
 					let Res_Data = result.data.result;
 					_this.ClockInObj.street = Res_Data.address;
 					_this.ClockInObj.Details = Res_Data.formatted_addresses.recommend;
@@ -386,7 +388,7 @@ export default {
 						uni.hideLoading();
 					}, 300);
 				}
-			}); */
+			});
 			//高德定位 小程序
 			/* this.amapPlugin = new amap.AMapWX({
 				key: this.mapKey //该key 是在高德中申请的微信小程序key
@@ -415,7 +417,7 @@ export default {
 				}
 			}); */
 			//高德定位 Android
-			let URL = 'https://restapi.amap.com/v3/geocode/regeo';
+			/* let URL = 'https://restapi.amap.com/v3/geocode/regeo';
 			let key = 'ef196cee566aac0cbca74a0992733d01'; //你申请的开发者密钥（Key）  一般放在后台获取过来
 			wx.request({
 				url: URL,
@@ -438,7 +440,7 @@ export default {
 					_this.ClockInObj.Details = Res_Data.formatted_address;
 					_this.ClockInObj.address = Res_Data.formatted_address;
 				}
-			});
+			}); */
 		},
 		//公司地址范围限制
 		getMaxLongitudeLatitude(res) {

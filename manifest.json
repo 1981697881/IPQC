@@ -17,9 +17,7 @@
             "delay" : 0
         },
         /* 5+App特有相关 */
-        "modules" : {
-            "Geolocation" : {}
-        },
+        "modules" : {},
         "compatible" : {
             "ignoreVersion" : true
         },
@@ -60,13 +58,7 @@
                         "UniversalLinks" : ""
                     }
                 },
-                "geolocation" : {
-                    "amap" : {
-                        "__platform__" : [ "android" ],
-                        "appkey_ios" : "",
-                        "appkey_android" : "99a67fe28141c92047738c805f7a18a5"
-                    }
-                },
+                "geolocation" : {},
                 "push" : {}
             }
         }
@@ -92,5 +84,10 @@
     },
     "uniStatistics" : {
         "enable" : false
+    },
+    "h5" : {
+        "sdkConfigs" : {
+            "maps" : {}
+        }
     }
 }
