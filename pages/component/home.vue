@@ -155,9 +155,6 @@
 				</view>
 			</scroll-view>
 		</block>
-		<!-- <text v-if="isShow" class="loading-text">
-			{{ loadingType === 0 ? contentText.contentdown : loadingType === 1 ? contentText.contentrefresh : contentText.contentnomore }}
-		</text> -->
 	</view>
 </template>
 <script>
@@ -166,8 +163,6 @@ import ruiDatePicker from '@/components/rattenking-dtpicker/rattenking-dtpicker.
 import basic from '@/api/basic';
 import EvanSteps from '@/components/evan-steps/evan-steps.vue';
 import EvanStep from '@/components/evan-steps/evan-step.vue';
-var _self,
-	page = 1;
 export default {
 	components: { ruiDatePicker, EvanSteps, EvanStep },
 	data() {
@@ -176,15 +171,9 @@ export default {
 			start: '',
 			end: '',
 			switchB: true,
-			loadingType: 0,
 			pageHeight: 0,
 			pageHeight2: 0,
 			modalName: null,
-			contentText: {
-				contentdown: '上拉显示更多',
-				contentrefresh: '正在加载...',
-				contentnomore: '没有更多数据了'
-			},
 			winForm: {
 				planTime: '',
 				typeId: ''
@@ -196,7 +185,6 @@ export default {
 		};
 	},
 	created() {
-		_self = this;
 		var me = this;
 		uni.getSystemInfo({
 			success: function(res) {
@@ -240,56 +228,6 @@ export default {
 	},
 	onShow() {
 		var me = this;
-	},
-	// 下拉刷新
-	onPullDownRefresh() {
-		this.getLists();
-	},
-	// 上拉加载
-	onReachBottom: function() {
-		this.isShow = false;
-		page++; //每触底一次 page +1
-		// console.log(_self.cuIconList.length);
-		if (_self.loadingType != 0) {
-			//loadingType!=0;直接返回
-			return false;
-		}
-		_self.loadingType = 1;
-		// console.log(page);
-		uni.showNavigationBarLoading(); //显示加载动画
-		let obj = this.qFilter();
-		obj.pageNum = page;
-		basic
-			.pollingPlanList(obj)
-			.then(res => {
-				if (res.flag) {
-					if (_self.cuIconList.length == res.data.total) {
-						//没有数据
-						_self.loadingType = 2;
-						uni.hideNavigationBarLoading(); //关闭加载动画
-						return false;
-					}
-					if (res.data.records.length > 0) {
-						let dList = res.data.records;
-						dList.forEach((item, index) => {
-							_self.elements.push(item);
-						});
-					}
-					/* for (var i = _self.cuIconList.length; i < res.data.total; i++) {
-						_self.cuIconList = _self.cuIconList.concat(res.data.list[i - 1]); //将数据拼接在一起
-					} */
-					_self.loadingType = 0; //将loadingType归0重置
-					uni.hideNavigationBarLoading(); //关闭加载动画
-					uni.stopPullDownRefresh(); //得到数据后停止下拉刷新
-					this.isShow = true;
-				}
-			})
-			.catch(err => {
-				uni.showToast({
-					icon: 'none',
-					title: err.msg
-				});
-			});
 	},
 	methods: {
 		saveCom() {
@@ -428,18 +366,13 @@ export default {
 		},
 		//列表数据
 		getLists: function() {
-			//第一次回去数据
-			_self.loadingType = 0;
-			uni.showNavigationBarLoading();
 			const me = this;
 			basic
 				.pollingPlanList(this.qFilter())
 				.then(res => {
 					console.log(res);
 					if (res.flag) {
-						_self.elements = res.data.records;
-						uni.hideNavigationBarLoading();
-						uni.stopPullDownRefresh(); //得到数据后停止下拉刷新
+						me.elements = res.data.records;
 					}
 				})
 				.catch(res => {
@@ -452,7 +385,7 @@ export default {
 				.projectList(this.qFilter())
 				.then(res => {
 					if (res.flag) {
-						_self.cuIconList = res.data.records;
+						me.cuIconList = res.data.records;
 					}
 				})
 				.catch(res => {
@@ -499,13 +432,12 @@ export default {
 			this.end = e;
 			this.search();
 		},
-
 		// 查询条件过滤
 		qFilter() {
 			let obj = {};
 			this.start != null && this.start != undefined ? (obj.startDate = this.start) : null;
 			this.end != null && this.end != undefined ? (obj.endDate = this.end) : null;
-			obj.pageSize = 20;
+			obj.pageSize = 100;
 			obj.pageNum = 1;
 			return obj;
 		},

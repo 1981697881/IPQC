@@ -351,12 +351,6 @@ export default {
 						type: 'gcj02',
 						geocode: true,
 						success: res => {
-							uni.showToast({
-								icon: 'none',
-								duration: 2000,
-								title: res.latitude + '(' + res.longitude + ')'
-							});
-							console.log(res);
 							_this.lat_current = res.latitude - 0.002200;
 							_this.lng_current = res.longitude + 0.005400;
 							_this.getMaxLongitudeLatitude();

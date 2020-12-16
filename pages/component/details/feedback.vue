@@ -497,7 +497,6 @@ export default {
 			uni.chooseImage({
 				count: 3, //默认9
 				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
-				sourceType: ['album'], //从相册选择
 				success: res => {
 					if (this.form.rectifyImg.length != 0) {
 						this.form.rectifyImg = this.form.rectifyImg.concat(res.tempFilePaths);

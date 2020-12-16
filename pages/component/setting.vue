@@ -6,12 +6,12 @@
 		</cu-custom>
 		<scroll-view scroll-y class="page">
 			<view class="cu-list menu" :class="[menuBorder ? 'sm-border' : '', menuCard ? 'card-menu margin-top' : '']" style="padding: 5px;">
-				<view class="cu-item" :class="menuArrow ? 'arrow' : ''">
+				<!-- <view class="cu-item" :class="menuArrow ? 'arrow' : ''">
 					<view class="content">
 						<image src="/static/logo.png" class="png" mode="aspectFit"></image>
 						<text class="text-grey">系统设置</text>
 					</view>
-				</view>
+				</view> -->
 				<view class="cu-item" :class="menuArrow ? 'arrow' : ''" @tap="$manyCk(checkUpload)">
 					<!-- @tap="$manyCk(checkUpload)" -->
 					<button class="cu-btn content" open-type="contact">

@@ -47,7 +47,7 @@
 		</view>
 		<view class="content">
 			<view class="padding" style="text-align: center;">
-				<view class="cu-avatar round imgxl margin-left" style="background-image:url(../static/uugai.com-1595407574492.png;"></view>
+				<view class="cu-avatar round imgxl margin-left"></view>
 			</view>
 			<view class="input-group">
 				<view class="input-row border">

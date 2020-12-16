@@ -235,21 +235,21 @@ export default {
 	},
 	onShow: function(option) {
 		let me = this;
-		console.log(12213113)
+		console.log(12213113);
 		uni.$on('recordClockIn', res => {
-			console.log(res)
+			console.log(res);
 			me.winForm.clockTime = res.clockTime;
 			me.winForm.clockLocation = res.clockLocation;
 		});
 	},
 	onLoad: function(option) {
 		let me = this;
-		console.log(option)
+		console.log(option);
 		if (JSON.stringify(option) != '{}') {
 			me.planId = option.planId;
 			me.deptName = option.deptName;
-			me.winForm.clockTime = option.clockTime
-			me.winForm.clockLocation = option.clockLocation
+			me.winForm.clockTime = option.clockTime;
+			me.winForm.clockLocation = option.clockLocation;
 			me.getList(option.planId);
 		}
 	},
@@ -276,18 +276,18 @@ export default {
 		me.initMain();
 	},
 	methods: {
-		handleShare(){
+		handleShare() {
 			uni.share({
-			    provider: "weixin",
-			    scene: "WXSceneSession",
-			    type: 1,
-			    summary: "测试",
-			    success: function (res) {
-			        console.log("success:" + JSON.stringify(res));
-			    },
-			    fail: function (err) {
-			        console.log("fail:" + JSON.stringify(err));
-			    }
+				provider: 'weixin',
+				scene: 'WXSceneSession',
+				type: 1,
+				summary: '测试',
+				success: function(res) {
+					console.log('success:' + JSON.stringify(res));
+				},
+				fail: function(err) {
+					console.log('fail:' + JSON.stringify(err));
+				}
 			});
 		},
 		getList(option) {
@@ -320,7 +320,7 @@ export default {
 				});
 		},
 		del(index, item) {
-			let me = this
+			let me = this;
 			uni.showModal({
 				title: '温馨提示',
 				content: '是否删除当前行,删除将无法复原？',
@@ -362,11 +362,11 @@ export default {
 									let str = item2.concerns;
 									data.forEach((items, indexs) => {
 										str.push({
-											conId:items.conId.toString(),
-											concerns:items.concerns,
-											opinion:items.opinion,
-											checked: false,
-										})
+											conId: items.conId.toString(),
+											concerns: items.concerns,
+											opinion: items.opinion,
+											checked: false
+										});
 									});
 									me.$set(item2, 'concerns', str);
 								}
@@ -393,7 +393,7 @@ export default {
 					this.$set(item2, 'isThrough', false);
 				}
 			}
-		},//event:默认参数,item: 子数据,item2:父数据
+		}, //event:默认参数,item: 子数据,item2:父数据
 		CheckConIdChange(e, item, item2) {
 			let me = this;
 			if (!item.checked) {
@@ -403,7 +403,7 @@ export default {
 				let str = item2.opinion;
 				arr.forEach((items, indexs) => {
 					if (items.checked) {
-						console.log(items)
+						console.log(items);
 						str += indexs + 1 + '' + items.opinion + '\n';
 					}
 				});
@@ -426,7 +426,6 @@ export default {
 			uni.chooseImage({
 				count: 3, //默认9
 				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
-				sourceType: ['album'], //从相册选择
 				success: res => {
 					console.log(res.tempFilePaths);
 					if (item.rectifyImg.length != 0) {
@@ -543,85 +542,113 @@ export default {
 				let me = this;
 				let rectifyImg = [];
 				delete list[0].rectifyImg;
-				if(me.cuIList[0].rectifyImg.length>0){
+				if (me.cuIList[0].rectifyImg.length > 0) {
 					me.isClick = true;
 					for (let i = 0; i < me.cuIList[0].rectifyImg.length; i++) {
-					const uploadTask = uni.uploadFile({
-						url: service.getUrls().url+'file/imgUpload',
-						filePath: me.cuIList[0].rectifyImg[i],
-						name: 'imgS',
-						header: {
-							'Authorization': this.$store.state.token
-						},
-						success: function(uploadFileRes) {
-							let data = JSON.parse(uploadFileRes.data)
-							if(data.flag){
-								rectifyImg.push(data.data)
-								console.log(rectifyImg)
-								if((i+1) == me.cuIList[0].rectifyImg.length){
-									let concernsData = []
-									list[0].concerns.forEach((items,indexs)=>{
-										if(items.checked){
-											concernsData.push(items.concerns)
-										}
-									})
-									list[0].concerns = concernsData.toString()
-									list[0].concernsImg = rectifyImg.toString()
-									console.log(list[0])
-									basic
-										.pollingRecordAdd(list[0])
-										.then(res => {
-											if (res.flag) {
-												uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
-												uni.showToast({
-													icon: 'success',
-													title: res.msg
-												});
-												uni.navigateBack({
-													delta:2,
-													url: '../component/polling'
-												});
-												/* let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
+						const uploadTask = uni.uploadFile({
+							url: service.getUrls().url + 'file/imgUpload',
+							filePath: me.cuIList[0].rectifyImg[i],
+							name: 'imgS',
+							header: {
+								Authorization: this.$store.state.token
+							},
+							success: function(uploadFileRes) {
+								let data = JSON.parse(uploadFileRes.data);
+								if (data.flag) {
+									rectifyImg.push(data.data);
+									console.log(rectifyImg);
+									if (i + 1 == me.cuIList[0].rectifyImg.length) {
+										let concernsData = [];
+										list[0].concerns.forEach((items, indexs) => {
+											if (items.checked) {
+												concernsData.push(items.concerns);
+											}
+										});
+										list[0].concerns = concernsData.toString();
+										list[0].concernsImg = rectifyImg.toString();
+										console.log(list[0]);
+										basic
+											.pollingRecordAdd(list[0])
+											.then(res => {
+												if (res.flag) {
+													uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+													uni.showToast({
+														icon: 'success',
+														title: res.msg
+													});
+													uni.navigateBack({
+														delta: 2,
+														url: '../component/polling'
+													});
+													/* let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
 													return {
 														name: 'imgS',
 														uri: value
 													};
 												}); */
-
-											}
-										})
-										.catch(err => {
-											uni.showToast({
-												icon: 'none',
-												title: err.msg
+												}
+											})
+											.catch(err => {
+												uni.showToast({
+													icon: 'none',
+													title: err.msg
+												});
+												this.isClick = false;
 											});
-											this.isClick = false;
-										});
-
+									}
 								}
+								uni.showToast({
+									icon: 'success',
+									title: data.msg
+								});
+							},
+							fail: err => {
+								console.log('uploadImage fail', err);
+								uni.showModal({
+									content: err.errMsg,
+									showCancel: false
+								});
 							}
-							uni.showToast({
-								icon: 'success',
-								title: data.msg
-							});
-						},
-						fail: err => {
-							console.log('uploadImage fail', err);
-							uni.showModal({
-								content: err.errMsg,
-								showCancel: false
-							});
+						});
+						uploadTask.onProgressUpdate(function(reso) {
+							me.percent = reso.progress;
+						});
+					}
+				} else {
+					let concernsData = [];
+					list[0].concerns.forEach((items, indexs) => {
+						if (items.checked) {
+							concernsData.push(items.concerns);
 						}
 					});
-					uploadTask.onProgressUpdate(function(reso) {
-						me.percent = reso.progress;
-					});
-					}
-				}else{
-					uni.showToast({
+					list[0].concerns = concernsData.toString();
+					basic
+						.pollingRecordAdd(list[0])
+						.then(res => {
+							if (res.flag) {
+								uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+								uni.showToast({
+									icon: 'success',
+									title: res.msg
+								});
+								uni.navigateBack({
+									delta: 2,
+									url: '../component/polling'
+								});
+							}
+						})
+						.catch(err => {
+							uni.showToast({
+								icon: 'none',
+								title: err.msg
+							});
+							this.isClick = false;
+						});
+
+					/* uni.showToast({
 						icon: 'none',
 						title: '请选择图片'
-					});
+					}); */
 				}
 			}
 		},
@@ -675,7 +702,7 @@ export default {
 				checkId: [],
 				checkStaff: '',
 				clockLocation: that.winForm.clockLocation,
-				clockTime: that.winForm.clockTime,
+				clockTime: that.winForm.clockTime
 			};
 			that.modalName2 = 'Modal';
 			/* that.cuIList.push({
@@ -684,7 +711,7 @@ export default {
 				dispatchNum: 0
 			}); */
 			that.isFab = false;
-		},
+		}
 	}
 };
 </script>
