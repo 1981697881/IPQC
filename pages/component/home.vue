@@ -77,13 +77,13 @@
 				</view>
 			</view>
 			<scroll-view :style="{ height: pageHeight + 'px' }" scroll-x class="page">
-				<view style="margin-left: 10px;margin-right: 10px;overflow-y: auto;height: 100%;" class="cu-list bg-white">
-					<view style="width: 100%;" class="cu-item" v-for="(item, index) in elements" :key="index" @tap="$manyCk(showList(index, item))">
-						<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px;">
+				<view style="margin-left: 10px;margin-right: 10px;overflow-y: auto;height: 100%;" class=" cu-list bg-white ">
+					<view  style="width: 100%;" class="cu-item" v-for="(item, index) in elements" :key="index" @tap="$manyCk(showList(index, item))">
+						<view :class="item.riskLevel!=null&&item.riskLevel=='0'?'text-blue':(item.riskLevel=='1'?'text-yellow':(item.riskLevel=='2'?'text-orange':(item.riskLevel=='3'?'text-red':'text-grey')))" class="cu-bar bg-white" style="height: 25px;min-height: 25px;">
 							<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">公司: {{ item.deptName }}</view>
 							<view class="action">单号: {{ item.planNo }}</view>
 						</view>
-						<view class="text-grey cu-bar bg-white" style="height: 25px;min-height: 25px">
+						<view :class="item.riskLevel!=null&&item.riskLevel=='0'?'text-blue':(item.riskLevel=='1'?'text-yellow':(item.riskLevel=='2'?'text-orange':(item.riskLevel=='3'?'text-red':'text-grey')))" class="cu-bar bg-white" style="height: 25px;min-height: 25px">
 							<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">项目: {{ item.proName }}</view>
 							<view class="action">检查人员: {{ item.inspector }}</view>
 						</view>

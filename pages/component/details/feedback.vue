@@ -3,7 +3,7 @@
 		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">整改登记</block>
-			<block slot="right"><text @tap="$manyCk(handleShare)" class="cuIcon-forward margin-right-xs">分享</text></block>
+			<!-- <block slot="right"><text @tap="$manyCk(handleShare)" class="cuIcon-forward margin-right-xs">分享</text></block> -->
 		</cu-custom>
 		<view><progress :percent="percent" stroke-width="10"></progress></view>
 		<view class="cu-modal" style="z-index: 555;" :class="modalName2 == 'Modal' ? 'show' : ''">
@@ -65,9 +65,10 @@
 			<form>
 				<view class="cu-form-group">
 					<view class="title">被检人员</view>
-					<picker @change="checkStaffChange" :range-key="'username'" :value="index3" :range="userList">
+					<!-- <picker @change="checkStaffChange" :range-key="'username'" :value="index3" :range="userList">
 						<view class="picker">{{ form.checkStaffName != '' ? form.checkStaffName : '请选择' }}</view>
-					</picker>
+					</picker> -->
+					<input placeholder="请输入" v-model="form.checkStaff" name="input" />
 				</view>
 				<view class="cu-form-group">
 					<view class="title">陪同人员</view>
@@ -211,19 +212,18 @@ export default {
 					.then(res => {
 						if (res.flag) {
 							me.form = res.data;
-							for (let i in me.userList) {
+							/* for (let i in me.userList) {
 								if (me.userList[i].uid == me.form.checkStaff) {
 									me.$set(me.form, 'checkStaffName', me.userList[i].username);
 								}
-							}
-
+							} */
 							me.form.rectifyImg = me.form.rectifyImg.split(',');
 							for (let i = 0; i < me.form.rectifyImg.length; i++) {
 								me.form.rectifyImg[i] = service.getUrls().url + 'uploadFiles/image/' + me.form.rectifyImg[i];
 							}
 							me.form.concerns = me.form.concerns.split(',');
 							me.form.checkContent = me.form.opinion;
-							me.form.concernsImg = me.form.concernsImg.split(',');
+							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
 							for (let i = 0; i < me.form.concernsImg.length; i++) {
 								me.form.concernsImg[i] = service.getUrls().url + 'uploadFiles/image/' + me.form.concernsImg[i];
 							}
@@ -260,7 +260,8 @@ export default {
 						if (res.flag) {
 							me.form.concerns = res.data.concerns.split(',');
 							me.form.checkContent = res.data.opinion;
-							me.form.concernsImg = res.data.concernsImg.split(',');
+							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
+							me.form.checkStaff = res.data.checkStaff;
 							for (let i = 0; i < me.form.concernsImg.length; i++) {
 								me.form.concernsImg[i] = service.getUrls().url + 'uploadFiles/image/' + me.form.concernsImg[i];
 							}

@@ -4,7 +4,7 @@
 		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">巡检登记</block>
-			<block slot="right"><text @tap="$manyCk(handleShare)" class="cuIcon-forward margin-right-xs">分享</text></block>
+			<!-- <block slot="right"><text @tap="$manyCk(handleShare)" class="cuIcon-forward margin-right-xs">分享</text></block> -->
 		</cu-custom>
 		<uni-fab
 			v-show="isFab"
@@ -25,8 +25,8 @@
 				</view>
 				<view class="cu-bar solid-bottom" style="height: 60upx;">
 					<view class="action">
-						<view style="width: 70px;">被检人员</view>
-						<ld-select
+						<view style="width: 70px;">被检人员：</view>
+						<!-- <ld-select
 							:list="userList"
 							list-key="username"
 							value-key="uid"
@@ -34,7 +34,8 @@
 							clearable
 							v-model="winForm.checkStaff"
 							@change="userListChange"
-						></ld-select>
+						></ld-select> -->
+						<input placeholder="请输入" v-model="winForm.checkStaff" name="input" />
 					</view>
 				</view>
 				<view class="cu-bar solid-bottom" style="height: 60upx;">
