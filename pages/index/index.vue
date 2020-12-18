@@ -8,7 +8,7 @@ import store from '@/store';
 import login from '@/api/login';
 import basic from '@/api/basic';
 import { mapState } from 'vuex';
-export default { 
+export default {
 	data() {
 		return {
 			PageCur: 'component',
@@ -18,6 +18,29 @@ export default {
 	},
 	computed: mapState(['forcedLogin', 'hasLogin', 'username']),
 	created() {
+		plus.key.addEventListener(
+			'backbutton',
+			() => {
+				if (back_k) {
+					plus.runtime.quit();
+				} else {
+					uni.showToast({
+						title: '再按一次退出应用',
+						icon: 'none'
+					});
+				}
+				back_k++;
+				setTimeout(() => {
+					back_k--;
+				}, 3000);
+			},
+			false
+		);
+	},
+	onLoad(options) {
+		console.log(1233213);
+		console.log(options);
+
 		/**
 		 * 默认登录，这情况为已登录过，而登录缓存还在，后台登录，前端不展示登录页
 		 * 检测用户账号密码是否在已缓存的用户列表中
@@ -28,28 +51,30 @@ export default {
 					const data = {
 						username: service.getUsers()[0].username,
 						password: service.getUsers()[0].password
-					}; 
+					};
 					if (data.username && data.password) {
-						login
-							.login(data)
-							.then(res => {
-								if (res.flag) {
-									/* data.userId = res.data['userId'];
-									data.username = res.data['username']; */
-									store.commit('login', data);
-									service.clearUser();
-									service.addUser(data);
-								}
-							})
-							.catch(err => {
-								uni.showToast({
-									icon: 'none',
-									title: err.msg
+						if (options.isLogin != 'true') {
+							login
+								.login(data)
+								.then(res => {
+									if (res.flag) {
+										/* data.userId = res.data['userId'];
+										data.username = res.data['username']; */
+										store.commit('login', data);
+										service.clearUser();
+										service.addUser(data);
+									}
+								})
+								.catch(err => {
+									uni.showToast({
+										icon: 'none',
+										title: err.msg
+									});
+									return uni.reLaunch({
+										url: '../login/login'
+									});
 								});
-								return uni.reLaunch({
-									url: '../login/login'
-								});
-							});
+						}
 					}
 				} else {
 					return uni.reLaunch({
@@ -70,22 +95,6 @@ export default {
 				url: '../login/login'
 			});
 		}
-		plus.key.addEventListener('backbutton',()=>{
-		   if(back_k){
-						plus.runtime.quit();
-		   }else{
-						uni.showToast({
-						title:"再按一次退出应用",
-						icon:'none'
-						});
-					}
-						back_k ++
-		   setTimeout(()=>{
-						back_k --
-		   },3000)
-		  }, false);
-	},
-	onLoad() {
 		this.plusReady();
 		var that = this;
 		uni.getSystemInfo({
@@ -111,7 +120,7 @@ export default {
 		AndroidCheckUpdate2() {
 			var that = this;
 			uni.request({
-				url: service.getUrls().url+'/pda/output.json', //获取最新版本号
+				url: service.getUrls().url + '/pda/output.json', //获取最新版本号
 				method: 'GET',
 				data: {},
 				success: res => {
@@ -134,7 +143,7 @@ export default {
 
 						//res.data.androidurl    是apk的下载链接
 						console.log('准备');
-						var dtask = plus.downloader.createDownload(service.getUrls().url+'/pda/ipqc.apk', {}, function(d, status) {
+						var dtask = plus.downloader.createDownload(service.getUrls().url + '/pda/ipqc.apk', {}, function(d, status) {
 							console.log('开始');
 							// 下载完成
 							if (status == 200) {
@@ -165,11 +174,11 @@ export default {
 			var _this = this;
 			uni.request({
 				//请求地址，设置为自己的服务器链接
-				url: service.getUrls().url+'/pda/output.json',
+				url: service.getUrls().url + '/pda/output.json',
 				method: 'GET',
 				data: {},
 				success: resMz => {
-					console.log(resMz)
+					console.log(resMz);
 					var server_version = resMz.data[0].apkData.versionName;
 					var currTimeStamp = new Date().getTime();
 					// 判断缓存时间
@@ -213,7 +222,7 @@ export default {
 		},
 		downWgt: function() {
 			var that = this;
-			var downloadApkUrl = service.getUrls().url+'/pda/ipqc.apk';
+			var downloadApkUrl = service.getUrls().url + '/pda/ipqc.apk';
 			var dtask = plus.downloader.createDownload(downloadApkUrl, {}, function(d, status) {
 				// 下载完成
 				if (status == 200) {
@@ -226,11 +235,10 @@ export default {
 					});
 				} else {
 					uni.showToast({
-						title: '下载更新失败',
+						title: '下载更新失败'
 					});
 					plus.nativeUI.closeWaiting();
 				}
-				
 			});
 			//监听下载
 			dtask.addEventListener('statechanged', function(download, status) {
@@ -251,7 +259,7 @@ export default {
 						break;
 					case 4:
 						uni.showToast({
-							title: '下载完成',
+							title: '下载完成'
 						});
 						plus.nativeUI.closeWaiting();
 						break;

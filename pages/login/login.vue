@@ -265,7 +265,7 @@
 				 */
 				//if (this.forcedLogin) {
 					uni.reLaunch({
-						url: '../index/index',
+						url: '../index/index?isLogin=true',
 					});
 				/* } else {
 					uni.navigateBack();

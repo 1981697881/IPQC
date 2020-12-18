@@ -73,7 +73,7 @@
 				</view>
 				<view class="action">
 					<view class="title">是否完成：</view>
-					<switch class="blue" @change="SwitchB" :class="switchB ? 'checked' : ''" :checked="switchB ? true : false" color="#e54d42"></switch>
+					<switch class="blue" @change="SwitchB" :class="onSwitch ? 'checked' : ''" :checked="onSwitch ? true : false" color="#e54d42"></switch>
 				</view>
 			</view>
 			<scroll-view :style="{ height: pageHeight + 'px' }" scroll-x class="page">
@@ -170,7 +170,7 @@ export default {
 			TabCur: 0,
 			start: '',
 			end: '',
-			switchB: true,
+			onSwitch: false,
 			pageHeight: 0,
 			pageHeight2: 0,
 			modalName: null,
@@ -422,7 +422,8 @@ export default {
 			return m;
 		},
 		SwitchB(e) {
-			this.switchB = e.detail.value;
+			this.onSwitch = e.detail.value;
+			this.search();
 		},
 		bindChange1(e) {
 			this.start = e;
@@ -434,11 +435,14 @@ export default {
 		},
 		// 查询条件过滤
 		qFilter() {
+			console.log(123)
 			let obj = {};
 			this.start != null && this.start != undefined ? (obj.startDate = this.start) : null;
 			this.end != null && this.end != undefined ? (obj.endDate = this.end) : null;
 			obj.pageSize = 100;
+			obj.isornot = this.onSwitch.toString();
 			obj.pageNum = 1;
+			console.log(obj)
 			return obj;
 		},
 		compareDate(date1, date2) {
