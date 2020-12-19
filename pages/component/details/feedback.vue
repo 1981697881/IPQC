@@ -148,6 +148,7 @@ export default {
 		return {
 			percent: 0,
 			pageHeight: 0,
+			imageUrl: service.getUrls().url,
 			isClick: false,
 			loadModal: false,
 			onoff: true,
@@ -194,7 +195,7 @@ export default {
 	},
 	onLoad: function(option) {
 		let me = this;
-		console.log(option);
+		me.imageUrl = me.imageUrl.replace('/web','')
 		me.initMain();
 		if (JSON.stringify(option) != '{}') {
 			me.isOrder = option.isOrder == 'true' ? true : false;
@@ -219,13 +220,13 @@ export default {
 							} */
 							me.form.rectifyImg = me.form.rectifyImg.split(',');
 							for (let i = 0; i < me.form.rectifyImg.length; i++) {
-								me.form.rectifyImg[i] = service.getUrls().url + 'uploadFiles/image/' + me.form.rectifyImg[i];
+								me.form.rectifyImg[i] = me.imageUrl + 'uploadFiles/image/' + me.form.rectifyImg[i];
 							}
 							me.form.concerns = me.form.concerns.split(',');
 							me.form.checkContent = me.form.opinion;
 							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
 							for (let i = 0; i < me.form.concernsImg.length; i++) {
-								me.form.concernsImg[i] = service.getUrls().url + 'uploadFiles/image/' + me.form.concernsImg[i];
+								me.form.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + me.form.concernsImg[i];
 							}
 							me.winForm.delayTimeLimit = res.data.delayTimeLimit;
 							me.winForm.rectifyPlanDate = res.data.rectifyPlanDate;
@@ -235,6 +236,7 @@ export default {
 							me.winForm.delayReason = res.data.delayReason;
 							me.winForm.rectifyContent = res.data.rectifyContent;
 							me.winForm.applicationDate = res.data.applicationDate;
+							console.log(me.form)
 							uni.showToast({
 								icon: 'success',
 								title: err.msg
@@ -263,7 +265,7 @@ export default {
 							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
 							me.form.checkStaff = res.data.checkStaff;
 							for (let i = 0; i < me.form.concernsImg.length; i++) {
-								me.form.concernsImg[i] = service.getUrls().url + 'uploadFiles/image/' + me.form.concernsImg[i];
+								me.form.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + me.form.concernsImg[i];
 							}
 							console.log(me.form);
 							uni.showToast({
@@ -279,6 +281,7 @@ export default {
 						});
 					});
 			}
+			
 			me.form.recordId = this.recordId;
 		}
 	},

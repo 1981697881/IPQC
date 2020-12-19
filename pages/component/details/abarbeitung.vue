@@ -138,6 +138,7 @@ export default {
 	data() {
 		return {
 			percent: 0,
+			imageUrl: service.getUrls().url,
 			showCanvas: false,
 			ctx: '', //绘图图像
 			points: [], //路径点集合
@@ -155,6 +156,7 @@ export default {
 	},
 	onLoad: function(option) {
 		let me = this;
+		me.imageUrl = me.imageUrl.replace('/web','')
 		if (JSON.stringify(option) != '{}') {
 			this.isOrder = true;
 			this.planId = option.planId;
@@ -164,9 +166,12 @@ export default {
 				.then(res => {
 					if (res.flag) {
 						if (res.data != null) {
-							res.data.concernsImg = res.data.concernsImg.split(',')
+							res.data.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
 							let concerns = res.data.concerns.split(',')
 							let str = ''
+							for (let i = 0; i < res.data.concernsImg.length; i++) {
+								res.data.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + res.data.concernsImg[i];
+							}
 							for(let i = 0;i< concerns.length;i++){
 								str += i + 1 + '' + concerns[i] + '\n';
 							}
