@@ -176,6 +176,7 @@ export default {
 			modalName: null,
 			winForm: {
 				planTime: '',
+				username: service.getUsers()[0].username,
 				typeId: ''
 			},
 			isShow: true,
@@ -440,8 +441,9 @@ export default {
 			this.start != null && this.start != undefined ? (obj.startDate = this.start) : null;
 			this.end != null && this.end != undefined ? (obj.endDate = this.end) : null;
 			obj.pageSize = 100;
+			obj.username = service.getUsers()[0].username,
 			obj.isornot = this.onSwitch.toString();
-			obj.pageNum = 1;
+			obj.pageNum = 1; 
 			console.log(obj)
 			return obj;
 		},
