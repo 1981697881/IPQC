@@ -176,7 +176,6 @@ export default {
 			modalName: null,
 			winForm: {
 				planTime: '',
-				username: service.getUsers()[0].username,
 				typeId: ''
 			},
 			isShow: true,
@@ -323,6 +322,7 @@ export default {
 				proId: item.proId,
 				address: item.address,
 				deptId: item.deptId,
+				username: service.getUsers()[0].username,
 				deptName: item.deptName
 			};
 			this.modalName = 'Modal';

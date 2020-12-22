@@ -36,7 +36,7 @@ export const config = {
 globalInterceptor.request.use(
     (config) => {
         console.log('is global request interceptor');
-        getToken() && (config.header.Authorization = getToken());
+		config.header.Authorization = getToken();
 		return config;
     },
     (err) => {
@@ -84,8 +84,6 @@ globalInterceptor.response.use(
         console.error('err: ', err);
         console.error('config: ', config);
         showToast(err);
-        store.commit("setToken", {token: ''})
-        saveToken('')
 		return Promise.reject(err);
         // return false;
     }
@@ -131,8 +129,10 @@ function handleCode({ data, status, config, res }) {
 	console.log(config)
 	console.log(res)
 	console.log(data)
+	console.log(status)
 	const STATUS = {
         '20000'() {
+			console.log(1211)
 			if(store.state.token == '' || typeof store.state.token == 'undefined'){
 				if(typeof res.header.Authorization == 'undefined'){
 					store.commit("setToken", {token: res.header.authorization})
@@ -150,15 +150,10 @@ function handleCode({ data, status, config, res }) {
 			});
 			store.commit("setToken", {token: ''})
 			saveToken('')
-			return data;
+			return Promise.reject({ status, msg: 'token超时，请重新登录' });
 		},
 		'20001'() {
-			uni.reLaunch({
-				url: '../login/login'
-			});
-			store.commit("setToken", {token: ''})
-			saveToken('')
-			return data;
+			return Promise.reject({ status, msg: '请求错误' });
 		},
         '400'() {
             // return { status, msg: '请求错误' };
