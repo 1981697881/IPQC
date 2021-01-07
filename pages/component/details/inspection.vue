@@ -70,16 +70,19 @@
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<view v-for="(item, index) in cuIList" :key="index" style="margin-top: 10px;">
 				<view class="cu-list menu-avatar">
-					<view class="cu-item" style="width: 100%;margin-top: 2px;height: auto;" @longpress="del(index, item)">
+					<view class="cu-item" style="width: 100%;margin-top: 2px;height: auto;">
 						<view style="clear: both;width: 100%;">
 							<view class="cu-bar bg-white solid-bottom">
 								<view class="action">
 									<text class="cuIcon-titles text-orange"></text>
-									被检人员:{{ item.checkStaffName }}
+									被检人员:{{ item.checkStaff }}
 								</view>
 								<view class="action">
 									登记日期：{{ item.recordDate }}
 									<!-- <switch :class="item.isCard ? 'checked' : ''" :checked="item.isCard ? true : false" @change="IsCard($event, item)"></switch> -->
+								</view>
+								<view class="action">
+									<button class="bg-red cu-btn round sm" @tap="del(index, item)">删除</button>
 								</view>
 							</view>
 							<view class="cu-card no-card case">
@@ -149,21 +152,21 @@
 										</view>
 										<view v-show="item.isThrough" class="cu-bar bg-white">
 											<view class="action">隐患图片</view>
-											<view class="action">{{ item.rectifyImg.length }}/3</view>
+											<view class="action">{{ item.concernsImg.length }}/3</view>
 										</view>
 										<view v-show="item.isThrough" class="cu-form-group">
 											<view class="grid col-3 grid-square flex-sub">
 												<view
 													class="bg-img"
-													v-for="(item3, index3) in item.rectifyImg"
+													v-for="(item3, index3) in item.concernsImg"
 													:key="index3"
 													@tap="ViewImage($event, item)"
-													:data-url="item.rectifyImg[index3]"
+													:data-url="item.concernsImg[index3]"
 												>
-													<image :src="item.rectifyImg[index3]" mode="aspectFill"></image>
+													<image :src="item.concernsImg[index3]" mode="aspectFill"></image>
 													<view class="cu-tag bg-red" @tap.stop="DelImg($event, item)" :data-index="index3"><text class="cuIcon-close"></text></view>
 												</view>
-												<view class="solids" @tap="ChooseImage(item)" v-if="item.rectifyImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
+												<view class="solids" @tap="ChooseImage(item)" v-if="item.concernsImg.length < 3"><text class="cuIcon-cameraadd"></text></view>
 											</view>
 										</view>
 									</view>
@@ -196,6 +199,7 @@ export default {
 			percent: 0,
 			loading: false,
 			disabled: false,
+			imageUrl: service.getUrls().url,
 			pageHeight: 0,
 			isDis: false,
 			onoff: true,
@@ -245,13 +249,23 @@ export default {
 	},
 	onLoad: function(option) {
 		let me = this;
+		me.imageUrl = me.imageUrl.replace('/web', '');
 		console.log(option);
 		if (JSON.stringify(option) != '{}') {
-			me.planId = option.planId;
-			me.deptName = option.deptName;
-			me.winForm.clockTime = option.clockTime;
-			me.winForm.clockLocation = option.clockLocation;
-			me.getList(option.planId);
+			console.log(option.isExist)
+			if (option.isExist == 'true') {
+				me.isExist = true; 
+				me.planId = option.planId;
+				me.deptName = option.deptName;
+				me.winForm.clockTime = option.clockTime;
+				me.winForm.clockLocation = option.clockLocation;
+				me.getList(option.planId);
+			} else {
+				me.planId = option.planId;
+				me.deptName = option.deptName;
+				me.isExist = false;
+				me.getList(option.planId);
+			}
 		}
 	},
 	onReady: function() {
@@ -301,6 +315,10 @@ export default {
 							me.isFab = true;
 						} else {
 							me.isFab = false;
+							res.data.concernsImg = res.data.concernsImg != '' ? res.data.concernsImg.split(',') : [];
+							for (let i = 0; i < res.data.concernsImg.length; i++) {
+								res.data.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + res.data.concernsImg[i];
+							}
 							me.cuIList.push(res.data);
 							let recodList = me.cuIList[0].recordCheckList;
 							recodList.forEach(item => {
@@ -429,17 +447,17 @@ export default {
 				sizeType: ['original', 'compressed'], //可以指定是原图还是压缩图，默认二者都有
 				success: res => {
 					console.log(res.tempFilePaths);
-					if (item.rectifyImg.length != 0) {
-						item.rectifyImg = item.rectifyImg.concat(res.tempFilePaths);
+					if (item.concernsImg.length != 0) {
+						item.concernsImg = item.concernsImg.concat(res.tempFilePaths);
 					} else {
-						item.rectifyImg = res.tempFilePaths;
+						item.concernsImg = res.tempFilePaths;
 					}
 				}
 			});
 		},
 		ViewImage(e, item) {
 			uni.previewImage({
-				urls: item.rectifyImg,
+				urls: item.concernsImg,
 				current: e.currentTarget.dataset.url
 			});
 		},
@@ -451,7 +469,7 @@ export default {
 				confirmText: '再见',
 				success: res => {
 					if (res.confirm) {
-						item.rectifyImg.splice(e.currentTarget.dataset.index, 1);
+						item.concernsImg.splice(e.currentTarget.dataset.index, 1);
 					}
 				}
 			});
@@ -522,7 +540,7 @@ export default {
 			});
 			me.cuIList.push({
 				isCard: true,
-				rectifyImg: [],
+				concernsImg: [],
 				isThrough: false,
 				planId: me.planId,
 				concerns: '',
@@ -541,14 +559,14 @@ export default {
 				uni.$off('recordClockIn');
 				let list = JSON.parse(JSON.stringify(this.cuIList));
 				let me = this;
-				let rectifyImg = [];
-				delete list[0].rectifyImg;
-				if (me.cuIList[0].rectifyImg.length > 0) {
+				let concernsImg = [];
+				delete list[0].concernsImg;
+				if (me.cuIList[0].concernsImg.length > 0) {
 					me.isClick = true;
-					for (let i = 0; i < me.cuIList[0].rectifyImg.length; i++) {
+					for (let i = 0; i < me.cuIList[0].concernsImg.length; i++) {
 						const uploadTask = uni.uploadFile({
 							url: service.getUrls().url + 'file/imgUpload',
-							filePath: me.cuIList[0].rectifyImg[i],
+							filePath: me.cuIList[0].concernsImg[i],
 							name: 'imgS',
 							header: {
 								Authorization: this.$store.state.token
@@ -556,9 +574,9 @@ export default {
 							success: function(uploadFileRes) {
 								let data = JSON.parse(uploadFileRes.data);
 								if (data.flag) {
-									rectifyImg.push(data.data);
-									console.log(rectifyImg);
-									if (i + 1 == me.cuIList[0].rectifyImg.length) {
+									concernsImg.push(data.data);
+									console.log(concernsImg);
+									if (i + 1 == me.cuIList[0].concernsImg.length) {
 										let concernsData = [];
 										list[0].concerns.forEach((items, indexs) => {
 											if (items.checked) {
@@ -566,36 +584,67 @@ export default {
 											}
 										});
 										list[0].concerns = concernsData.toString();
-										list[0].concernsImg = rectifyImg.toString();
-										console.log(list[0]);
-										basic
-											.pollingRecordAdd(list[0])
-											.then(res => {
-												if (res.flag) {
-													uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+										list[0].concernsImg = concernsImg.toString();
+										console.log(me.isExist);
+										if (me.isExist) {
+											basic
+												.pollingRecordAdd(list[0])
+												.then(res => {
+													if (res.flag) {
+														uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+														uni.showToast({
+															icon: 'success',
+															title: res.msg
+														});
+														uni.navigateBack({
+															delta: 2,
+															url: '../component/polling'
+														});
+														/* let imgs = me.cuIList[0].concernsImg.map((value, index) => {
+														return {
+															name: 'imgS',
+															uri: value
+														};
+													}); */
+													}
+												})
+												.catch(err => {
 													uni.showToast({
-														icon: 'success',
-														title: res.msg
+														icon: 'none',
+														title: err.msg
 													});
-													uni.navigateBack({
-														delta: 2,
-														url: '../component/polling'
-													});
-													/* let imgs = me.cuIList[0].rectifyImg.map((value, index) => {
-													return {
-														name: 'imgS',
-														uri: value
-													};
-												}); */
-												}
-											})
-											.catch(err => {
-												uni.showToast({
-													icon: 'none',
-													title: err.msg
+													this.isClick = false;
 												});
-												this.isClick = false;
-											});
+										} else {
+											basic
+												.pollingRecordUpdate(list[0])
+												.then(res => {
+													if (res.flag) {
+														uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+														uni.showToast({
+															icon: 'success',
+															title: res.msg
+														});
+														uni.navigateBack({
+															delta: 1,
+															url: '../component/polling'
+														});
+														/* let imgs = me.cuIList[0].concernsImg.map((value, index) => {
+														return {
+															name: 'imgS',
+															uri: value
+														};
+													}); */
+													}
+												})
+												.catch(err => {
+													uni.showToast({
+														icon: 'none',
+														title: err.msg
+													});
+													this.isClick = false;
+												});
+										}
 									}
 								}
 								uni.showToast({

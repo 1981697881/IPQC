@@ -193,10 +193,11 @@ export default {
 				}, */
 				{
 					title: '巡检登记',
-					msg: '已登记',
+					msg: '已审核',
 					icon: 'location',
 					isType: true,
 					isOpen: true,
+					isExist: true,
 					status: '' /* error */,
 					path: 'ClockIn/ClockIn',
 					/* path: 'component/details/inspection', */
@@ -206,6 +207,7 @@ export default {
 					title: '整改登记',
 					icon: '',
 					msg: '',
+					isExist: true,
 					status: '',
 					isType: false,
 					isOpen: true,
@@ -216,6 +218,7 @@ export default {
 					title: '完成反馈',
 					icon: '',
 					msg: '',
+					isExist: true,
 					isType: false,
 					isOpen: true,
 					status: '',
@@ -244,6 +247,7 @@ export default {
 	onShow: function(option) {
 		let me = this;
 		uni.$on('handleBack', res => {
+			console.log(res)
 			me.form.planId = res.planId;
 			me.form.deptName = res.deptName;
 			basic
@@ -265,8 +269,9 @@ export default {
 							me.$set(me, 'form', reso.data);
 							me.form.deptName = res.deptName;
 							me.form.recordId = reso.data.recordId;
-							me.elements[0].isOpen = false;
-							me.elements[0].description = reso.data.clockTime;
+							me.elements[0].isExist = false;
+							me.elements[0].description = reso.data.updateTime;
+							me.elements[0].path = 'component/details/inspection';
 							me.elements[1].isOpen = true;
 							me.elements[2].isOpen = true;
 						}
@@ -316,8 +321,9 @@ export default {
 							me.$set(me, 'form', res.data);
 							me.form.deptName = option.deptName;
 							me.form.recordId = res.data.recordId;
-							me.elements[0].isOpen = false;
-							me.elements[0].description = res.data.clockTime;
+							me.elements[0].isExist = false;
+							me.elements[0].description = res.data.updateTime;
+							me.elements[0].path = 'component/details/inspection';
 							me.elements[1].isOpen = true;
 							me.elements[2].isOpen = true;
 							/* me.elements[0].isOpen = false */
@@ -368,7 +374,7 @@ export default {
 			console.log(item.isOpen)
 			if (item.isOpen) {
 				uni.navigateTo({
-					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId
+					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType+ '&isExist=' + item.isExist + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId
 				});
 			} else {
 				uni.showToast({

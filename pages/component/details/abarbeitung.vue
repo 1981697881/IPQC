@@ -73,7 +73,7 @@
 							<view class="cu-bar bg-white solid-bottom">
 								<view class="action">
 									<text class="cuIcon-titles text-orange"></text>
-									被检人员:{{ item.checkStaffName }}
+									被检人员:{{ item.checkStaff }}
 								</view>
 								<view class="action">登记日期：{{ item.recordDate }}</view>
 							</view>

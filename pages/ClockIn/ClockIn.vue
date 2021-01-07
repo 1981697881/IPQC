@@ -145,6 +145,7 @@ export default {
 			this.form.planId = option.planId;
 			this.form.deptName = option.deptName;
 			this.form.isType = option.isType;
+			this.form.isExist = option.isExist;
 			this.form.isOrder = option.isOrder;
 			this.form.recordId = option.recordId;
 		}
@@ -239,6 +240,8 @@ export default {
 							me.form.planId +
 							'&deptName=' +
 							me.form.deptName +
+							'&isExist=' +
+							me.form.isExist +
 							'&clockTime=' +
 							rqData.clockTime +
 							'&clockLocation=' +

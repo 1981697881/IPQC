@@ -68,6 +68,14 @@ export default {
 			},
 			data: params
 	    });
+	},//巡检登记修改
+	pollingRecordUpdate(params) {
+	    return Request().put('/polling-record/update', {
+	        header: {
+				contentType: 'application/json',
+			},
+			data: params
+	    });
 	},//添加巡检计划
 	addPollingPlan(params) {
 	    return Request().post('/app/addPollingPlan', {

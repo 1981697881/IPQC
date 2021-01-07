@@ -218,7 +218,7 @@ export default {
 									me.$set(me.form, 'checkStaffName', me.userList[i].username);
 								}
 							} */
-							me.form.rectifyImg = me.form.rectifyImg.split(',');
+							me.form.rectifyImg = me.form.rectifyImg!=''?me.form.rectifyImg.split(','):[];
 							for (let i = 0; i < me.form.rectifyImg.length; i++) {
 								me.form.rectifyImg[i] = me.imageUrl + 'uploadFiles/image/' + me.form.rectifyImg[i];
 							}
