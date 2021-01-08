@@ -193,10 +193,11 @@ export default {
 				}, */
 				{
 					title: '巡检登记',
-					msg: '已审核',
+					msg: '已完成',
 					icon: 'location',
 					isType: true,
 					isOpen: true,
+					isCommit: false,
 					isExist: true,
 					status: '' /* error */,
 					path: 'ClockIn/ClockIn',
@@ -206,8 +207,9 @@ export default {
 				{
 					title: '整改登记',
 					icon: '',
-					msg: '',
+					msg: '已完成',
 					isExist: true,
+					isCommit: false,
 					status: '',
 					isType: false,
 					isOpen: true,
@@ -217,10 +219,11 @@ export default {
 				{
 					title: '完成反馈',
 					icon: '',
-					msg: '',
+					msg: '已完成',
 					isExist: true,
 					isType: false,
 					isOpen: true,
+					isCommit: false,
 					status: '',
 					path: 'component/details/abarbeitung',
 					description: ''
@@ -269,11 +272,16 @@ export default {
 							me.$set(me, 'form', reso.data);
 							me.form.deptName = res.deptName;
 							me.form.recordId = reso.data.recordId;
-							me.elements[0].isExist = false;
 							me.elements[0].description = reso.data.updateTime;
 							me.elements[0].path = 'component/details/inspection';
+							me.elements[0].isExist = false;
 							me.elements[1].isOpen = true;
 							me.elements[2].isOpen = true;
+							if(reso.data.status == '结束' || reso.data.status == '停用'){
+								me.elements[0].isCommit = true;
+								me.elements[1].isCommit = true;
+								me.elements[2].isCommit = true;
+							}
 						}
 						// 清除监听
 						uni.$off('handleBack');
@@ -326,6 +334,11 @@ export default {
 							me.elements[0].path = 'component/details/inspection';
 							me.elements[1].isOpen = true;
 							me.elements[2].isOpen = true;
+							if(res.data.status == '结束' || res.data.status == '停用'){
+								me.elements[0].isCommit = true;
+								me.elements[1].isCommit = true;
+								me.elements[2].isCommit = true;
+							}
 							/* me.elements[0].isOpen = false */
 							/* me.getNewsList({recordId: res.data.recordId}) */
 						}
@@ -374,7 +387,7 @@ export default {
 			console.log(item.isOpen)
 			if (item.isOpen) {
 				uni.navigateTo({
-					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType+ '&isExist=' + item.isExist + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId
+					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType+ '&isExist=' + item.isExist+ '&isCommit=' + item.isCommit + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId
 				});
 			} else {
 				uni.showToast({

@@ -146,6 +146,7 @@ export default {
 			this.form.deptName = option.deptName;
 			this.form.isType = option.isType;
 			this.form.isExist = option.isExist;
+			this.form.isCommit = option.isCommit;
 			this.form.isOrder = option.isOrder;
 			this.form.recordId = option.recordId;
 		}
@@ -242,6 +243,8 @@ export default {
 							me.form.deptName +
 							'&isExist=' +
 							me.form.isExist +
+							'&isCommit=' +
+							me.form.isCommit +
 							'&clockTime=' +
 							rqData.clockTime +
 							'&clockLocation=' +

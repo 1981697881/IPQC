@@ -3,7 +3,7 @@
 		<cu-custom bgColor="bg-gradual-blue" class="customHead" :isBack="true">
 			<block slot="backText">返回</block>
 			<block slot="content">整改历史</block>
-			<block slot="right"><text @tap="$manyCk(handleAdd)" class="cuIcon-add margin-right-xs">新增</text></block>
+			<block slot="right" v-if="!isCommit"><text @tap="$manyCk(handleAdd)" class="cuIcon-add margin-right-xs">新增</text></block>
 		</cu-custom>
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<view v-for="(item, index) in cuIconList" :key="index">
@@ -34,6 +34,7 @@ export default {
 	data() {
 		return {
 			isShow: true,
+			isCommit: false,
 			start: '',
 			end: '',
 			keyword: '',
@@ -56,7 +57,11 @@ export default {
 	onLoad: function(option) {
 		// 列表数据默认加载
 		if (JSON.stringify(option) != '{}') {
-			console.log(option)
+			if(option.isCommit == 'true'){
+				this.isCommit=true
+			}else{
+				this.isCommit=false
+			}
 			this.recordId = option.recordId;
 			this.planId = option.planId;
 			this.isType = option.isType;

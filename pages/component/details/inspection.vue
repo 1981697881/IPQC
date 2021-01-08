@@ -81,7 +81,7 @@
 									登记日期：{{ item.recordDate }}
 									<!-- <switch :class="item.isCard ? 'checked' : ''" :checked="item.isCard ? true : false" @change="IsCard($event, item)"></switch> -->
 								</view>
-								<view class="action">
+								<view v-if="!isCommit" class="action">
 									<button class="bg-red cu-btn round sm" @tap="del(index, item)">删除</button>
 								</view>
 							</view>
@@ -178,7 +178,7 @@
 			</view>
 			<view class="cu-bar tabbar shadow foot">
 				<view class="box text-center">
-					<button :disabled="isClick" class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(saveData)">提交</button>
+					<button v-if="!isCommit" :disabled="isClick" class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(saveData)">提交</button>
 				</view>
 			</view>
 		</scroll-view>
@@ -198,6 +198,7 @@ export default {
 		return {
 			percent: 0,
 			loading: false,
+			isCommit: true,
 			disabled: false,
 			imageUrl: service.getUrls().url,
 			pageHeight: 0,
@@ -252,7 +253,11 @@ export default {
 		me.imageUrl = me.imageUrl.replace('/web', '');
 		console.log(option);
 		if (JSON.stringify(option) != '{}') {
-			console.log(option.isExist)
+			if(option.isCommit == 'true'){
+				this.isCommit=true
+			}else{
+				this.isCommit=false
+			}
 			if (option.isExist == 'true') {
 				me.isExist = true; 
 				me.planId = option.planId;

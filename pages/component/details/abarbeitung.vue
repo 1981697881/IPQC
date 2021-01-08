@@ -121,7 +121,7 @@
 			</view>
 			<view class="cu-bar tabbar shadow foot">
 				<view class="box text-center">
-					<button :disabled="isClick" class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(onCanvs)">提交</button>
+					<button v-if="!isCommit" :disabled="isClick" class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(onCanvs)">提交</button>
 				</view>
 			</view>
 		</scroll-view>
@@ -138,6 +138,7 @@ export default {
 	data() {
 		return {
 			percent: 0,
+			isCommit: true,
 			imageUrl: service.getUrls().url,
 			showCanvas: false,
 			ctx: '', //绘图图像
@@ -160,6 +161,11 @@ export default {
 		if (JSON.stringify(option) != '{}') {
 			this.isOrder = true;
 			this.planId = option.planId;
+			if(option.isCommit == 'true'){
+				this.isCommit=true
+			}else{
+				this.isCommit=false
+			}
 			this.deptName = option.deptName;
 			basic
 				.pollingRecordByPlanId(option.planId)
