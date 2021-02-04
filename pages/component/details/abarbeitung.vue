@@ -157,14 +157,14 @@ export default {
 	},
 	onLoad: function(option) {
 		let me = this;
-		me.imageUrl = me.imageUrl.replace('/web','')
+		me.imageUrl = me.imageUrl.replace('/web', '');
 		if (JSON.stringify(option) != '{}') {
 			this.isOrder = true;
 			this.planId = option.planId;
-			if(option.isCommit == 'true'){
-				this.isCommit=true
-			}else{
-				this.isCommit=false
+			if (option.isCommit == 'true') {
+				this.isCommit = true;
+			} else {
+				this.isCommit = false;
 			}
 			this.deptName = option.deptName;
 			basic
@@ -172,19 +172,19 @@ export default {
 				.then(res => {
 					if (res.flag) {
 						if (res.data != null) {
-							res.data.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
-							let concerns = res.data.concerns.split(',')
-							let str = ''
+							res.data.concernsImg = res.data.concernsImg != '' ? res.data.concernsImg.split(',') : [];
+							let concerns = res.data.concerns.split(',');
+							let str = '';
 							for (let i = 0; i < res.data.concernsImg.length; i++) {
 								res.data.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + res.data.concernsImg[i];
 							}
-							for(let i = 0;i< concerns.length;i++){
+							for (let i = 0; i < concerns.length; i++) {
 								str += i + 1 + '' + concerns[i] + '\n';
 							}
-							res.data.concerns = str
+							res.data.concerns = str;
 							me.cuIList.push(res.data);
-						}else{
-							me.isClick = true
+						} else {
+							me.isClick = true;
 						}
 						console.log(res.data);
 						uni.showToast({
@@ -315,19 +315,19 @@ export default {
 				date: tYear + '-' + tMonth + '-' + tDate
 			};
 		},
-		handleShare(){
-			console.log(123)
+		handleShare() {
+			console.log(123);
 			uni.share({
-			    provider: "weixin",
-			    scene: "WXSceneSession",
-			    type: 1,
-			    summary: "测试",
-			    success: function (res) {
-			        console.log("success:" + JSON.stringify(res));
-			    },
-			    fail: function (err) {
-			        console.log("fail:" + JSON.stringify(err));
-			    }
+				provider: 'weixin',
+				scene: 'WXSceneSession',
+				type: 1,
+				summary: '测试',
+				success: function(res) {
+					console.log('success:' + JSON.stringify(res));
+				},
+				fail: function(err) {
+					console.log('fail:' + JSON.stringify(err));
+				}
 			});
 		},
 		doHandleMonth(month) {
@@ -343,7 +343,6 @@ export default {
 			let concernsImg = [];
 			let signature = '';
 			if (that.cuIList.length > 0) {
-				
 				uni.canvasToTempFilePath({
 					canvasId: 'mycanvas',
 					success: function(res) {
@@ -353,7 +352,7 @@ export default {
 						} else {
 							cutImg = res.tempFilePath;
 						}
-						console.log(cutImg);
+
 						for (let i = 0; i < cutImg.length; i++) {
 							const uploadTask = uni.uploadFile({
 								url: service.getUrls().url + 'file/imgUpload',
@@ -363,10 +362,9 @@ export default {
 									Authorization: that.$store.state.token
 								},
 								success: function(uploadFileRes) {
-									console.log(uploadFileRes);
 									let data = JSON.parse(uploadFileRes.data);
 									if (data.flag) {
-										uni.$emit('handleBack', { planId: that.planId, deptName: that.deptName, isback: true });
+										
 										if (i + 1 == cutImg.length) {
 											signature = data.data;
 											that.isClick = true;
@@ -376,15 +374,16 @@ export default {
 													recordId: list.recordId,
 													rectifyFinishDate: that.getDay('', 0).date,
 													concernsImg: concernsImg.toString(),
-													signature: signature,
+													signature: signature
 												})
 												.then(reso => {
 													if (reso.flag) {
 														setTimeout(function() {
+															uni.$emit('handleBack', { planId: that.planId, deptName: that.deptName, isback: true });
 															uni.navigateBack({
 																url: '../component/polling'
 															});
-														}, 500);
+														}, 500); 
 														uni.showToast({
 															icon: 'success',
 															title: reso.msg
@@ -420,6 +419,15 @@ export default {
 								that.percent = reso.progress;
 							});
 						}
+					},
+					fail: function(errs) {
+						console.log('生成图片出错:', JSON.stringify(errs));
+						uni.hideLoading();
+						uni.showModal({
+							title: '绘制小程序二维码失败',
+							content: '请搜索""小程序,并在小程序观看课程',
+							showCancel: false
+						});
 					}
 				});
 			}

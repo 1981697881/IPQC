@@ -583,14 +583,15 @@ export default {
 									console.log(concernsImg);
 									if (i + 1 == me.cuIList[0].concernsImg.length) {
 										let concernsData = [];
-										list[0].concerns.forEach((items, indexs) => {
-											if (items.checked) {
-												concernsData.push(items.concerns);
-											}
-										});
+										if(list[0].concerns != ''){
+											list[0].concerns.forEach((items, indexs) => {
+												if (items.checked) {
+													concernsData.push(items.concerns);
+												}
+											});
+										}
 										list[0].concerns = concernsData.toString();
 										list[0].concernsImg = concernsImg.toString();
-										console.log(me.isExist);
 										if (me.isExist) {
 											basic
 												.pollingRecordAdd(list[0])
@@ -671,34 +672,63 @@ export default {
 					}
 				} else {
 					let concernsData = [];
-					list[0].concerns.forEach((items, indexs) => {
-						if (items.checked) {
-							concernsData.push(items.concerns);
-						}
-					});
-					list[0].concerns = concernsData.toString();
-					basic
-						.pollingRecordAdd(list[0])
-						.then(res => {
-							if (res.flag) {
-								uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
-								uni.showToast({
-									icon: 'success',
-									title: res.msg
-								});
-								uni.navigateBack({
-									delta: 2,
-									url: '../component/polling'
-								});
+					console.log(list[0].concerns)
+					if(list[0].concerns != ''){
+						list[0].concerns.forEach((items, indexs) => {
+							if (items.checked) {
+								concernsData.push(items.concerns);
 							}
-						})
-						.catch(err => {
-							uni.showToast({
-								icon: 'none',
-								title: err.msg
-							});
-							this.isClick = false;
 						});
+					}
+					list[0].concerns = concernsData.toString();
+					if (me.isExist) {
+						basic
+							.pollingRecordAdd(list[0])
+							.then(res => {
+								if (res.flag) {
+									uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+									uni.showToast({
+										icon: 'success',
+										title: res.msg
+									});
+									uni.navigateBack({
+										delta: 2,
+										url: '../component/polling'
+									});
+								}
+							})
+							.catch(err => {
+								uni.showToast({
+									icon: 'none',
+									title: err.msg
+								});
+								this.isClick = false;
+							});
+					} else {
+						basic
+							.pollingRecordUpdate(list[0])
+							.then(res => {
+								if (res.flag) {
+									uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+									uni.showToast({
+										icon: 'success',
+										title: res.msg
+									});
+									uni.navigateBack({
+										delta: 1,
+										url: '../component/polling'
+									});
+								}
+							})
+							.catch(err => {
+								uni.showToast({
+									icon: 'none',
+									title: err.msg
+								});
+								this.isClick = false;
+							});
+					}
+					
 
 					/* uni.showToast({
 						icon: 'none',
