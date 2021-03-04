@@ -9,12 +9,12 @@ export default {
 			data: params
 	    });
 	},//主页-项目列表
-	projectList(params) {
+	projectList(params,data) {
 	    return Request().post('/app/projectList/'+params.pageNum+'/'+params.pageSize, {
 	        header: {
 				contentType: 'application/json',
 			},
-			data: params
+			data: data
 	    });
 	},//获取人员
 	userList() {

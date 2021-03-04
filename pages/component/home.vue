@@ -78,12 +78,40 @@
 			</view>
 			<scroll-view :style="{ height: pageHeight + 'px' }" scroll-x class="page">
 				<view style="margin-left: 10px;margin-right: 10px;overflow-y: auto;height: 100%;" class=" cu-list bg-white ">
-					<view  style="width: 100%;" class="cu-item" v-for="(item, index) in elements" :key="index" @tap="$manyCk(showList(index, item))">
-						<view :class="item.riskLevel!=null&&item.riskLevel=='0'?'text-blue':(item.riskLevel=='1'?'text-yellow':(item.riskLevel=='2'?'text-orange':(item.riskLevel=='3'?'text-red':'text-grey')))" class="cu-bar bg-white" style="height: 25px;min-height: 25px;">
+					<view style="width: 100%;" class="cu-item" v-for="(item, index) in elements" :key="index" @tap="$manyCk(showList(index, item))">
+						<view
+							:class="
+								item.riskLevel != null && item.riskLevel == '0'
+									? 'text-blue'
+									: item.riskLevel == '1'
+									? 'text-yellow'
+									: item.riskLevel == '2'
+									? 'text-orange'
+									: item.riskLevel == '3'
+									? 'text-red'
+									: 'text-grey'
+							"
+							class="cu-bar bg-white"
+							style="height: 25px;min-height: 25px;"
+						>
 							<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">公司: {{ item.deptName }}</view>
 							<view class="action">单号: {{ item.planNo }}</view>
 						</view>
-						<view :class="item.riskLevel!=null&&item.riskLevel=='0'?'text-blue':(item.riskLevel=='1'?'text-yellow':(item.riskLevel=='2'?'text-orange':(item.riskLevel=='3'?'text-red':'text-grey')))" class="cu-bar bg-white" style="height: 25px;min-height: 25px">
+						<view
+							:class="
+								item.riskLevel != null && item.riskLevel == '0'
+									? 'text-blue'
+									: item.riskLevel == '1'
+									? 'text-yellow'
+									: item.riskLevel == '2'
+									? 'text-orange'
+									: item.riskLevel == '3'
+									? 'text-red'
+									: 'text-grey'
+							"
+							class="cu-bar bg-white"
+							style="height: 25px;min-height: 25px"
+						>
 							<view class="action" style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">项目: {{ item.proName }}</view>
 							<view class="action">检查人员: {{ item.inspector }}</view>
 						</view>
@@ -136,14 +164,21 @@
 			</scroll-view>
 		</block>
 		<block v-if="TabCur == 1">
-			<scroll-view class="page" :style="{ height: pageHeight2 + 'px' }">
-				<view style="overflow-y: auto;height: 100%;">
+			<view class="cu-bar search bg-white">
+				<view class="search-form round">
+					<text class="cuIcon-search"></text>
+					<input :adjust-position="false" v-model="keyword" type="text" placeholder="编号,名称" confirm-type="search" />
+				</view>
+				<view class="action"><button class="cu-btn bg-green shadow-blur round" @tap="searchKey">搜索</button></view>
+			</view>
+			<scroll-view :style="{ height: pageHeight2 + 'px' }" class="scroll-box" scroll-y enable-back-to-top scroll-with-animation @scrolltolower="loadMore">
+				<view>
 					<view v-for="(item, index) in cuIconList" :key="index">
 						<view class="cu-list menu-avatar">
-							<view class="cu-item" style="width: 100%;margin-top: 2px;height: 160upx;">
+							<view class="cu-item" style="width: 100%;margin-top: 2px;height: 220upx;">
 								<view style="clear: both;width: 100%;" class="grid text-left col-2" @tap="addPlan(index, item)" data-target="Modal" data-number="item.number">
 									<view class="text-grey">项目编号:{{ item.proCode }}</view>
-									<view class="text-grey">项目名称:{{ item.proName }}</view>
+									<view class="text-grey" style="width: 100%;">项目名称:{{ item.proName }}</view>
 									<view class="text-grey">负责人:{{ item.principal }}</view>
 									<view class="text-grey">联系电话:{{ item.tel }}</view>
 									<view class="text-grey" style="width: 100%;">所属公司:{{ item.deptName }}</view>
@@ -153,6 +188,8 @@
 						</view>
 					</view>
 				</view>
+				<!-- 加载更多 -->
+				<view v-if="cuIconList.length" class="cu-load text-gray" :class="loadStatus"></view>
 			</scroll-view>
 		</block>
 	</view>
@@ -174,11 +211,18 @@ export default {
 			pageHeight: 0,
 			pageHeight2: 0,
 			modalName: null,
+			loadStatus: 'over', //loading,over
 			winForm: {
 				planTime: '',
 				typeId: ''
 			},
+			listParams: {
+				pageSize: 100,
+				pageNum: 1
+			},
+			keyword: '',
 			isShow: true,
+			lastPage: 1,
 			elements: [],
 			projectType: [],
 			cuIconList: []
@@ -205,7 +249,7 @@ export default {
 					.exec();
 				setTimeout(function() {
 					me.pageHeight = res.windowHeight - 190;
-					me.pageHeight2 = res.windowHeight - 88;
+					me.pageHeight2 = res.windowHeight - 88 - 50;
 				}, 1000);
 			}
 		});
@@ -215,6 +259,7 @@ export default {
 			if (service.getUsers()[0].username != '' && service.getUsers()[0].username != 'undefined') {
 				me.initMain();
 				me.getLists();
+				me.getProjects(me.keyword);
 			} else {
 				return uni.reLaunch({
 					url: '../login/login'
@@ -229,7 +274,22 @@ export default {
 	onShow() {
 		var me = this;
 	},
+	// 触底加载更多
+	onReachBottom() {
+		console.log(123);
+		if (this.listParams.pageNum < this.lastPage) {
+			this.listParams.pageNum += 1;
+			this.getProjects();
+		}
+	},
 	methods: {
+		loadMore() {
+		console.log(123);
+		if (this.listParams.pageNum < this.lastPage) {
+			this.listParams.pageNum += 1;
+			this.getProjects();
+		}
+	},
 		saveCom() {
 			var me = this;
 			if (me.winForm.typeId == '' || typeof this.winForm.typeId == 'undefined') {
@@ -331,6 +391,7 @@ export default {
 			this.modalName = null;
 		},
 		tabSelect(e) {
+			this.keyword = '';
 			this.TabCur = e.currentTarget.dataset.id;
 		},
 		showList(index, item) {
@@ -382,11 +443,26 @@ export default {
 						title: res.msg
 					});
 				});
+		},
+		searchKey() {
+			this.cuIconList= []
+			this.listParams.pageNum = 1;
+			this.getProjects(this.keyword);
+		},
+		getProjects(val) {
+			let me = this;
+			me.loadStatus = 'loading';
 			basic
-				.projectList(this.qFilter())
+				.projectList(this.listParams, { keyword: val })
 				.then(res => {
 					if (res.flag) {
-						me.cuIconList = res.data.records;
+						me.cuIconList = [...me.cuIconList, ...res.data.records];
+						me.lastPage = res.data.pages;
+						if (me.listParams.pageNum < res.data.pages) {
+							me.loadStatus = '';
+						} else {
+							me.loadStatus = 'over';
+						}
 					}
 				})
 				.catch(res => {
@@ -436,15 +512,12 @@ export default {
 		},
 		// 查询条件过滤
 		qFilter() {
-			console.log(123)
 			let obj = {};
 			this.start != null && this.start != undefined ? (obj.startDate = this.start) : null;
 			this.end != null && this.end != undefined ? (obj.endDate = this.end) : null;
 			obj.pageSize = 100;
-			obj.username = service.getUsers()[0].username,
-			obj.isornot = this.onSwitch.toString();
-			obj.pageNum = 1; 
-			console.log(obj)
+			(obj.username = service.getUsers()[0].username), (obj.isornot = this.onSwitch.toString());
+			obj.pageNum = 1;
 			return obj;
 		},
 		compareDate(date1, date2) {
