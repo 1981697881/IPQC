@@ -17,6 +17,21 @@
 			@fabClick="fabClick"
 		></uni-fab>
 		<view><progress :percent="percent" stroke-width="10"></progress></view>
+		<view class="cu-modal" style="z-index: 1111" :class="modalName3 == 'Modal' ? 'show' : ''">
+			<view class="cu-dialog bg-white" style="height: 65%;">
+				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
+					<view class="content text-sl">签名确认</view>
+					<view class="action" @tap="hideModal2"><text class="cuIcon-close text-red"></text></view>
+				</view>
+				<view class="signature" v-show="showCanvas">
+					<canvas class="mycanvas" canvas-id="mycanvas" @touchstart="touchstart" @touchmove="touchmove" @touchend="touchend"></canvas>
+					<view class="footer">
+						<view class="cu-btn bg-green shadow-blur round lg" @click="$manyCk(saveData)">保存</view>
+						<view class="cu-btn bg-grey shadow-blur round lg" @click="clear">清除</view>
+					</view>
+				</view>
+			</view>
+		</view>
 		<view class="cu-modal" style="z-index: 1111" :class="modalName2 == 'Modal' ? 'show' : ''">
 			<view class="cu-dialog bg-white" style="height: 400upx;">
 				<view class="cu-bar justify-end margin-lr-xs" style="height: 70upx;border-bottom: 1px solid #CCCCCC;">
@@ -48,6 +63,7 @@
 							value-key="checkId"
 							placeholder="请选择"
 							clearable
+							ref="projectCheck"
 							v-model="winForm.checkId"
 							@change="checkListChange"
 						></ld-select>
@@ -55,8 +71,19 @@
 				</view>
 				<view class="cu-bar solid-bottom" style="height: 60upx;">
 					<view class="action">
-						<view style="width: 70px;">陪同人员:</view>
-						<input placeholder="请输入" v-model="winForm.escort" name="input" />
+						<view style="width: 70px;">检查人员:</view>
+						<!-- <input placeholder="请输入" v-model="winForm.escort" name="input" /> -->
+						<ld-select
+							:multiple="true"
+							:list="userList"
+							list-key="chinaName"
+							value-key="uid"
+							placeholder="请选择"
+							clearable
+							ref="userCheck"
+							v-model="winForm.escortArray"
+							@change="escortListChange"
+						></ld-select>
 					</view>
 				</view>
 				<view style="clear: both;" class="cu-bar bg-white justify-end padding-bottom-xl margin-top">
@@ -81,8 +108,12 @@
 									登记日期：{{ item.recordDate }}
 									<!-- <switch :class="item.isCard ? 'checked' : ''" :checked="item.isCard ? true : false" @change="IsCard($event, item)"></switch> -->
 								</view>
-								<view v-if="!isCommit" class="action">
-									<button class="bg-red cu-btn round sm" @tap="del(index, item)">删除</button>
+								<view v-if="!isCommit" class="action"><button class="bg-red cu-btn round sm" @tap="del(index, item)">删除</button></view>
+							</view>
+							<view class="cu-bar bg-white solid-bottom">
+								<view class="action">
+									<text class="cuIcon-titles text-orange"></text>
+									检查人员:{{ item.escortName }}
 								</view>
 							</view>
 							<view class="cu-card no-card case">
@@ -178,7 +209,7 @@
 			</view>
 			<view class="cu-bar tabbar shadow foot">
 				<view class="box text-center">
-					<button v-if="!isCommit" :disabled="isClick" class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(saveData)">提交</button>
+					<button v-if="!isCommit" :disabled="isClick" class="cu-btn bg-green shadow-blur round lg" style="width: 40%;" @tap="$manyCk(onCanvs)">提交</button>
 				</view>
 			</view>
 		</scroll-view>
@@ -189,18 +220,23 @@ import ruiDatePicker from '@/components/rattenking-dtpicker/rattenking-dtpicker.
 import ldSelect from '@/components/ld-select/ld-select.vue';
 import uniFab from '@/components/uni-fab/uni-fab.vue';
 import basic from '@/api/basic';
-import citySelect from '@/components/city-select/city-select.vue';
 import service from '@/service.js';
 import loading from '@/components/loading';
+var x = 20;
+var y = 20;
 export default {
-	components: { ruiDatePicker, ldSelect, uniFab, loading, citySelect },
+	components: { ruiDatePicker, ldSelect, uniFab, loading },
 	data() {
 		return {
+			formatName: 'FName',
 			percent: 0,
 			loading: false,
 			isCommit: true,
 			disabled: false,
 			imageUrl: service.getUrls().url,
+			showCanvas: false,
+			ctx: '', //绘图图像
+			points: [], //路径点集合
 			pageHeight: 0,
 			isDis: false,
 			onoff: true,
@@ -213,9 +249,11 @@ export default {
 			pickerVal: null,
 			modalName: null,
 			modalName2: null,
+			modalName3: null,
 			gridCol: 3,
 			projectCheckList: [],
 			userList: [],
+			recordId: null,
 			listTouchStart: 0,
 			listTouchDirection: null,
 			horizontal: 'right',
@@ -224,8 +262,8 @@ export default {
 			direction: 'horizontal',
 			winForm: {
 				checkId: [],
+				escortArray: [],
 				planId: '',
-				escort: '',
 				clockTime: '',
 				clockLocation: ''
 			},
@@ -241,7 +279,6 @@ export default {
 	},
 	onShow: function(option) {
 		let me = this;
-		console.log(12213113);
 		uni.$on('recordClockIn', res => {
 			console.log(res);
 			me.winForm.clockTime = res.clockTime;
@@ -251,15 +288,14 @@ export default {
 	onLoad: function(option) {
 		let me = this;
 		me.imageUrl = me.imageUrl.replace('/web', '');
-		console.log(option);
 		if (JSON.stringify(option) != '{}') {
-			if(option.isCommit == 'true'){
-				this.isCommit=true
-			}else{
-				this.isCommit=false
+			if (option.isCommit == 'true') {
+				this.isCommit = true;
+			} else {
+				this.isCommit = false;
 			}
 			if (option.isExist == 'true') {
-				me.isExist = true; 
+				me.isExist = true;
 				me.planId = option.planId;
 				me.deptName = option.deptName;
 				me.winForm.clockTime = option.clockTime;
@@ -296,6 +332,79 @@ export default {
 		me.initMain();
 	},
 	methods: {
+		onCanvs() {
+			this.modalName3 = 'Modal';
+			this.createCanvas();
+		},
+		//关闭并清空画布
+		close: function() {
+			this.showCanvas = false;
+			this.clear();
+		},
+		//创建并显示画布
+		createCanvas: function() {
+			this.showCanvas = true;
+			this.ctx = uni.createCanvasContext('mycanvas', this); //创建绘图对象
+			//设置画笔样式
+			this.ctx.lineWidth = 4;
+			this.ctx.lineCap = 'round';
+			this.ctx.lineJoin = 'round';
+		},
+		//触摸开始，获取到起点
+		touchstart: function(e) {
+			let startX = e.changedTouches[0].x;
+			let startY = e.changedTouches[0].y;
+			let startPoint = { X: startX, Y: startY };
+			this.points.push(startPoint);
+			//每次触摸开始，开启新的路径
+			this.ctx.beginPath();
+		},
+
+		//触摸移动，获取到路径点
+		touchmove: function(e) {
+			let moveX = e.changedTouches[0].x;
+			let moveY = e.changedTouches[0].y;
+			let movePoint = { X: moveX, Y: moveY };
+			this.points.push(movePoint); //存点
+			let len = this.points.length;
+			if (len >= 2) {
+				this.draw(); //绘制路径
+			}
+		},
+
+		// 触摸结束，将未绘制的点清空防止对后续路径产生干扰
+		touchend: function() {
+			this.points = [];
+		},
+
+		/* ***********************************************
+			#   绘制笔迹
+			#	1.为保证笔迹实时显示，必须在移动的同时绘制笔迹
+			#	2.为保证笔迹连续，每次从路径集合中区两个点作为起点（moveTo）和终点(lineTo)
+			#	3.将上一次的终点作为下一次绘制的起点（即清除第一个点）
+			************************************************ */
+		draw: function() {
+			let point1 = this.points[0];
+			let point2 = this.points[1];
+			this.points.shift();
+			this.ctx.moveTo(point1.X, point1.Y);
+			this.ctx.lineTo(point2.X, point2.Y);
+			this.ctx.stroke();
+			this.ctx.draw(true);
+		},
+
+		//清空画布
+		clear: function() {
+			let that = this;
+			uni.getSystemInfo({
+				success: function(res) {
+					let canvasw = res.windowWidth;
+					let canvash = res.windowHeight;
+					that.ctx.clearRect(0, 0, canvasw, canvash);
+					that.ctx.draw(true);
+				}
+			});
+		},
 		handleShare() {
 			uni.share({
 				provider: 'weixin',
@@ -318,12 +427,14 @@ export default {
 					if (res.flag) {
 						if (res.data == null) {
 							me.isFab = true;
+							me.recordId = null;
 						} else {
 							me.isFab = false;
 							res.data.concernsImg = res.data.concernsImg != '' ? res.data.concernsImg.split(',') : [];
 							for (let i = 0; i < res.data.concernsImg.length; i++) {
 								res.data.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + res.data.concernsImg[i];
 							}
+							me.recordId = res.data.recordId;
 							me.cuIList.push(res.data);
 							let recodList = me.cuIList[0].recordCheckList;
 							recodList.forEach(item => {
@@ -543,6 +654,15 @@ export default {
 					}
 				});
 			});
+			let escortList = me.winForm.escortArray;
+			let escortNameList = [];
+			escortList.forEach((item, index) => {
+				this.userList.forEach((item2, index) => {
+					if (item == item2.uid) {
+						escortNameList.push(item2.chinaName);
+					}
+				});
+			});
 			me.cuIList.push({
 				isCard: true,
 				concernsImg: [],
@@ -550,6 +670,8 @@ export default {
 				planId: me.planId,
 				concerns: '',
 				checkStaff: me.winForm.checkStaff,
+				escortArray: me.winForm.escortArray,
+				escortName: escortNameList.toString(),
 				clockLocation: me.winForm.clockLocation,
 				clockTime: me.winForm.clockTime,
 				checkStaffName: me.winForm.checkStaffName,
@@ -560,38 +682,145 @@ export default {
 			me.modalName2 = null;
 		},
 		saveData() {
+			let me = this;
 			if (this.cuIList.length > 0) {
 				uni.$off('recordClockIn');
 				let list = JSON.parse(JSON.stringify(this.cuIList));
-				let me = this;
 				let concernsImg = [];
+				let signature = '';
 				delete list[0].concernsImg;
-				if (me.cuIList[0].concernsImg.length > 0) {
-					me.isClick = true;
-					for (let i = 0; i < me.cuIList[0].concernsImg.length; i++) {
+				uni.canvasToTempFilePath({
+					canvasId: 'mycanvas',
+					success: function(res) {
+						let cutImg = res.tempFilePath;
 						const uploadTask = uni.uploadFile({
 							url: service.getUrls().url + 'file/imgUpload',
-							filePath: me.cuIList[0].concernsImg[i],
+							filePath: cutImg,
 							name: 'imgS',
 							header: {
-								Authorization: this.$store.state.token
+								Authorization: me.$store.state.token
 							},
-							success: function(uploadFileRes) {
-								let data = JSON.parse(uploadFileRes.data);
-								if (data.flag) {
-									concernsImg.push(data.data);
-									console.log(concernsImg);
-									if (i + 1 == me.cuIList[0].concernsImg.length) {
+							success: function(uploadFileReso) {
+								let qmData = JSON.parse(uploadFileReso.data);
+								if (qmData.flag) {
+									signature = qmData.data;
+									me.isClick = true;
+									if (me.cuIList[0].concernsImg.length > 0) {
+										me.isClick = true;
+										for (let i = 0; i < me.cuIList[0].concernsImg.length; i++) {
+											const uploadTask = uni.uploadFile({
+												url: service.getUrls().url + 'file/imgUpload',
+												filePath: me.cuIList[0].concernsImg[i],
+												name: 'imgS',
+												header: {
+													Authorization: this.$store.state.token
+												},
+												success: function(uploadFileRes) {
+													let data = JSON.parse(uploadFileRes.data);
+													if (data.flag) {
+														concernsImg.push(data.data);
+														if (i + 1 == me.cuIList[0].concernsImg.length) {
+															let concernsData = [];
+															if (list[0].concerns != '') {
+																list[0].concerns.forEach((items, indexs) => {
+																	if (items.checked) {
+																		concernsData.push(items.concerns);
+																	}
+																});
+															}
+															list[0].concerns = concernsData.toString();
+															list[0].concernsImg = concernsImg.toString();
+															list[0].photoUrl = signature;
+															if (me.isExist) {
+																basic
+																	.pollingRecordAdd(list[0])
+																	.then(res => {
+																		if (res.flag) {
+																			uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+																			uni.showToast({
+																				icon: 'success',
+																				title: res.msg
+																			});
+																			uni.navigateBack({
+																				delta: 2,
+																				url: '../component/polling'
+																			});
+																			/* let imgs = me.cuIList[0].concernsImg.map((value, index) => {
+																				return {
+																					name: 'imgS',
+																					uri: value
+																				};
+																			}); */
+																		}
+																	})
+																	.catch(err => {
+																		uni.showToast({
+																			icon: 'none',
+																			title: err.msg
+																		});
+																		this.isClick = false;
+																	});
+															} else {
+																list[0].recordId=me.recordId
+																basic
+																	.pollingRecordUpdate(list[0])
+																	.then(res => {
+																		if (res.flag) {
+																			uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
+																			uni.showToast({
+																				icon: 'success',
+																				title: res.msg
+																			});
+																			uni.navigateBack({
+																				delta: 1,
+																				url: '../component/polling'
+																			});
+																			/* let imgs = me.cuIList[0].concernsImg.map((value, index) => {
+																				return {
+																					name: 'imgS',
+																					uri: value
+																				};
+																			}); */
+																		}
+																	})
+																	.catch(err => {
+																		uni.showToast({
+																			icon: 'none',
+																			title: err.msg
+																		});
+																		this.isClick = false;
+																	});
+															}
+														}
+													}
+													uni.showToast({
+														icon: 'success',
+														title: data.msg
+													});
+												},
+												fail: err => {
+													console.log('uploadImage fail', err);
+													uni.showModal({
+														content: err.errMsg,
+														showCancel: false
+													});
+												}
+											});
+											uploadTask.onProgressUpdate(function(reso) {
+												me.percent = reso.progress;
+											});
+										}
+									} else {
 										let concernsData = [];
-										if(list[0].concerns != ''){
+										if (list[0].concerns != '') {
 											list[0].concerns.forEach((items, indexs) => {
 												if (items.checked) {
 													concernsData.push(items.concerns);
 												}
 											});
 										}
+										list[0].photoUrl = signature;
 										list[0].concerns = concernsData.toString();
-										list[0].concernsImg = concernsImg.toString();
 										if (me.isExist) {
 											basic
 												.pollingRecordAdd(list[0])
@@ -606,12 +835,6 @@ export default {
 															delta: 2,
 															url: '../component/polling'
 														});
-														/* let imgs = me.cuIList[0].concernsImg.map((value, index) => {
-														return {
-															name: 'imgS',
-															uri: value
-														};
-													}); */
 													}
 												})
 												.catch(err => {
@@ -622,6 +845,7 @@ export default {
 													this.isClick = false;
 												});
 										} else {
+											list[0].recordId=me.recordId
 											basic
 												.pollingRecordUpdate(list[0])
 												.then(res => {
@@ -635,12 +859,6 @@ export default {
 															delta: 1,
 															url: '../component/polling'
 														});
-														/* let imgs = me.cuIList[0].concernsImg.map((value, index) => {
-														return {
-															name: 'imgS',
-															uri: value
-														};
-													}); */
 													}
 												})
 												.catch(err => {
@@ -651,12 +869,13 @@ export default {
 													this.isClick = false;
 												});
 										}
+
+										/* uni.showToast({
+												icon: 'none',
+												title: '请选择图片'
+											}); */
 									}
 								}
-								uni.showToast({
-									icon: 'success',
-									title: data.msg
-								});
 							},
 							fail: err => {
 								console.log('uploadImage fail', err);
@@ -667,77 +886,22 @@ export default {
 							}
 						});
 						uploadTask.onProgressUpdate(function(reso) {
+							console.log(reso);
 							me.percent = reso.progress;
 						});
+					},
+					fail: function(errs) {
+						console.log('生成图片出错:', JSON.stringify(errs));
+						uni.hideLoading();
 					}
-				} else {
-					let concernsData = [];
-					console.log(list[0].concerns)
-					if(list[0].concerns != ''){
-						list[0].concerns.forEach((items, indexs) => {
-							if (items.checked) {
-								concernsData.push(items.concerns);
-							}
-						});
-					}
-					list[0].concerns = concernsData.toString();
-					if (me.isExist) {
-						basic
-							.pollingRecordAdd(list[0])
-							.then(res => {
-								if (res.flag) {
-									uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
-									uni.showToast({
-										icon: 'success',
-										title: res.msg
-									});
-									uni.navigateBack({
-										delta: 2,
-										url: '../component/polling'
-									});
-								}
-							})
-							.catch(err => {
-								uni.showToast({
-									icon: 'none',
-									title: err.msg
-								});
-								this.isClick = false;
-							});
-					} else {
-						basic
-							.pollingRecordUpdate(list[0])
-							.then(res => {
-								if (res.flag) {
-									uni.$emit('handleBack', { planId: me.planId, deptName: me.deptName, isback: true });
-									uni.showToast({
-										icon: 'success',
-										title: res.msg
-									});
-									uni.navigateBack({
-										delta: 1,
-										url: '../component/polling'
-									});
-								}
-							})
-							.catch(err => {
-								uni.showToast({
-									icon: 'none',
-									title: err.msg
-								});
-								this.isClick = false;
-							});
-					}
-					
-
-					/* uni.showToast({
-						icon: 'none',
-						title: '请选择图片'
-					}); */
-				}
+				});
+			}else{
+				uni.showToast({
+					icon: 'none',
+					title: '无数据'
+				});
 			}
 		},
-
 		// 查询前后三天日期
 		getDay(date, day) {
 			var today = new Date();
@@ -764,12 +928,29 @@ export default {
 			}
 			return m;
 		},
+		hideModal2(e) {
+			this.modalName3 = null;
+		},
 		hideModal(e) {
+			this.$nextTick(() => {
+				this.$refs.projectCheck.empty();
+				this.$refs.userCheck.empty();
+			});
+			this.winForm = {
+				checkId: [],
+				escortArray: [],
+				checkStaff: '',
+				clockLocation: this.winForm.clockLocation,
+				clockTime: this.winForm.clockTime
+			};
 			this.modalName2 = null;
 			this.isFab = true;
 		},
 		checkListChange(val) {
 			this.winForm.checkId = val;
+		},
+		escortListChange(val) {
+			this.winForm.escortArray = val;
 		},
 		userListChange(val) {
 			let me = this;
@@ -783,8 +964,13 @@ export default {
 
 		fabClick() {
 			var that = this;
+			this.$nextTick(() => {
+				this.$refs.projectCheck.empty();
+				this.$refs.userCheck.empty();
+			});
 			this.winForm = {
 				checkId: [],
+				escortArray: [],
 				checkStaff: '',
 				clockLocation: that.winForm.clockLocation,
 				clockTime: that.winForm.clockTime
@@ -839,5 +1025,51 @@ export default {
 .nav-title::first-letter {
 	font-size: 16px;
 	margin-right: 2px;
+}
+.signature {
+	position: relative;
+	z-index: 999;
+	width: auto;
+}
+.container {
+	padding: 20rpx 0 120rpx 0;
+	box-sizing: border-box;
+}
+.title {
+	height: 50upx;
+	line-height: 50upx;
+	font-size: 16px;
+}
+.mycanvas {
+	width: 100%;
+	height: calc(100vh - 52vh);
+	background-color: #ececec;
+}
+.footer {
+	font-size: 14px;
+	height: 120upx;
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+.left,
+.right,
+.close {
+	line-height: 100upx;
+	height: 100upx;
+	width: 220upx;
+	text-align: center;
+	font-weight: bold;
+	color: white;
+	border-radius: 5upx;
+}
+.left {
+	background: #007aff;
+}
+.right {
+	background: orange;
+}
+.close {
+	background: #a3a3a3;
 }
 </style>

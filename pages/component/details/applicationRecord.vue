@@ -13,7 +13,7 @@
 							<view class="text-grey">检查时间:{{ item.checkTime }}</view>
 							<view class="text-grey">打卡人:{{ item.clockName }}</view>
 							<view class="text-grey">被检人:{{ item.clockName }}</view>
-							<view class="text-grey">陪同人员:{{ item.escort }}</view>
+							<view class="text-grey">检查人员:{{ item.escortName }}</view>
 							<view class="text-grey">申请人:{{ item.proposer }}</view>
 							<view class="text-grey">批准人:{{ item.ratify }}</view>
 							<view class="text-grey" style="width: 100%;">打卡时间:{{ item.clockTime }}</view>

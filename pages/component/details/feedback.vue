@@ -71,8 +71,20 @@
 					<input placeholder="请输入" v-model="form.checkStaff" name="input" />
 				</view>
 				<view class="cu-form-group">
-					<view class="title">陪同人员</view>
-					<input placeholder="请输入" v-model="form.escort" name="input" />
+					<view class="title">检查人员</view>
+					<!-- <input placeholder="请输入" v-model="form.escort" name="input" /> -->
+					<ld-select
+						:multiple="true"
+						:list="userList"
+						list-key="chinaName"
+						value-key="uid"
+						placeholder="请选择"
+						clearable
+						style="width: 100%;"
+						ref="userCheck"
+						v-model="form.escortArray"
+						@change="escortListChange"
+					></ld-select>
 				</view>
 				<view class="cu-bar bg-white"><view class="action">隐患问题</view></view>
 				<view class="cu-list menu">
@@ -154,9 +166,11 @@ export default {
 			onoff: true,
 			isOrder: false,
 			isLength: 3,
+			filterValue: null,
 			form: {
 				rectifyPlanDate: null,
 				rectifyImg: [],
+				escortArray: [],
 				concernsImg: [],
 				checkStaffName: '',
 				checkStaff: '',
@@ -222,6 +236,8 @@ export default {
 							for (let i = 0; i < me.form.rectifyImg.length; i++) {
 								me.form.rectifyImg[i] = me.imageUrl + 'uploadFiles/image/' + me.form.rectifyImg[i];
 							}
+
+							me.filterValue = me.form.escortArray
 							me.form.concerns = me.form.concerns.split(',');
 							me.form.checkContent = me.form.opinion;
 							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
@@ -236,7 +252,6 @@ export default {
 							me.winForm.delayReason = res.data.delayReason;
 							me.winForm.rectifyContent = res.data.rectifyContent;
 							me.winForm.applicationDate = res.data.applicationDate;
-							console.log(me.form)
 							uni.showToast({
 								icon: 'success',
 								title: err.msg
@@ -263,11 +278,14 @@ export default {
 							me.form.concerns = res.data.concerns.split(',');
 							me.form.checkContent = res.data.opinion;
 							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
+							me.filterValue = res.data.escortArray
+							me.$nextTick(() => {
+							   me.$refs.userCheck.resetValue(res.data.escortArray);
+							 })
 							me.form.checkStaff = res.data.checkStaff;
 							for (let i = 0; i < me.form.concernsImg.length; i++) {
 								me.form.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + me.form.concernsImg[i];
 							}
-							console.log(me.form);
 							uni.showToast({
 								icon: 'success',
 								title: err.msg
@@ -281,7 +299,7 @@ export default {
 						});
 					});
 			}
-			
+
 			me.form.recordId = this.recordId;
 		}
 	},
@@ -307,6 +325,9 @@ export default {
 		});
 	},
 	methods: {
+		escortListChange(val) {
+			this.form.escortArray = val;
+		},
 		initMain() {
 			const me = this;
 			basic

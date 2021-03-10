@@ -126,13 +126,8 @@ function saveToken(token) {
  * @return {object|Promise<reject>}
  */
 function handleCode({ data, status, config, res }) {
-	console.log(config)
-	console.log(res)
-	console.log(data)
-	console.log(status)
 	const STATUS = {
         '20000'() {
-			console.log(1211)
 			if(store.state.token == '' || typeof store.state.token == 'undefined'){
 				if(typeof res.header.Authorization == 'undefined'){
 					store.commit("setToken", {token: res.header.authorization})

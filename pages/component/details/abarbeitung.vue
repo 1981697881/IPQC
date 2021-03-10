@@ -364,7 +364,6 @@ export default {
 								success: function(uploadFileRes) {
 									let data = JSON.parse(uploadFileRes.data);
 									if (data.flag) {
-										
 										if (i + 1 == cutImg.length) {
 											signature = data.data;
 											that.isClick = true;
@@ -383,7 +382,7 @@ export default {
 															uni.navigateBack({
 																url: '../component/polling'
 															});
-														}, 500); 
+														}, 500);
 														uni.showToast({
 															icon: 'success',
 															title: reso.msg
@@ -423,11 +422,11 @@ export default {
 					fail: function(errs) {
 						console.log('生成图片出错:', JSON.stringify(errs));
 						uni.hideLoading();
-						uni.showModal({
+						/* uni.showModal({
 							title: '绘制小程序二维码失败',
 							content: '请搜索""小程序,并在小程序观看课程',
 							showCancel: false
-						});
+						}); */
 					}
 				});
 			}

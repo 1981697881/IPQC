@@ -106,6 +106,10 @@
 			}
 		},
 		methods: {
+			resetValue(val){
+				console.log(val)
+				this.sValue = val
+			},
 			getBValye(val){ // 将数组值转换为以,隔开的字符串
 				if(val.length>0){
 					if(Array.isArray(val)){
@@ -171,6 +175,7 @@
 				console.log(value)
 			},
 			getListKeyValue(item){
+				console.log(this.listKey)
 				if(this.listKey){
 					let func = new Function('item', 'return ' + 'item.'+this.listKey);
 					return func(item)
