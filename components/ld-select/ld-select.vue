@@ -107,7 +107,6 @@
 		},
 		methods: {
 			resetValue(val){
-				console.log(val)
 				this.sValue = val
 			},
 			getBValye(val){ // 将数组值转换为以,隔开的字符串
@@ -124,13 +123,11 @@
 						let values = chooseAttr.map(temp => this.getListKeyValue(temp)).join(',')
 						return values
 					} else {
-						
 						let choose = this.list.find(temp => {
 							let val_val = this.getValueKeyValue(temp)
 							
 							return val === val_val
 						})
-						
 						return this.getListKeyValue(choose)
 					}
 				} else {
@@ -161,7 +158,6 @@
 			valueOf(list){
 				let me = this
 				let value = ''
-				console.log(me.bValue)
 				if(me.valueKey){
 					for(let i in list){
 						if(me.sValue == list[i][me.valueKey+'']){
@@ -172,10 +168,8 @@
 				} else {
 					return value
 				}
-				console.log(value)
 			},
 			getListKeyValue(item){
-				console.log(this.listKey)
 				if(this.listKey){
 					let func = new Function('item', 'return ' + 'item.'+this.listKey);
 					return func(item)

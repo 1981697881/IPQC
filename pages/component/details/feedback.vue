@@ -71,7 +71,7 @@
 					<input placeholder="请输入" v-model="form.checkStaff" name="input" />
 				</view>
 				<view class="cu-form-group">
-					<view class="title">检查人员</view>
+					<view class="title">陪同人员</view>
 					<!-- <input placeholder="请输入" v-model="form.escort" name="input" /> -->
 					<ld-select
 						:multiple="true"
@@ -236,8 +236,9 @@ export default {
 							for (let i = 0; i < me.form.rectifyImg.length; i++) {
 								me.form.rectifyImg[i] = me.imageUrl + 'uploadFiles/image/' + me.form.rectifyImg[i];
 							}
-
-							me.filterValue = me.form.escortArray
+							me.$nextTick(() => {
+							   me.$refs.userCheck.resetValue(me.form.escortArray.map(String));
+							 })
 							me.form.concerns = me.form.concerns.split(',');
 							me.form.checkContent = me.form.opinion;
 							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
@@ -279,8 +280,9 @@ export default {
 							me.form.checkContent = res.data.opinion;
 							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
 							me.filterValue = res.data.escortArray
+							
 							me.$nextTick(() => {
-							   me.$refs.userCheck.resetValue(res.data.escortArray);
+							   me.$refs.userCheck.resetValue(res.data.escortArray.map(String));
 							 })
 							me.form.checkStaff = res.data.checkStaff;
 							for (let i = 0; i < me.form.concernsImg.length; i++) {

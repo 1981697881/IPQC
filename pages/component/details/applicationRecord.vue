@@ -8,14 +8,14 @@
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<view v-for="(item, index) in cuIconList" :key="index">
 				<view class="cu-list menu-avatar">
-					<view class="cu-item" style="width: 100%;margin-top: 2px;height: 200upx;">
+					<view class="cu-item" style="width: 100%;margin-top: 2px;height: 260upx;">
 						<view style="clear: both; width: 100%;" class="grid text-left col-2" @tap="showList(index, item)" data-target="Modal">
 							<view class="text-grey">检查时间:{{ item.checkTime }}</view>
 							<view class="text-grey">打卡人:{{ item.clockName }}</view>
 							<view class="text-grey">被检人:{{ item.clockName }}</view>
-							<view class="text-grey">检查人员:{{ item.escortName }}</view>
 							<view class="text-grey">申请人:{{ item.proposer }}</view>
 							<view class="text-grey">批准人:{{ item.ratify }}</view>
+							<view class="text-grey" style="width: 100%;">陪同人员:{{ item.escortName }}</view>
 							<view class="text-grey" style="width: 100%;">打卡时间:{{ item.clockTime }}</view>
 							<view class="text-grey" style="width: 100%;">延期原因:{{ item.delayReason }}</view>
 						</view>

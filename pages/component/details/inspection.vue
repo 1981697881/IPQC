@@ -71,7 +71,7 @@
 				</view>
 				<view class="cu-bar solid-bottom" style="height: 60upx;">
 					<view class="action">
-						<view style="width: 70px;">检查人员:</view>
+						<view style="width: 70px;">陪同人员:</view>
 						<!-- <input placeholder="请输入" v-model="winForm.escort" name="input" /> -->
 						<ld-select
 							:multiple="true"
@@ -113,7 +113,7 @@
 							<view class="cu-bar bg-white solid-bottom">
 								<view class="action">
 									<text class="cuIcon-titles text-orange"></text>
-									检查人员:{{ item.escortName }}
+									陪同人员:{{ item.escortName }}
 								</view>
 							</view>
 							<view class="cu-card no-card case">
@@ -713,7 +713,7 @@ export default {
 												filePath: me.cuIList[0].concernsImg[i],
 												name: 'imgS',
 												header: {
-													Authorization: this.$store.state.token
+													Authorization: me.$store.state.token
 												},
 												success: function(uploadFileRes) {
 													let data = JSON.parse(uploadFileRes.data);
