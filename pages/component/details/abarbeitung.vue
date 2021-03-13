@@ -77,6 +77,17 @@
 								</view>
 								<view class="action">登记日期：{{ item.recordDate }}</view>
 							</view>
+							<view class="cu-bar bg-white solid-bottom">
+								<view class="action">
+									<text class="cuIcon-titles text-orange"></text>
+									陪同人员:{{ item.escortName }}
+								</view>
+							</view><view class="cu-bar bg-white solid-bottom">
+								<view class="action">
+									<text class="cuIcon-titles text-orange"></text>
+									检查人员:{{ item.inspector }}
+								</view>
+							</view>
 							<view class="cu-card no-card case">
 								<view class="cu-item shadow">
 									<view class="cu-list menu-avatar">

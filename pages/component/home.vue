@@ -22,6 +22,7 @@
 							value-key="typeId"
 							placeholder="请选择"
 							clearable
+							ref="projectCheck"
 							v-model="winForm.typeId"
 							@change="checkListChange"
 						></ld-select>
@@ -317,7 +318,7 @@ export default {
 									console.log(reso.data == null);
 									if (reso.data == null) {
 										uni.navigateTo({
-											url: '/pages/component/polling?planId=' + res.data.planId + '&deptName=' + me.winForm.deptName
+											url: '/pages/component/polling?planId=' + res.data.planId + '&deptName=' + me.winForm.deptName+ '&inspector=' + res.data.inspector
 										});
 									} else {
 										uni.navigateTo({
@@ -328,6 +329,8 @@ export default {
 												me.winForm.deptName +
 												'&checkStaff=' +
 												reso.data.checkStaff +
+												'&inspector=' +
+												res.data.inspector +
 												'&recordCheckList=' +
 												encodeURIComponent(JSON.stringify(reso.data.recordCheckList))
 										});
@@ -376,6 +379,9 @@ export default {
 				});
 		},
 		addPlan(index, item) {
+			this.$nextTick(() => {
+				this.$refs.projectCheck.empty();
+			});
 			this.winForm = {
 				planTime: this.getDay('', 0).date,
 				typeId: '',
@@ -399,10 +405,10 @@ export default {
 				.pollingRecordByPlanId(item.planId)
 				.then(res => {
 					if (res.flag) {
-						console.log(res.data == null);
+						console.log(item.inspector);
 						if (res.data == null) {
 							uni.navigateTo({
-								url: '/pages/component/polling?planId=' + item.planId + '&deptName=' + item.deptName
+								url: '/pages/component/polling?planId=' + item.planId + '&deptName=' + item.deptName+ '&inspector=' + item.inspector
 							});
 						} else {
 							uni.navigateTo({

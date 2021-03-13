@@ -252,6 +252,7 @@ export default {
 		uni.$on('handleBack', res => {
 			console.log(res)
 			me.form.planId = res.planId;
+		
 			me.form.deptName = res.deptName;
 			basic
 				.pollingRecordByPlanId(res.planId)
@@ -301,6 +302,9 @@ export default {
 		if (JSON.stringify(option) != '{}') {
 			if (typeof option.checkStaff != 'undefined') {
 				me.winForm.checkStaff = option.checkStaff;
+			}
+			if(option.inspector){
+				me.form.inspector = option.inspector
 			}
 			if (typeof option.recordCheckList != 'undefined') {
 				let checkList = JSON.parse(option.recordCheckList);
@@ -384,10 +388,10 @@ export default {
 	},
 	methods: {
 		showList(index, item) {
-			console.log(item.isOpen)
+
 			if (item.isOpen) {
 				uni.navigateTo({
-					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType+ '&isExist=' + item.isExist+ '&isCommit=' + item.isCommit + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId
+					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType+ '&isExist=' + item.isExist+ '&isCommit=' + item.isCommit + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId+ '&inspector=' + this.form.inspector
 				});
 			} else {
 				uni.showToast({

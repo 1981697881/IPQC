@@ -38,9 +38,6 @@ export default {
 		);
 	},
 	onLoad(options) {
-		console.log(1233213);
-		console.log(options);
-
 		/**
 		 * 默认登录，这情况为已登录过，而登录缓存还在，后台登录，前端不展示登录页
 		 * 检测用户账号密码是否在已缓存的用户列表中

@@ -52,13 +52,6 @@ export default {
 				accept: '*/*',
 			},
 	    });
-	},//查询登记
-	pollingRecordByPlanId(params) {
-	    return Request().get('/app/pollingRecordByPlanId/'+params, {
-			header: {
-				accept: '*/*',
-			},
-	    });
 	},
 	//巡检登记
 	pollingRecordAdd(params) {

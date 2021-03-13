@@ -113,6 +113,11 @@
 							<view class="cu-bar bg-white solid-bottom">
 								<view class="action">
 									<text class="cuIcon-titles text-orange"></text>
+									检查人员:{{ inspector }}
+								</view>
+							</view><view class="cu-bar bg-white solid-bottom">
+								<view class="action">
+									<text class="cuIcon-titles text-orange"></text>
 									陪同人员:{{ item.escortName }}
 								</view>
 							</view>
@@ -250,6 +255,7 @@ export default {
 			modalName: null,
 			modalName2: null,
 			modalName3: null,
+			inspector: null,
 			gridCol: 3,
 			projectCheckList: [],
 			userList: [],
@@ -289,6 +295,10 @@ export default {
 		let me = this;
 		me.imageUrl = me.imageUrl.replace('/web', '');
 		if (JSON.stringify(option) != '{}') {
+			console.log(option)
+			if(option.inspector){
+				me.inspector = option.inspector
+			}	
 			if (option.isCommit == 'true') {
 				this.isCommit = true;
 			} else {
@@ -435,6 +445,7 @@ export default {
 								res.data.concernsImg[i] = me.imageUrl + 'uploadFiles/image/' + res.data.concernsImg[i];
 							}
 							me.recordId = res.data.recordId;
+							me.inspector = res.data.inspector;
 							me.cuIList.push(res.data);
 							let recodList = me.cuIList[0].recordCheckList;
 							recodList.forEach(item => {

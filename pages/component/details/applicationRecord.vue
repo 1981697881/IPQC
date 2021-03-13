@@ -12,6 +12,7 @@
 						<view style="clear: both; width: 100%;" class="grid text-left col-2" @tap="showList(index, item)" data-target="Modal">
 							<view class="text-grey">检查时间:{{ item.checkTime }}</view>
 							<view class="text-grey">打卡人:{{ item.clockName }}</view>
+							<view class="text-grey">检查人:{{ item.inspector }}</view>
 							<view class="text-grey">被检人:{{ item.clockName }}</view>
 							<view class="text-grey">申请人:{{ item.proposer }}</view>
 							<view class="text-grey">批准人:{{ item.ratify }}</view>

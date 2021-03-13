@@ -64,6 +64,10 @@
 		<scroll-view scroll-y class="page" :style="{ height: pageHeight + 'px' }">
 			<form>
 				<view class="cu-form-group">
+					<view class="title">检查人员</view>
+					<text>{{form.inspector}}</text>
+				</view>
+				<view class="cu-form-group">
 					<view class="title">被检人员</view>
 					<!-- <picker @change="checkStaffChange" :range-key="'username'" :value="index3" :range="userList">
 						<view class="picker">{{ form.checkStaffName != '' ? form.checkStaffName : '请选择' }}</view>
@@ -128,7 +132,7 @@
 
 				<view class="cu-form-group">
 					<view class="title">整改跟踪人</view>
-					<picker @change="rectifyChange" :range-key="'username'" :value="index1" :range="userList">
+					<picker @change="rectifyChange" :range-key="'chinaName'" :value="index1" :range="userList">
 						<view class="picker">{{ form.rectifyName != '' ? form.rectifyName : '请选择' }}</view>
 					</picker>
 				</view>
@@ -278,6 +282,7 @@ export default {
 						if (res.flag) {
 							me.form.concerns = res.data.concerns.split(',');
 							me.form.checkContent = res.data.opinion;
+							me.form.inspector = res.data.inspector;
 							me.form.concernsImg = res.data.concernsImg!=''?res.data.concernsImg.split(','):[];
 							me.filterValue = res.data.escortArray
 							
@@ -503,12 +508,11 @@ export default {
 		},
 		rectifyChange(e) {
 			this.$set(this.form, 'rectifyUid', this.userList[e.detail.value].uid);
-			this.$set(this.form, 'rectifyName', this.userList[e.detail.value].username);
+			this.$set(this.form, 'rectifyName', this.userList[e.detail.value].chinaName);
 		},
 		checkStaffChange(e) {
 			this.$set(this.form, 'checkStaff', this.userList[e.detail.value].uid);
 			this.$set(this.form, 'checkStaffName', this.userList[e.detail.value].username);
-			console.log(this.form);
 		},
 		proposerChange(e) {
 			this.$set(this.winForm, 'proposer', this.userList[e.detail.value].uid);

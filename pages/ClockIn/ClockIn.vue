@@ -149,6 +149,7 @@ export default {
 			this.form.isCommit = option.isCommit;
 			this.form.isOrder = option.isOrder;
 			this.form.recordId = option.recordId;
+			this.form.inspector = option.inspector;
 		}
 		this.initMain();
 	},
@@ -245,6 +246,8 @@ export default {
 							me.form.isExist +
 							'&isCommit=' +
 							me.form.isCommit +
+							'&inspector=' +
+							me.form.inspector +
 							'&clockTime=' +
 							rqData.clockTime +
 							'&clockLocation=' +
@@ -254,9 +257,9 @@ export default {
 						url: '../component/polling'
 					}); */
 				} else {
-					console.log(rqData);
+			
 					uni.$emit('handleClockIn', { clockTime: rqData.clockTime, clockLocation: rqData.clockLocation });
-					console.log(me.form);
+					
 					uni.navigateTo({
 						url:
 							'../component/details/feedback?planId=' +
