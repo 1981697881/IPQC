@@ -39,7 +39,7 @@
 				<view style="clear: both;" class="cu-bar bg-white justify-end padding-bottom-xl">
 					<view class="action">
 						<button class="cu-btn line-green text-green" @tap="hideModal">取消</button>
-						<button class="cu-btn bg-green margin-left" @tap="$manyCk(saveCom)">确定</button>
+						<button class="cu-btn bg-green margin-left" @tap="saveCom">确定</button>
 					</view>
 				</view>
 			</view>
@@ -222,6 +222,7 @@ export default {
 				pageNum: 1
 			},
 			keyword: '',
+			 state:false,
 			isShow: true,
 			lastPage: 1,
 			elements: [],
@@ -293,6 +294,10 @@ export default {
 	},
 		saveCom() {
 			var me = this;
+			if(me.state){
+				 return false;
+			}
+			this.state = true;
 			if (me.winForm.typeId == '' || typeof this.winForm.typeId == 'undefined') {
 				return uni.showToast({
 					icon: 'none',
@@ -313,6 +318,7 @@ export default {
 							.pollingRecordByPlanId(res.data.planId)
 							.then(reso => {
 								if (reso.flag) {
+									me.state = false;
 									me.modalName = null;
 									me.getLists();
 									console.log(reso.data == null);

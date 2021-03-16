@@ -155,7 +155,7 @@
 															class="round blue"
 															:class="item2.checked ? 'checked' : ''"
 															:checked="item2.checked ? true : false"
-															:value="item2.checkId"
+															:value="item2.checkId.toString()"
 														></checkbox>
 													</checkbox-group>
 												</view>
@@ -164,22 +164,28 @@
 										<view v-show="item.isThrough" class="cu-bar bg-white"><view class="action">隐患问题</view></view>
 										<view v-show="item.isThrough" class="cu-list menu">
 											<view v-for="(item2, index2) in item.concerns" :key="index2" class="cu-item" style="height: auto;">
-												<view class="content padding-sm" style="left: 0;">
-													<view>
-														<text class="cuIcon-warn text-blue margin-right-xs"></text>
-														{{ item2.concerns }}
+												<view v-if="item2.type=='title'" class="text-red content padding-sm" style="left: 0;">
+														{{ item2.val }}
+												</view>
+												<block v-else>
+													<view class="content padding-sm" style="left: 0;">
+														<view>
+															<text class="cuIcon-warn text-blue margin-right-xs"></text>
+															{{ item2.concerns }}
+														</view>
 													</view>
-												</view>
-												<view class="action" style="position: absolute;right:0;">
-													<checkbox-group class="block" @change="CheckConIdChange($event, item2, item)">
-														<checkbox
-															class="round blue"
-															:class="item2.checked ? 'checked' : ''"
-															:checked="item2.checked ? true : false"
-															:value="item2.conId"
-														></checkbox>
-													</checkbox-group>
-												</view>
+													<view class="action" style="position: absolute;right:0;">
+														<checkbox-group  class="block" @change="CheckConIdChange($event, item2, item)">
+															<checkbox
+																class="round blue"
+																:class="item2.checked ? 'checked' : ''"
+																:checked="item2.checked ? true : false"
+																:value="item2.conId"
+															></checkbox>
+														</checkbox-group>
+														
+													</view>
+												</block>
 											</view>
 										</view>
 										<view v-show="item.isThrough" class="cu-form-group align-start">
@@ -286,7 +292,6 @@ export default {
 	onShow: function(option) {
 		let me = this;
 		uni.$on('recordClockIn', res => {
-			console.log(res);
 			me.winForm.clockTime = res.clockTime;
 			me.winForm.clockLocation = res.clockLocation;
 		});
@@ -295,7 +300,6 @@ export default {
 		let me = this;
 		me.imageUrl = me.imageUrl.replace('/web', '');
 		if (JSON.stringify(option) != '{}') {
-			console.log(option)
 			if(option.inspector){
 				me.inspector = option.inspector
 			}	
@@ -495,8 +499,8 @@ export default {
 			let me = this;
 			if (item.checked) {
 				me.$set(item2, 'concerns', []);
-				this.$set(item, 'checked', false);
-				this.$set(item2, 'isThrough', true);
+				me.$set(item, 'checked', false);
+				me.$set(item2, 'isThrough', true);
 				let arr = item2.recordCheckList;
 				arr.forEach(i => {
 					if (!i.checked) {
@@ -507,11 +511,19 @@ export default {
 									let data = res.data;
 									let str = item2.concerns;
 									data.forEach((items, indexs) => {
+										if(indexs==0){
+											str.push({
+												type:'title',
+												val: i.checkName,
+												parentId: i.checkId
+											})
+										}
 										str.push({
 											conId: items.conId.toString(),
 											concerns: items.concerns,
 											opinion: items.opinion,
-											checked: false
+											checked: false,
+											parentId: i.checkId
 										});
 									});
 									me.$set(item2, 'concerns', str);
@@ -526,7 +538,7 @@ export default {
 					}
 				});
 			} else {
-				this.$set(item, 'checked', true);
+				me.$set(item, 'checked', true);
 				let arr = item2.recordCheckList;
 				let isThrough = true;
 				arr.map(i => {
@@ -535,8 +547,17 @@ export default {
 					}
 				});
 				if (isThrough) {
-					this.$set(item2, 'concerns', []);
-					this.$set(item2, 'isThrough', false);
+					me.$set(item2, 'concerns', []);
+					me.$set(item2, 'isThrough', false);
+				}else{
+					let concerns = item2.concerns;
+					let newConcerns = []
+					concerns.forEach((items,index)=>{
+						if(items.parentId != item.checkId){
+							newConcerns.push(items); 
+						}
+					})
+					me.$set(item2, 'concerns', newConcerns);
 				}
 			}
 		}, //event:默认参数,item: 子数据,item2:父数据
@@ -549,7 +570,6 @@ export default {
 				let str = item2.opinion;
 				arr.forEach((items, indexs) => {
 					if (items.checked) {
-						console.log(items);
 						str += indexs + 1 + '' + items.opinion + '\n';
 					}
 				});

@@ -361,9 +361,8 @@ export default {
 						if (cutImg.length != 0) {
 							cutImg = cutImg.concat(res.tempFilePath);
 						} else {
-							cutImg = res.tempFilePath;
+							cutImg .push(res.tempFilePath);
 						}
-
 						for (let i = 0; i < cutImg.length; i++) {
 							const uploadTask = uni.uploadFile({
 								url: service.getUrls().url + 'file/imgUpload',
@@ -429,6 +428,7 @@ export default {
 								that.percent = reso.progress;
 							});
 						}
+					
 					},
 					fail: function(errs) {
 						console.log('生成图片出错:', JSON.stringify(errs));
