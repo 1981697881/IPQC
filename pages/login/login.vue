@@ -62,12 +62,9 @@
 			<view class="btn-row">
 				<button type="primary" class="primary" @tap="bindLogin">登录</button>
 			</view>
-		
 		</view>
 	</view>
-	
 </template>
-
 <script>
 	import service from '../../service.js';
 	import login from '@/api/login';

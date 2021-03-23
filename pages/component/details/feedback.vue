@@ -15,9 +15,10 @@
 				<form>
 					<view class="cu-form-group">
 						<view class="title">延期期限</view>
-						<picker mode="date" :value="winForm.delayTimeLimit" start="2020-12-01" end="2030-09-01" @change="DateChange($event, 'delayTimeLimit')">
+						<text>{{winForm.delayTimeLimit}}</text>
+						<!-- <picker mode="date" :value="winForm.delayTimeLimit" start="2020-12-01" end="2030-09-01" @change="DateChange($event, 'delayTimeLimit')">
 							<view class="picker">{{ winForm.delayTimeLimit }}</view>
-						</picker>
+						</picker> -->
 					</view>
 					<view class="cu-form-group">
 						<view class="title">延期原因</view>
@@ -273,13 +274,15 @@ export default {
 				me.form.clockTime = option.clockTime;
 				me.form.clockLocation = option.clockLocation;
 				me.form.rectifyPlanDate = me.getDay('', 0).date;
-				me.winForm.delayTimeLimit = me.getDay('', 0).date;
+				/* me.winForm.delayTimeLimit = me.getDay('', 0).date; */
+				
 				me.winForm.rectifyPlanDate = me.getDay('', 0).date;
 				me.winForm.applicationDate = me.getDay('', 0).date;
 				basic
 					.pollingRecordByPlanId(option.planId)
 					.then(res => {
 						if (res.flag) {
+							me.winForm.delayTimeLimit = res.data.delayTimeLimit;
 							me.form.concerns = res.data.concerns.split(',');
 							me.form.checkContent = res.data.opinion;
 							me.form.inspector = res.data.inspector;

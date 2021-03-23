@@ -192,6 +192,12 @@
 											<view class="title">整改内容</view>
 											<textarea v-model="item.opinion" maxlength="-1" :disabled="modalName != null" placeholder="整改内容"></textarea>
 										</view>
+										<view v-show="item.isThrough" class="cu-form-group">
+											<view class="title">延期期限</view>
+											<picker mode="date" :value="item.delayTimeLimit" start="2020-12-01" end="2030-09-01" @change="DateChange($event, 'delayTimeLimit', item)">
+												<view class="picker">{{ item.delayTimeLimit }}</view>
+											</picker>
+										</view>
 										<view v-show="item.isThrough" class="cu-bar bg-white">
 											<view class="action">隐患图片</view>
 											<view class="action">{{ item.concernsImg.length }}/3</view>
@@ -239,6 +245,7 @@ export default {
 	components: { ruiDatePicker, ldSelect, uniFab, loading },
 	data() {
 		return {
+			date: '2018-12-25',
 			formatName: 'FName',
 			percent: 0,
 			loading: false,
@@ -346,6 +353,9 @@ export default {
 		me.initMain();
 	},
 	methods: {
+		DateChange(e, val, item) {
+			this.$set(item, val, e.detail.value);
+		},
 		onCanvs() {
 			this.modalName3 = 'Modal';
 			this.createCanvas();
@@ -499,6 +509,7 @@ export default {
 			let me = this;
 			if (item.checked) {
 				me.$set(item2, 'concerns', []);
+				me.$set(item2, 'delayTimeLimit', me.getDay('', 0).date);
 				me.$set(item, 'checked', false);
 				me.$set(item2, 'isThrough', true);
 				let arr = item2.recordCheckList;
@@ -538,6 +549,7 @@ export default {
 					}
 				});
 			} else {
+			
 				me.$set(item, 'checked', true);
 				let arr = item2.recordCheckList;
 				let isThrough = true;
@@ -549,6 +561,7 @@ export default {
 				if (isThrough) {
 					me.$set(item2, 'concerns', []);
 					me.$set(item2, 'isThrough', false);
+					me.$set(item2, 'delayTimeLimit', null);
 				}else{
 					let concerns = item2.concerns;
 					let newConcerns = []
@@ -700,6 +713,7 @@ export default {
 				isThrough: false,
 				planId: me.planId,
 				concerns: '',
+				delayTimeLimit: null,
 				checkStaff: me.winForm.checkStaff,
 				escortArray: me.winForm.escortArray,
 				escortName: escortNameList.toString(),
@@ -1069,7 +1083,7 @@ export default {
 .title {
 	height: 50upx;
 	line-height: 50upx;
-	font-size: 16px;
+	font-size: 13px;
 }
 .mycanvas {
 	width: 100%;
