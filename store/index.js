@@ -29,6 +29,9 @@ const store = new Vuex.Store({//全局变量定义
         },
 		setToken(state, user) {
 		   state.token = user.token || '';
+		},
+		delToken(state) {
+		   state.token = '';
 		}
     }
 })

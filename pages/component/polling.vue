@@ -41,6 +41,11 @@
 				</view>
 				<button v-if="isAlter" class="cu-btn round lines-blue line-blue shadow" @tap="$manyCk(alterData)">修改</button>
 			</view>
+			<view class="cu-bar bg-white solid-bottom" style="height: 60upx;">
+				<view class="action">
+					<button class="cu-btn round bg-cyan" @tap="clickStatistics">巡查统计表</button>
+				</view>
+			</view>
 		</view>
 		<view class="cu-modal" style="z-index: 333" :class="modalName == 'Modal' ? 'show' : ''">
 			<view class="cu-dialog bg-white" style="height: 480upx;">
@@ -387,8 +392,13 @@ export default {
 		me.initMain();
 	},
 	methods: {
+		
+		 clickStatistics(){
+			uni.navigateTo({
+				url: '../component/details/statistics?planId=' + this.form.planId
+			});
+		},
 		showList(index, item) {
-
 			if (item.isOpen) {
 				uni.navigateTo({
 					url: '../' + item.path + '?planId=' + this.form.planId + '&isType=' + item.isType+ '&isExist=' + item.isExist+ '&isCommit=' + item.isCommit + '&deptName=' + this.form.deptName + '&recordId=' + this.form.recordId+ '&inspector=' + this.form.inspector

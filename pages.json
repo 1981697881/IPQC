@@ -63,6 +63,17 @@
 			"style": {
 				
 			}
+		},{
+			"path": "pages/component/details/record",
+			"style": {
+				
+			}
+		},
+		{
+			"path": "pages/component/details/statistics",
+			"style": {
+				
+			}
 		},
 		{
 			"path": "pages/set/set",

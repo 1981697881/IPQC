@@ -101,10 +101,23 @@ export default {
 	},//反馈登记
 	recordRectifyAdd(params) {
 	    return Request().post('/app/recordRectifyAdd', {
-	        header: {
+	        header: {	
 				contentType: 'application/json',
 			},
 			data: params
+	    });
+	},//检查记录表
+	recordFindAll(params) {
+	    return Request().post('/record-rectify/findAll', {
+	        header: {	
+				contentType: 'application/json',
+			},
+			data: params
+	    });
+	},//检查统计表
+	planReport(params) {
+	    return Request().get('/print/printPollingPlanReport/'+params, {
+	        
 	    });
 	},
 };
