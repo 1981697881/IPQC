@@ -23,6 +23,11 @@
 					</view>
 				</view>
 			</view>
+			<view class="cu-bar tabbar shadow foot">
+				<view class="box text-center">
+					<button  class="cu-btn bg-blue shadow-blur round lg" style="width: 40%;" @tap="$manyCk(clickRecord)">检查登记表</button>
+				</view>
+			</view>
 		</scroll-view>
 	</view>
 </template>
@@ -84,12 +89,17 @@ export default {
 					})
 					.exec();
 				setTimeout(function() {
-					me.pageHeight = res.windowHeight - headHeight;
+					me.pageHeight = res.windowHeight - headHeight -40;
 				}, 1000);
 			}
 		});
 	},
 	methods: {
+		clickRecord(){
+			uni.navigateTo({
+				url: '../details/record?recordId=' + this.recordId
+			});
+		},
 		// 产品列表数据
 		getNewsList: function() {
 			//第一次回去数据
