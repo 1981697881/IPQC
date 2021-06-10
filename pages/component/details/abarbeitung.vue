@@ -119,7 +119,7 @@
 													:data-url="item.concernsImg[index3]"
 												>
 													<image :src="item.concernsImg[index3]" mode="aspectFill"></image>
-													<view class="cu-tag bg-red" @tap.stop="DelImg($event, item)" :data-index="index3"><text class="cuIcon-close"></text></view>
+													<!-- <view class="cu-tag bg-red" @tap.stop="DelImg($event, item)" :data-index="index3"><text class="cuIcon-close"></text></view> -->
 												</view>
 											</view>
 										</view>
@@ -357,11 +357,11 @@ export default {
 				uni.canvasToTempFilePath({
 					canvasId: 'mycanvas',
 					success: function(res) {
-						let cutImg = that.cuIList[0].concernsImg;
+						let cutImg = [];
 						if (cutImg.length != 0) {
 							cutImg = cutImg.concat(res.tempFilePath);
 						} else {
-							cutImg .push(res.tempFilePath);
+							cutImg.push(res.tempFilePath);
 						}
 						for (let i = 0; i < cutImg.length; i++) {
 							const uploadTask = uni.uploadFile({
